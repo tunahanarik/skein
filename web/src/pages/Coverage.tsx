@@ -87,7 +87,7 @@ export function CoveragePage() {
               <tr key={r.asset.key} className="clickable" onClick={() => navigate(`/asset/${r.asset.address}`)}>
                 <td>
                   <div className="row" style={{ gap: 10, flexWrap: "nowrap" }}>
-                    <Avatar symbol={r.asset.symbol} />
+                    <Avatar symbol={r.asset.symbol} address={r.asset.address} />
                     <div>
                       <a {...linkProps(`/asset/${r.asset.address}`)} style={{ fontWeight: 600, color: "var(--text)" }}>
                         {r.asset.symbol}

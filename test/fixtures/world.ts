@@ -323,6 +323,18 @@ export class FakeChainReader implements ChainReader {
         const id = r.roundId ?? 100n;
         return ok([id, r.answer, BigInt(r.updatedAt), BigInt(r.updatedAt), r.answeredInRound ?? id]);
       }
+      case "getRoundData": {
+        // Deterministic history: each earlier round is 1 h older and 0.1 % lower.
+        const r = this.world.rounds.get(t);
+        if (!r || r === "revert") return revert;
+        const latest = r.roundId ?? 100n;
+        const id = BigInt(c.args?.[0] as bigint);
+        const back = latest - id;
+        if (back <= 0n || back > 1000n) return revert;
+        const answer = (r.answer * (1000n - back)) / 1000n;
+        const at = BigInt(r.updatedAt) - back * 3600n;
+        return ok([id, answer, at, at, id]);
+      }
       case "symbol":
         return m?.symbol !== undefined ? ok(m.symbol) : revert;
       case "name":

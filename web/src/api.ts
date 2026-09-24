@@ -1,10 +1,12 @@
 /** Typed client for the read-only JSON API (src/server/api.ts). Same origin only. */
 import type { AssetIntelligence, CoverageRow, PortfolioIntelligence } from "../../src/product/types.js";
+import type { PriceHistory } from "../../src/product/service.js";
 import type { AssetListItem, Wire } from "../../src/server/wire.js";
 
 export type Intelligence = Wire<AssetIntelligence>;
 export type Portfolio = Wire<PortfolioIntelligence>;
 export type Coverage = Wire<CoverageRow>;
+export type History = Wire<PriceHistory>;
 export type Card = Intelligence["categories"][number]["subcategories"][number]["cards"][number];
 export type Sub = Intelligence["categories"][number]["subcategories"][number];
 export type { AssetListItem };
@@ -39,6 +41,7 @@ export const api = {
     return get<Intelligence>(`/api/assets/${encodeURIComponent(ref)}${qs ? `?${qs}` : ""}`, s);
   },
   portfolio: (address: string, s?: AbortSignal) => get<Portfolio>(`/api/portfolio/${encodeURIComponent(address)}`, s),
+  history: (ref: string, s?: AbortSignal) => get<History>(`/api/assets/${encodeURIComponent(ref)}/history`, s),
   coverage: (s?: AbortSignal) => get<{ rows: Coverage[] }>("/api/coverage", s),
   health: (s?: AbortSignal) => get<{ chainId: number; readOnly: boolean; rpc: { status: string; latestBlock: string | null } }>("/api/health", s),
 };

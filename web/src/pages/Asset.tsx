@@ -6,7 +6,9 @@ import { RouteTable } from "../components/RouteTable";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
 import { amount, usd } from "../format";
 import { useI18n } from "../i18n";
+import { PriceChart } from "../components/PriceChart";
 import { linkProps } from "../router";
+import { useWatchlist } from "../watchlist";
 import { ago, code } from "../text";
 
 type Cat = "TRADE" | "EARN" | "BORROW" | "LIQUIDITY";
@@ -115,14 +117,25 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
 
 function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: string | null; assetRef: string }) {
   const { t } = useI18n();
+  const watch = useWatchlist();
   const a = v?.asset;
   return (
     <div className="asset-head">
-      <Avatar symbol={a?.symbol ?? assetRef} size="lg" />
+      <Avatar symbol={a?.symbol ?? assetRef} address={a?.address ?? null} size="lg" />
       <div style={{ minWidth: 0 }}>
         <div className="row" style={{ gap: 8 }}>
           <h1>{a?.symbol ?? assetRef}</h1>
           {a?.registryType && <span className="tag">{code(t, "type", a.registryType)}</span>}
+          {a && (
+            <button className="star" aria-pressed={watch.has(a.key)} onClick={() => watch.toggle(a.key)} title={watch.has(a.key) ? t("watch.remove") : t("watch.add")} aria-label={watch.has(a.key) ? t("watch.remove") : t("watch.add")}>
+              {watch.has(a.key) ? "★" : "☆"}
+            </button>
+          )}
+          {a && (
+            <a className="star" {...linkProps(`/compare?a=${encodeURIComponent(a.symbol)}&b=${a.symbol === "TSLA" ? "NVDA" : "TSLA"}`)}>
+              {t("watch.compare")}
+            </a>
+          )}
         </div>
         <div className="muted small" style={{ overflowWrap: "anywhere" }}>
           {name ?? ""}
@@ -144,6 +157,7 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
                 ? `${v.price.method === "ROBINHOOD_QUOTE_MID" ? t("asset.rhQuote") : t("asset.chainlink")} · ${ago(t, v.price.observedAt)} · ${code(t, "fresh", v.price.freshness)}`
                 : v.price?.unpricedReason}
             </div>
+            {v.asset && <PriceChart assetRef={v.asset.address} />}
           </>
         ) : (
           <Skeleton h={30} w={120} />

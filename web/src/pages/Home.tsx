@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { api } from "../api";
 import { AssetSearch } from "../components/AssetSearch";
-import { Avatar, Skeleton, useAsync } from "../components/common";
+import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
 import { usd } from "../format";
 import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
 import { code } from "../text";
 import { useWallet } from "../wallet";
+import { useWatchlist } from "../watchlist";
 
 const QUICK = ["NVDA", "USDG", "WETH", "TSLA", "SGOV", "AAPL"];
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
@@ -57,6 +58,8 @@ export function WalletEntry({ compact }: { compact?: boolean }) {
 
 export function HomePage() {
   const { t } = useI18n();
+  const list = useAssetList();
+  const watch = useWatchlist();
   const cov = useAsync((s) => api.coverage(s), []);
   const rows = cov.data?.rows ?? null;
   const count = (k: "canTrade" | "canEarn" | "canBorrowAgainst" | "canProvideLiquidity") => rows?.filter((r) => r.capabilities[k]).length ?? 0;
@@ -86,7 +89,7 @@ export function HomePage() {
           <div className="quick">
             {QUICK.map((s) => (
               <a key={s} {...linkProps(`/asset/${s}`)}>
-                <Avatar symbol={s} />
+                <Avatar symbol={s} address={list?.find((a) => a.symbol === s)?.address ?? null} />
                 {s}
               </a>
             ))}
@@ -94,6 +97,36 @@ export function HomePage() {
         </div>
         <WalletEntry />
       </div>
+
+      {watch.keys.length > 0 && (
+        <section className="section">
+          <div className="section-head">
+            <h2>{t("watch.title")}</h2>
+            <span className="muted">{t("watch.hint")}</span>
+          </div>
+          <div className="quick">
+            {watch.keys.map((k) => {
+              const r = rows?.find((x) => x.asset.key === k);
+              const meta = list?.find((x) => x.key === k);
+              const sym = r?.asset.symbol ?? meta?.symbol;
+              if (!sym) return null;
+              return (
+                <a key={k} {...linkProps(`/asset/${meta?.address ?? sym}`)}>
+                  <Avatar symbol={sym} address={meta?.address ?? null} />
+                  {sym}
+                  {r && (
+                    <span className="row" style={{ gap: 3, marginLeft: 4 }}>
+                      {CATS.map((c) => (
+                        <span key={c} className={`dot ${r.capabilities.detail[c]}`} title={`${t(`cat.${c}`)}: ${t(`cap.${r.capabilities.detail[c]}`)}`} />
+                      ))}
+                    </span>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="section-head">
@@ -136,7 +169,7 @@ export function HomePage() {
                 {top.map(({ r }) => (
                   <tr key={r.asset.key} className="clickable" onClick={() => navigate(`/asset/${r.asset.symbol}`)}>
                     <td style={{ width: 44 }}>
-                      <Avatar symbol={r.asset.symbol} />
+                      <Avatar symbol={r.asset.symbol} address={r.asset.address} />
                     </td>
                     <td>
                       <a {...linkProps(`/asset/${r.asset.symbol}`)} style={{ fontWeight: 600, color: "var(--text)" }}>

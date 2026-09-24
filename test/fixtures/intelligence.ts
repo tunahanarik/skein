@@ -44,6 +44,7 @@ export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { 
       return getPortfolio(w, { ...s.deps, now });
     },
     now,
+    prices: s.prices,
     ...(opts.maxStaleMs !== undefined ? { maxStaleMs: opts.maxStaleMs } : {}),
   });
   return { s, world, pools, mm, pm, engine, service, clock, portfolioCalls: () => portfolioCalls };

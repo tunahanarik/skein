@@ -34,6 +34,20 @@ export const CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+/** App shell with page-specific title / description / Open Graph tags (for link previews). */
+export function shellWithMeta(html: string, meta: { title: string; description: string }): string {
+  const tags = [
+    `<title>${esc(meta.title)}</title>`,
+    `<meta name="description" content="${esc(meta.description)}" />`,
+    `<meta property="og:title" content="${esc(meta.title)}" />`,
+    `<meta property="og:description" content="${esc(meta.description)}" />`,
+    `<meta property="og:type" content="website" />`,
+  ].join("\n    ");
+  return html.replace(/<title>[^<]*<\/title>/, "").replace(/<meta name="description"[^>]*>/, "").replace("</head>", `    ${tags}\n  </head>`);
+}
+
 export function createStatic(rootDir: string) {
   const root = resolve(rootDir);
   return function serve(req: IncomingMessage, res: ServerResponse): boolean {

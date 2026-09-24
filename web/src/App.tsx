@@ -3,6 +3,7 @@ import { shortAddr } from "./format";
 import { I18nProvider, LANGS, useI18n, type Lang } from "./i18n";
 import { AboutPage } from "./pages/About";
 import { AssetPage } from "./pages/Asset";
+import { ComparePage } from "./pages/Compare";
 import { CoveragePage } from "./pages/Coverage";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
@@ -59,6 +60,9 @@ function Header() {
           <a className={is("coverage")} {...linkProps("/coverage")}>
             {t("nav.coverage")}
           </a>
+          <a className={is("compare")} {...linkProps("/compare")}>
+            {t("nav.compare")}
+          </a>
           <a className={is("about")} {...linkProps("/about")}>
             {t("nav.about")}
           </a>
@@ -109,6 +113,8 @@ function Page() {
       return <CoveragePage />;
     case "about":
       return <AboutPage />;
+    case "compare":
+      return <ComparePage />;
     default:
       return (
         <div className="empty">

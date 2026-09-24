@@ -24,6 +24,19 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 | `/api/assets/:ref?mode=product\|debug&to=&amount=` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key | 10 s; `no-store` with an amount |
 | `/api/portfolio/:address?mode=` | `PortfolioIntelligence` | no-store |
 | `/api/coverage` | `{ rows: CoverageRow[] }` | 15 s |
+| `/api/assets/:ref/history` | the Chainlink feed's last 49 rounds (`getRoundData`, one multicall), oldest first, with an exact change. Stock Token feeds include the multiplier | 60 s |
+| `/api/logo/:address` | token logo for a canonical asset, proxied from the registry's `logoUrl` | 1 day |
+
+Logo proxy rules (`src/server/logos.ts`):
+- Only `https://cdn.robinhood.com`: the only host in the Robinhood registry's `logoUrl` fields.
+- Redirects are refused.
+- Images are PNG/JPEG/WebP detected by magic number; SVG is refused because it can carry script.
+- At most 256 KB.
+- Cached in memory and in `.cache/logos` (gitignored). A failure is remembered for 10 min.
+- Served with `Content-Security-Policy: default-src 'none'; sandbox`.
+- Logos have their own rate-limit bucket (1200/min), because a coverage page shows about 200.
+
+`/asset/:ref` pages get an app shell with the asset's title, description and Open Graph tags, for link previews. The values come from registry data and are HTML-escaped.
 
 Bigints travel as decimal strings (`Wire<T>` in `src/server/wire.ts`), so no precision is lost.
 
@@ -59,10 +72,11 @@ Errors are `{ error: { code, message } }` and never carry stack traces:
 
 ## Web app
 The pages are:
-- **Explore:** asset search and a wallet entry
+- **Explore:** asset search, a wallet entry and the watchlist (starred assets, kept in localStorage)
 - **Asset:** capabilities, categories, a route table, explicit-amount quotes and "show hidden" (DEBUG)
 - **Wallet:** holdings and what each holding can do
 - **Coverage:** the matrix for all assets
+- **Compare:** two assets side by side (`/compare?a=&b=`, public symbols only)
 - **How it works**
 
 Wallet handling (`web/src/wallet.tsx`):

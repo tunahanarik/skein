@@ -13,17 +13,43 @@ import { AssetIntelligenceService } from "../product/service.js";
 import { createRuntime } from "../runtime.js";
 import { createApi } from "./api.js";
 import { sendJson } from "./json.js";
-import { createStatic } from "./static.js";
+import { LogoStore } from "./logos.js";
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { createStatic, CSP, shellWithMeta } from "./static.js";
+import { SECURITY_HEADERS } from "./json.js";
 
 const env = process.env;
 const rt = createRuntime(env);
 const intelligence = new AssetIntelligenceService({
   engine: rt.opportunities,
   getPortfolio: (w) => rt.getPortfolio(w),
+  prices: rt.prices,
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
-const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1" });
-const serveStatic = createStatic(env.WEB_DIST ?? "web/dist");
+const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos" }) });
+const webDist = env.WEB_DIST ?? "web/dist";
+const serveStatic = createStatic(webDist);
+
+/** /asset/:ref gets an app shell whose title and preview text name the asset (registry data only). */
+async function assetShell(path: string): Promise<string | null> {
+  const m = /^\/asset\/([^/]{1,100})$/.exec(path);
+  const index = join(webDist, "index.html");
+  if (!m || !existsSync(index)) return null;
+  let ref: string;
+  try {
+    ref = decodeURIComponent(m[1]!);
+  } catch {
+    return null;
+  }
+  const reg = await rt.getRegistry();
+  const a = /^0x[0-9a-fA-F]{40}$/.test(ref) ? reg.get(rt.reader.chainId, ref.toLowerCase() as `0x${string}`) : reg.canonicalBySymbol(ref).length === 1 ? reg.canonicalBySymbol(ref)[0] : undefined;
+  if (!a?.canonical) return null;
+  return shellWithMeta(readFileSync(index, "utf8"), {
+    title: `${a.symbol} · Waypoint`,
+    description: `What ${a.symbol} (${a.name.slice(0, 60)}) can do on Robinhood Chain: trade, earn, borrow and provide liquidity. Read-only; sources and ages for every number.`,
+  });
+}
 
 const REFRESH_EVERY_MS = 45_000;
 const ACTIVE_WINDOW_MS = 30 * 60_000;
@@ -37,6 +63,26 @@ const server = createServer((req, res) => {
   if (path.startsWith("/api/")) {
     lastApiRequest = Date.now();
     return void api(req, res);
+  }
+  if (req.method === "GET" && path.startsWith("/asset/")) {
+    void assetShell(path).then(
+      (html) => {
+        if (html === null) {
+          if (!serveStatic(req, res)) sendJson(res, 404, { error: { code: "NOT_FOUND", message: "not found" } }, "no-store");
+          return;
+        }
+        res.statusCode = 200;
+        for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+        res.setHeader("Content-Security-Policy", CSP);
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Cache-Control", "no-cache");
+        res.end(html);
+      },
+      () => {
+        if (!serveStatic(req, res)) sendJson(res, 404, { error: { code: "NOT_FOUND", message: "not found" } }, "no-store");
+      },
+    );
+    return;
   }
   if ((req.method === "GET" || req.method === "HEAD") && serveStatic(req, res)) return;
   sendJson(res, 404, { error: { code: "NOT_FOUND", message: "not found" } }, "no-store");

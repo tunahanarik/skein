@@ -1,7 +1,7 @@
-/** Minimal history router: /, /asset/:ref, /wallet, /coverage. The wallet address is never in the URL. */
+/** Minimal history router: /, /asset/:ref, /wallet, /coverage, /compare?a=&b=, /about. The wallet address is never in the URL. */
 import { useEffect, useState } from "react";
 
-export type Route = { name: "home" } | { name: "asset"; ref: string } | { name: "wallet" } | { name: "coverage" } | { name: "about" } | { name: "notfound" };
+export type Route = { name: "home" } | { name: "asset"; ref: string } | { name: "wallet" } | { name: "coverage" } | { name: "compare" } | { name: "about" } | { name: "notfound" };
 
 export function parse(pathname: string): Route {
   const p = pathname.replace(/\/+$/, "") || "/";
@@ -9,6 +9,7 @@ export function parse(pathname: string): Route {
   if (p === "/wallet") return { name: "wallet" };
   if (p === "/coverage") return { name: "coverage" };
   if (p === "/about") return { name: "about" };
+  if (p === "/compare") return { name: "compare" };
   const m = /^\/asset\/([^/]+)$/.exec(p);
   if (m) {
     try {

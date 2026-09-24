@@ -70,9 +70,32 @@ export function ProtocolLink({ name, url }: { name: string; url: string }) {
   );
 }
 
-export function Avatar({ symbol, size }: { symbol: string; size?: "lg" }) {
+const failedLogos = new Set<string>();
+
+/** Token logo served by our own API (canonical assets only); falls back to a monogram. */
+export function Avatar({ symbol, address, size }: { symbol: string; address?: string | null; size?: "lg" }) {
+  // Failure is remembered per address, so an avatar that first renders without an address
+  // (data still loading) still shows the logo once the address arrives.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const failed = !address || failedLogos.has(address.toLowerCase()) || failedFor === address.toLowerCase();
+  const cls = `avatar${size === "lg" ? " lg" : ""}`;
+  if (!failed && address && /^0x[0-9a-fA-F]{40}$/.test(address)) {
+    return (
+      <img
+        className={`${cls} logo`}
+        src={`/api/logo/${address.toLowerCase()}`}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => {
+          failedLogos.add(address.toLowerCase());
+          setFailedFor(address.toLowerCase());
+        }}
+      />
+    );
+  }
   return (
-    <span className={`avatar${size === "lg" ? " lg" : ""}`} aria-hidden="true">
+    <span className={cls} aria-hidden="true">
       {symbol.slice(0, 4)}
     </span>
   );

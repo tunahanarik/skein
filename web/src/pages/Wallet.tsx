@@ -215,7 +215,7 @@ function Holding({ a, open, toggle }: { a: Intelligence; open: boolean; toggle: 
   return (
     <div className="panel">
       <button className="holding" onClick={toggle} aria-expanded={open}>
-        <Avatar symbol={a.asset?.symbol ?? "?"} />
+        <Avatar symbol={a.asset?.symbol ?? "?"} address={a.asset?.address ?? null} />
         <div style={{ minWidth: 120 }}>
           <div style={{ fontWeight: 650 }}>{a.asset?.symbol}</div>
           <div className="small muted">{code(t, "type", a.asset?.registryType)}</div>

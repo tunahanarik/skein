@@ -15,6 +15,7 @@
  *   USDG:        Chainlink USDG/USD → else UNPRICED (never an assumed $1). pegDeviationBps exposed.
  */
 import { ROBINHOOD_CHAIN_ID } from "../config/chains.js";
+import { chainlinkAggregatorAbi } from "../config/abis.js";
 import {
   classifyFreshness,
   STOCK_PRICE_CONFLICT_PCT,
@@ -90,6 +91,47 @@ export class PriceService {
 
   constructor(private readonly deps: PriceServiceDeps) {
     this.now = deps.now ?? (() => new Date());
+  }
+
+  /** The Chainlink feed that prices `a`, if the directory has one (same rule as priceAssets). */
+  async feedFor(a: Asset): Promise<ChainlinkFeed | null> {
+    const index = await (this.deps.loadFeedIndex ?? (() => loadFeedIndex(this.deps.http)))();
+    if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
+    if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+    if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
+    return null;
+  }
+
+  /**
+   * The feed's last `n` rounds (one multicall of getRoundData, same phase), oldest first. Display
+   * history only: points are Chainlink answers as published (Stock Token feeds already include the
+   * multiplier — pricing.md); rounds that fail or look invalid are dropped.
+   */
+  async feedHistory(a: Asset, blockNumber: bigint, n = 48): Promise<{ feed: ChainlinkFeed; points: { updatedAt: number; answer: bigint; decimals: number }[] } | null> {
+    const feed = await this.feedFor(a);
+    if (!feed) return null;
+    const [latest, dec] = await this.deps.reader.multicall(
+      [
+        { address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "latestRoundData" },
+        { address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" },
+      ],
+      { blockNumber },
+    );
+    if (latest?.status !== "success" || dec?.status !== "success") return { feed, points: [] };
+    const roundId = (latest.result as readonly bigint[])[0]!;
+    const decimals = Number(dec.result);
+    const phase = roundId >> 64n;
+    const agg = roundId & ((1n << 64n) - 1n);
+    const ids: bigint[] = [];
+    for (let i = 1n; i <= BigInt(n) && agg - i >= 1n; i++) ids.push((phase << 64n) | (agg - i));
+    const rs = ids.length ? await this.deps.reader.multicall(ids.map((id) => ({ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "getRoundData", args: [id] })), { blockNumber }) : [];
+    const rows = [latest, ...rs]
+      .filter((r) => r?.status === "success")
+      .map((r) => r!.status === "success" ? (r!.result as readonly bigint[]) : [])
+      .filter((r) => r.length >= 4 && r[1]! > 0n && r[3]! > 0n)
+      .map((r) => ({ updatedAt: Number(r[3]), answer: r[1]!, decimals }));
+    const uniq = [...new Map(rows.map((p) => [p.updatedAt, p])).values()].sort((x, y) => x.updatedAt - y.updatedAt);
+    return { feed, points: uniq };
   }
 
   async priceAssets(requests: readonly PriceRequest[], ctx: PriceContext): Promise<PriceBatch> {

@@ -6,6 +6,8 @@
  *   GET /api/assets/:ref?mode=&to=&amount=            AssetIntelligence (ref = symbol, address or key)
  *   GET /api/portfolio/:address?mode=                 PortfolioIntelligence (never cached, never logged)
  *   GET /api/coverage                                 coverage matrix
+ *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
+ *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
  *
  * Only GET/HEAD. Every input is validated; errors never carry stack traces. Request logs carry
  * the route TEMPLATE, never the raw path (a wallet address is part of the portfolio path).
@@ -16,8 +18,9 @@ import type { RpcHealthSnapshot } from "../chain/health.js";
 import type { AssetRegistry } from "../registry/registry.js";
 import type { AssetIntelligenceService } from "../product/service.js";
 import type { ProductMode } from "../product/types.js";
+import type { LogoStore } from "./logos.js";
 import { RateLimiter } from "./rateLimit.js";
-import { sendJson } from "./json.js";
+import { SECURITY_HEADERS, sendJson } from "./json.js";
 import type { AssetListItem, Wire } from "./wire.js";
 
 export interface ApiDeps {
@@ -30,6 +33,7 @@ export interface ApiDeps {
   now?: () => number;
   /** Trust X-Forwarded-For for rate limiting (only behind a known proxy). */
   trustProxy?: boolean;
+  logos?: LogoStore;
 }
 
 export class ApiError extends Error {
@@ -39,7 +43,7 @@ export class ApiError extends Error {
 }
 
 /** Requests per minute per client IP. Expensive = quotes, portfolio, DEBUG, coverage. */
-export const RATE_LIMITS = { general: 120, expensive: 20 } as const;
+export const RATE_LIMITS = { general: 120, expensive: 20, logos: 1200 } as const;
 
 const MAX_AMOUNT_LEN = 40;
 const SYMBOL = /^[A-Za-z0-9.\-]{1,16}$/;
@@ -108,7 +112,15 @@ export function createApi(deps: ApiDeps) {
     if (p === "/api/coverage") {
       return { template: "/api/coverage", body: { rows: await deps.intelligence.getCoverage() }, cache: "public, max-age=15", expensive: true };
     }
-    let m = /^\/api\/assets\/([^/]{1,100})$/.exec(p);
+    let m = /^\/api\/assets\/([^/]{1,100})\/history$/.exec(p);
+    if (m) {
+      const reg = await deps.getRegistry();
+      const key = resolveRef(reg, decodeURIComponent(m[1]!), deps.chainId);
+      const h = await deps.intelligence.getPriceHistory(key);
+      if (!h) throw new ApiError(404, "NO_HISTORY", "no price history for this asset");
+      return { template: "/api/assets/:ref/history", body: h, cache: "public, max-age=60", expensive: false };
+    }
+    m = /^\/api\/assets\/([^/]{1,100})$/.exec(p);
     if (m) {
       const reg = await deps.getRegistry();
       const key = resolveRef(reg, decodeURIComponent(m[1]!), deps.chainId);
@@ -132,6 +144,27 @@ export function createApi(deps: ApiDeps) {
     throw new ApiError(404, "NOT_FOUND", "no such endpoint");
   }
 
+  async function logo(req: IncomingMessage, res: ServerResponse, raw: string): Promise<boolean> {
+    if (!deps.logos) return false;
+    let addr: string;
+    try {
+      addr = decodeURIComponent(raw);
+    } catch {
+      return false;
+    }
+    if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) return false;
+    const l = await deps.logos.get(deps.chainId, addr.toLowerCase() as `0x${string}`);
+    if (!l) return false;
+    res.statusCode = 200;
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+    res.setHeader("Content-Type", l.contentType);
+    res.setHeader("Content-Length", l.bytes.length);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.end(req.method === "HEAD" ? undefined : l.bytes);
+    return true;
+  }
+
   return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const t0 = performance.now();
     let template = "unmatched";
@@ -143,6 +176,14 @@ export function createApi(deps: ApiDeps) {
       }
       const url = new URL(req.url ?? "/", "http://localhost");
       const ip = clientIp(req);
+      // Logos: many per page and cached, so they get their own, larger bucket.
+      const lm = /^\/api\/logo\/([^/]{1,100})$/.exec(url.pathname);
+      if (lm) {
+        template = "/api/logo/:address";
+        if (!limiter.take(`l:${ip}`, RATE_LIMITS.logos)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
+        if (await logo(req, res, lm[1]!)) return;
+        throw new ApiError(404, "NO_LOGO", "no logo");
+      }
       // Cheap pre-check so a flood never reaches the engine.
       if (!limiter.take(`g:${ip}`, RATE_LIMITS.general)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
       const expensive = url.pathname.startsWith("/api/portfolio") || url.pathname.startsWith("/api/coverage") || url.searchParams.has("amount") || url.searchParams.get("mode")?.toLowerCase() === "debug";

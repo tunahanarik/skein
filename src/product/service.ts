@@ -22,6 +22,7 @@ import { priceCanonicalAssets } from "../opportunities/assetPricing.js";
 import type { EngineResult, OpportunityEngine, OpportunityQuery } from "../opportunities/engine.js";
 import type { Portfolio, PortfolioAsset } from "../portfolio/types.js";
 import type { AssetRegistry } from "../registry/registry.js";
+import type { PriceService } from "../pricing/priceService.js";
 import { buildTradeGraph, destinations, findRoutes, type TradeGraph } from "../trade/graph.js";
 import { opportunityCard, routeCard } from "./cards.js";
 import { PRODUCT_CATEGORY_ORDER, SUBCATEGORY_ORDER, productCategoryOf } from "./categories.js";
@@ -58,6 +59,18 @@ export interface IntelligenceDeps {
    * is evaluated at response time from the data's own timestamps. Default 0 (CLIs, tests).
    */
   maxStaleMs?: number;
+  /** Phase 1 Price Service, for price history (optional; history is unavailable without it). */
+  prices?: PriceService;
+}
+
+export interface PriceHistory {
+  asset: AssetRef;
+  kind: "PORTFOLIO_PRICE";
+  source: { provider: "Chainlink"; feed: string; proxy: string } | null;
+  /** Oldest first. Chainlink rounds as published (Stock Token feeds include the multiplier). */
+  points: { t: string; usd: string }[];
+  change: { from: string; to: string; pct: string } | null;
+  generatedAt: string;
 }
 
 export interface AssetQueryOptions {
@@ -488,6 +501,26 @@ export class AssetIntelligenceService {
       blockNumber: s.ctx.blockNumber,
       generatedAt: this.now().toISOString(),
     };
+  }
+
+  // ---------------------------------------------------------------- price history
+
+  private readonly historyCache = new TtlCache<PriceHistory>(() => this.now().getTime());
+
+  async getPriceHistory(assetInput: string): Promise<PriceHistory | null> {
+    const s = await this.snapshot();
+    const { ref } = this.resolveAsset(s.ctx.registry, assetInput);
+    if (!ref || !ref.canonical || !this.deps.prices) return null;
+    const asset = s.ctx.registry.get(s.ctx.chainId, ref.address)!;
+    return this.historyCache.getOrLoad(ref.key, 60_000, async () => {
+      const h = await this.deps.prices!.feedHistory(asset, s.ctx.blockNumber).catch(() => null);
+      const points = (h?.points ?? []).map((p) => ({ t: new Date(p.updatedAt * 1000).toISOString(), usd: formatFixed(p.answer, p.decimals) }));
+      const first = h?.points[0];
+      const last = h?.points.at(-1);
+      // Exact change in 1e18 fixed point, then formatted.
+      const change = first && last && first.answer > 0n ? { from: points[0]!.usd, to: points.at(-1)!.usd, pct: formatFixed(((last.answer - first.answer) * 10n ** 20n) / first.answer, 18) } : null;
+      return { asset: ref, kind: "PORTFOLIO_PRICE", source: h ? { provider: "Chainlink", feed: h.feed.name, proxy: h.feed.proxyAddress } : null, points, change, generatedAt: this.now().toISOString() };
+    });
   }
 
   // ---------------------------------------------------------------- coverage

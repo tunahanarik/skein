@@ -140,3 +140,14 @@ describe("static web app", () => {
     expect((await get("/..%2f..%2fpackage.json")).status).toBe(404);
   });
 });
+
+describe("asset shell meta", () => {
+  it("escapes values and replaces the generic title", async () => {
+    const { shellWithMeta } = await import("../../src/server/static.js");
+    const html = shellWithMeta('<html><head><title>Waypoint</title><meta name="description" content="x" /></head><body></body></html>', { title: 'A<b>"', description: "d & e" });
+    expect(html).toContain("<title>A&lt;b&gt;&quot;</title>");
+    expect(html).toContain('property="og:description" content="d &amp; e"');
+    expect(html.match(/<title>/g)).toHaveLength(1);
+    expect(html.match(/name="description"/g)).toHaveLength(1);
+  });
+});
