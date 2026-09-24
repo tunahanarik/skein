@@ -1,5 +1,5 @@
 /**
- * Uniswap adapter (v3; the Phase 4 reference TRADE adapter). Read-only.
+ * Uniswap-v3-style TRADE adapter (the Phase 4 reference; dialects: Uniswap v3, Ramses CL). Read-only.
  *
  * Discovery (no pool addresses are hardcoded):
  *   1. factory PoolCreated events — a RESUMABLE, topic-filtered cold scan (tasks split by tokens on
@@ -33,9 +33,9 @@ import { isLogRangeError } from "../../chain/reader.js";
 import type { AdapterCapabilities, AdapterContext, AdapterIssue, AdapterResult, OpportunityAdapter, ResultStatus } from "../../opportunities/adapter.js";
 import { priceCanonicalAssets } from "../../opportunities/assetPricing.js";
 import { assetKey } from "../../registry/asset.js";
-import { UNISWAP_READ_CONTRACTS } from "./constants.js";
+import { UNISWAP_V3, type V3Dialect } from "./constants.js";
 import { hopFee, hopSpotRational, priceImpact } from "./math.js";
-import { normalizePool, PROTOCOL, VENUE_KIND, type UniswapNormalizeContext } from "./normalize.js";
+import { normalizePool, VENUE_KIND, type UniswapNormalizeContext } from "./normalize.js";
 import { coldScanTaskKeys, discoverPoolsIncremental, resolveScanTask, runScanTask, splitScanTaskKey, sweepFactoryPools, quoteExactInputSingle, readPoolIdentities, readPoolStates, type DiscoveredPool, type PoolIdentity, type PoolState } from "./onchain.js";
 import { MemoryPoolListStore, type PoolListStore } from "./poolStore.js";
 
@@ -72,10 +72,13 @@ export interface UniswapAdapterOptions {
   fromBlock?: bigint;
   /** Wall-clock budget per run for the resumable cold event scan (default DISCOVERY_SCAN_BUDGET_MS). */
   scanBudgetMs?: number;
+  /** Which v3-style DEX this adapter reads (default Uniswap v3). */
+  dialect?: V3Dialect;
 }
 
 export class UniswapAdapter implements OpportunityAdapter {
-  readonly protocol = { ...PROTOCOL };
+  readonly protocol: { id: string; name: string };
+  readonly dialect: V3Dialect;
   readonly categories: readonly OpportunityCategory[] = ["TRADE"];
   readonly capabilities: AdapterCapabilities = { discovery: true, assetFiltering: false, userPositions: false, singleOpportunity: true, execution: false, quotes: true };
 
@@ -97,6 +100,8 @@ export class UniswapAdapter implements OpportunityAdapter {
     this.clock = opts.now ?? (() => Date.now());
     this.fromBlock = opts.fromBlock ?? 0n;
     this.scanBudgetMs = opts.scanBudgetMs ?? DISCOVERY_SCAN_BUDGET_MS;
+    this.dialect = opts.dialect ?? UNISWAP_V3;
+    this.protocol = { ...this.dialect.protocol };
   }
 
   supportsCategory(c: OpportunityCategory): boolean {
@@ -121,7 +126,7 @@ export class UniswapAdapter implements OpportunityAdapter {
     const sets = this.tokenSets(ctx);
     if (!this.list) {
       const s = this.store.load();
-      if (s && s.chainId === ctx.chainId && s.factory.toLowerCase() === UNISWAP_READ_CONTRACTS.v3Factory && s.tokenSetHash === sets.hash) {
+      if (s && s.chainId === ctx.chainId && s.factory.toLowerCase() === this.dialect.factory.toLowerCase() && s.tokenSetHash === sets.hash) {
         this.list = { pools: s.pools, scannedTo: s.scannedTo, tokenSetHash: s.tokenSetHash, checkedAt: s.savedAt, coldScan: s.coldScan ?? null };
         // Immutable identity checks already done by an earlier process (re-verified after POOL_IDENTITY).
         for (const [k, v] of Object.entries(s.identities ?? {})) if (!this.identityCache.has(k)) this.identityCache.set(k, { identity: v.identity, block: v.block, storedAt: v.verifiedAt });
@@ -156,7 +161,7 @@ export class UniswapAdapter implements OpportunityAdapter {
         const key = list.coldScan.pending[0]!;
         const task = resolveScanTask(key, sets.nonHub, sets.hubs);
         try {
-          if (task) merge(await runScanTask(ctx.reader, task, this.fromBlock, list.coldScan.target));
+          if (task) merge(await runScanTask(ctx.reader, task, this.fromBlock, list.coldScan.target, this.dialect));
           list.coldScan.pending.shift();
           this.stats.coldTasksRun++;
           persist();
@@ -185,7 +190,7 @@ export class UniswapAdapter implements OpportunityAdapter {
       // 2) incremental scan of new blocks
       try {
         this.stats.incrementalScans++;
-        merge(await discoverPoolsIncremental(ctx.reader, new Set(sets.nonHub.map((a) => a.toLowerCase())), new Set(sets.hubs.map((a) => a.toLowerCase())), list.scannedTo + 1n, ctx.blockNumber));
+        merge(await discoverPoolsIncremental(ctx.reader, new Set(sets.nonHub.map((a) => a.toLowerCase())), new Set(sets.hubs.map((a) => a.toLowerCase())), list.scannedTo + 1n, ctx.blockNumber, this.dialect));
         list.scannedTo = ctx.blockNumber;
         persist();
       } catch (e) {
@@ -201,7 +206,7 @@ export class UniswapAdapter implements OpportunityAdapter {
     if (list.coldScan?.pending.length) {
       try {
         this.stats.sweeps = (this.stats.sweeps ?? 0) + 1;
-        merge(await sweepFactoryPools(ctx.reader, sets.nonHub, sets.hubs, ctx.blockNumber));
+        merge(await sweepFactoryPools(ctx.reader, sets.nonHub, sets.hubs, ctx.blockNumber, this.dialect));
       } catch (e) {
         issues.push({ scope: "uniswap:discovery", message: `factory sweep failed (${(e as Error).message.split("\n")[0]})`, severity: "DEGRADED" });
       }
@@ -214,7 +219,7 @@ export class UniswapAdapter implements OpportunityAdapter {
     const list = this.list;
     if (!list) return;
     const identities = Object.fromEntries([...this.identityCache.entries()].map(([k, v]) => [k, { identity: v.identity, block: v.block, verifiedAt: v.storedAt }]));
-    this.store.save({ version: 1, chainId, factory: UNISWAP_READ_CONTRACTS.v3Factory, tokenSetHash: list.tokenSetHash, scannedTo: list.scannedTo, savedAt: list.checkedAt, pools: list.pools.filter((p) => p.via === "EVENT"), coldScan: list.coldScan, identities });
+    this.store.save({ version: 1, chainId, factory: this.dialect.factory.toLowerCase() as Address, tokenSetHash: list.tokenSetHash, scannedTo: list.scannedTo, savedAt: list.checkedAt, pools: list.pools.filter((p) => p.via === "EVENT"), coldScan: list.coldScan, identities });
   }
 
   private async snapshot(ctx: AdapterContext): Promise<Snapshot> {
@@ -243,7 +248,7 @@ export class UniswapAdapter implements OpportunityAdapter {
       return !c || now - c.storedAt >= CACHE_TTL_MS.POOL_IDENTITY;
     });
     if (need.length) {
-      const read = await readPoolIdentities(ctx.reader, need, ctx.blockNumber);
+      const read = await readPoolIdentities(ctx.reader, need, ctx.blockNumber, this.dialect);
       for (const p of need) {
         const r = read.get(p.pool.toLowerCase());
         // Only fully readable identities are cached; unreadable ones are retried next run.
@@ -265,7 +270,7 @@ export class UniswapAdapter implements OpportunityAdapter {
       const c = this.secondaryState.get(i.pool.toLowerCase());
       return !c || now - c.takenAt >= CACHE_TTL_MS.POOL_STATE_SECONDARY;
     });
-    const states = await readPoolStates(ctx.reader, [...primary, ...staleSecondary], ctx.blockNumber, ctx.blockTimestamp);
+    const states = await readPoolStates(ctx.reader, [...primary, ...staleSecondary], ctx.blockNumber, ctx.blockTimestamp, this.dialect);
     for (const i of staleSecondary) {
       const st = states.get(i.pool.toLowerCase());
       if (st && !st.errors.length) this.secondaryState.set(i.pool.toLowerCase(), { state: st, takenAt: now });
@@ -293,6 +298,7 @@ export class UniswapAdapter implements OpportunityAdapter {
       },
       priceOf: priced.priceOf,
       isLookalike: (ref) => !ref.canonical && ctx.registry.canonicalBySymbol(ref.symbol).length > 0,
+      dialect: this.dialect,
     };
 
     t = performance.now();
@@ -341,7 +347,7 @@ export class UniswapAdapter implements OpportunityAdapter {
     const s = await this.snapshot(ctx);
     const hops = route.hops.map((h) => ({ h, m: s.markets.get(h.marketId), id: s.identities.get(h.marketId), st: null as PoolState | null }));
     for (const x of hops) {
-      if (!x.m || !x.id) return { ok: false, reason: `market ${x.h.marketId} is not a known Uniswap v3 market`, retryable: false };
+      if (!x.m || !x.id) return { ok: false, reason: `market ${x.h.marketId} is not a known ${this.dialect.label} market`, retryable: false };
       if (!x.m.assets[0].canonical || !x.m.assets[1].canonical) return { ok: false, reason: "quotes are only produced for canonical assets", retryable: false };
       if (!x.m.originVerified || x.m.verificationStatus !== "VERIFIED_ONCHAIN") return { ok: false, reason: `market ${x.h.marketId} is not verified`, retryable: false };
       if (x.m.state !== "ACTIVE") return { ok: false, reason: `market ${x.h.marketId} is ${x.m.state}`, retryable: false };
@@ -352,7 +358,7 @@ export class UniswapAdapter implements OpportunityAdapter {
     const hit = this.quoteCache.get(cacheKey);
     if (hit && this.clock() - hit.storedAt < CACHE_TTL_MS.QUOTE) return hit.result;
 
-    const src: DataSource = { type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract: UNISWAP_READ_CONTRACTS.quoterV2, method: "QuoterV2.quoteExactInputSingle (eth_call, per hop)", blockNumber: s.block, observedAt: s.generatedAt };
+    const src: DataSource = { type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract: this.dialect.quoter, method: "QuoterV2.quoteExactInputSingle (eth_call, per hop)", blockNumber: s.block, observedAt: s.generatedAt };
     let amount = amountInRaw;
     let gas = 0n;
     const fees: TradeQuote["fees"] = [];
@@ -362,9 +368,11 @@ export class UniswapAdapter implements OpportunityAdapter {
         const id = x.id!;
         const zeroForOne = x.h.from.address.toLowerCase() === id.token0.toLowerCase();
         this.stats.quoteCalls++;
-        const q = await quoteExactInputSingle(ctx.reader, x.h.from.address, x.h.to.address, id.fee, amount, s.block);
-        fees.push({ hop: i, asset: x.h.from, amount: { raw: hopFee(amount, id.fee), decimals: x.h.from.decimals, display: formatFixed(hopFee(amount, id.fee), x.h.from.decimals) } });
-        spots.push({ spot: hopSpotRational(x.st!.sqrtPriceX96!, zeroForOne), feePpm: id.fee });
+        const d = this.dialect;
+        const fee = d.dynamicFee ? (x.st?.fee ?? id.fee) : id.fee;
+        const q = await quoteExactInputSingle(ctx.reader, x.h.from.address, x.h.to.address, d.poolKey === "FEE" ? id.fee : id.tickSpacing, amount, s.block, d);
+        fees.push({ hop: i, asset: x.h.from, amount: { raw: hopFee(amount, fee), decimals: x.h.from.decimals, display: formatFixed(hopFee(amount, fee), x.h.from.decimals) } });
+        spots.push({ spot: hopSpotRational(x.st!.sqrtPriceX96!, zeroForOne), feePpm: fee });
         gas += q.gasEstimate;
         amount = q.amountOut;
       }

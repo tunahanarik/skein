@@ -1,5 +1,6 @@
 /**
- * Onchain reads for Uniswap v3, all through the ChainReader (pinned block, multicall).
+ * Onchain reads for Uniswap-v3-style pools (dialects: Uniswap v3, Ramses CL), all through the
+ * ChainReader (pinned block, multicall).
  *
  *   discovery  PoolCreated logs of the official v3 factory, filtered by indexed token topics
  *   identity   pool.factory/token0/token1/fee/tickSpacing + factory.getPool(...) round trip
@@ -9,7 +10,11 @@
 import type { Address } from "viem";
 import type { CallResult, ChainReader, ContractCall } from "../../chain/reader.js";
 import { sameAddress, ZERO_ADDRESS } from "../../lib/validation.js";
-import { erc20Abi, poolCreatedEvent, quoterV2Abi, UNISWAP_READ_CONTRACTS, V3_FEE_TIERS, v3FactoryAbi, v3PoolAbi } from "./constants.js";
+import { erc20Abi, poolCreatedEvent, quoterV2Abi, quoterV2TickSpacingAbi, UNISWAP_V3, v3FactoryAbi, v3FactoryTickSpacingAbi, v3PoolAbi, type V3Dialect } from "./constants.js";
+
+/** The factory's getPool key for a pool: its fee (FEE dialect) or its tickSpacing. */
+const poolKeyOf = (d: V3Dialect, p: { fee: number; tickSpacing: number }) => (d.poolKey === "FEE" ? p.fee : p.tickSpacing);
+const factoryAbiOf = (d: V3Dialect) => (d.poolKey === "FEE" ? v3FactoryAbi : v3FactoryTickSpacingAbi);
 
 export interface DiscoveredPool {
   pool: Address;
@@ -94,10 +99,10 @@ export function splitScanTaskKey(key: string): [string, string] | null {
  * instead, see LogQuery.noRangeSplit); a single-token set can only be helped by range bisection
  * (e.g. a token with > 10,000 pools), so it keeps it.
  */
-export async function runScanTask(reader: ChainReader, task: ScanTask, fromBlock: bigint, toBlock: bigint): Promise<DiscoveredPool[]> {
+export async function runScanTask(reader: ChainReader, task: ScanTask, fromBlock: bigint, toBlock: bigint, d: V3Dialect = UNISWAP_V3): Promise<DiscoveredPool[]> {
   if (toBlock < fromBlock) return [];
   const setSize = Math.max(...Object.values(task.args).map((v) => (Array.isArray(v) ? v.length : 1)));
-  return toPools(await reader.getLogs({ address: UNISWAP_READ_CONTRACTS.v3Factory, event: poolCreatedEvent, fromBlock, toBlock, args: task.args, noRangeSplit: setSize > 1 }));
+  return toPools(await reader.getLogs({ address: d.factory, event: poolCreatedEvent, fromBlock, toBlock, args: task.args, noRangeSplit: setSize > 1 }));
 }
 
 /**
@@ -106,19 +111,20 @@ export async function runScanTask(reader: ChainReader, task: ScanTask, fromBlock
  * pools that can matter for default TRADE results are known immediately — even while the resumable
  * event scan (which also finds token-vs-token pools) is still running on a rate-limited RPC.
  */
-export async function sweepFactoryPools(reader: ChainReader, nonHub: readonly Address[], hubs: readonly Address[], blockNumber: bigint): Promise<DiscoveredPool[]> {
-  const fees = Object.keys(V3_FEE_TIERS).map(Number);
+export async function sweepFactoryPools(reader: ChainReader, nonHub: readonly Address[], hubs: readonly Address[], blockNumber: bigint, d: V3Dialect = UNISWAP_V3): Promise<DiscoveredPool[]> {
+  const fees = Object.keys(d.tiers).map(Number); // fee tiers (FEE) or tick spacings (TICK_SPACING)
   const pairs: [Address, Address][] = [];
   for (const t of nonHub) for (const h of hubs) pairs.push([t, h]);
   for (let i = 0; i < hubs.length; i++) for (let j = i + 1; j < hubs.length; j++) pairs.push([hubs[i]!, hubs[j]!]);
   const combos = pairs.flatMap(([a, b]) => fees.map((fee) => ({ a, b, fee })));
-  const r = await reader.multicall(combos.map((c) => ({ address: UNISWAP_READ_CONTRACTS.v3Factory, abi: v3FactoryAbi, functionName: "getPool", args: [c.a, c.b, c.fee] })), { blockNumber });
+  const r = await reader.multicall(combos.map((c) => ({ address: d.factory, abi: factoryAbiOf(d), functionName: "getPool", args: [c.a, c.b, c.fee] })), { blockNumber });
   const out: DiscoveredPool[] = [];
   combos.forEach((c, i) => {
     const pool = val<Address>(r[i]);
     if (!pool || sameAddress(pool, ZERO_ADDRESS)) return;
     const [token0, token1] = BigInt(c.a) < BigInt(c.b) ? [c.a, c.b] : [c.b, c.a];
-    out.push({ pool, token0, token1, fee: c.fee, tickSpacing: V3_FEE_TIERS[c.fee]!, createdAtBlock: null, via: "FACTORY_GETPOOL" });
+    // FEE: key = fee. TICK_SPACING: key = tickSpacing; fee = the tier's initial fee until identity reads fee().
+    out.push({ pool, token0, token1, fee: d.poolKey === "FEE" ? c.fee : d.tiers[c.fee]!, tickSpacing: d.poolKey === "FEE" ? d.tiers[c.fee]! : c.fee, createdAtBlock: null, via: "FACTORY_GETPOOL" });
   });
   return out;
 }
@@ -128,9 +134,9 @@ export async function sweepFactoryPools(reader: ChainReader, nonHub: readonly Ad
  * and token1 ∈ chunk; plus token0 ∈ hubs ∧ token1 ∈ hubs. Sequential to respect rate limits.
  * Throws on any failure (no partial list).
  */
-export async function discoverPoolsFull(reader: ChainReader, nonHub: readonly Address[], hubs: readonly Address[], fromBlock: bigint, toBlock: bigint): Promise<DiscoveredPool[]> {
+export async function discoverPoolsFull(reader: ChainReader, nonHub: readonly Address[], hubs: readonly Address[], fromBlock: bigint, toBlock: bigint, d: V3Dialect = UNISWAP_V3): Promise<DiscoveredPool[]> {
   if (toBlock < fromBlock) return [];
-  const q = (args: Record<string, unknown>) => reader.getLogs({ address: UNISWAP_READ_CONTRACTS.v3Factory, event: poolCreatedEvent, fromBlock, toBlock, args });
+  const q = (args: Record<string, unknown>) => reader.getLogs({ address: d.factory, event: poolCreatedEvent, fromBlock, toBlock, args });
   const logs: { args: Record<string, unknown>; blockNumber: bigint }[] = [];
   for (let i = 0; i < nonHub.length; i += DISCOVERY_TOPIC_CHUNK) {
     const chunk = nonHub.slice(i, i + DISCOVERY_TOPIC_CHUNK);
@@ -142,9 +148,9 @@ export async function discoverPoolsFull(reader: ChainReader, nonHub: readonly Ad
 }
 
 /** Incremental scan of a (short) new range: unfiltered query, filtered client-side by address. */
-export async function discoverPoolsIncremental(reader: ChainReader, nonHub: ReadonlySet<string>, hubs: ReadonlySet<string>, fromBlock: bigint, toBlock: bigint): Promise<DiscoveredPool[]> {
+export async function discoverPoolsIncremental(reader: ChainReader, nonHub: ReadonlySet<string>, hubs: ReadonlySet<string>, fromBlock: bigint, toBlock: bigint, d: V3Dialect = UNISWAP_V3): Promise<DiscoveredPool[]> {
   if (toBlock < fromBlock) return [];
-  const logs = await reader.getLogs({ address: UNISWAP_READ_CONTRACTS.v3Factory, event: poolCreatedEvent, fromBlock, toBlock });
+  const logs = await reader.getLogs({ address: d.factory, event: poolCreatedEvent, fromBlock, toBlock });
   return toPools(logs.filter((l) => isIndexedPair(l.args.token0 as Address, l.args.token1 as Address, nonHub, hubs)));
 }
 
@@ -165,7 +171,7 @@ export interface PoolIdentity {
   readAtBlock: bigint;
 }
 
-export async function readPoolIdentities(reader: ChainReader, pools: readonly DiscoveredPool[], blockNumber: bigint): Promise<Map<string, PoolIdentity>> {
+export async function readPoolIdentities(reader: ChainReader, pools: readonly DiscoveredPool[], blockNumber: bigint, d: V3Dialect = UNISWAP_V3): Promise<Map<string, PoolIdentity>> {
   const out = new Map<string, PoolIdentity>();
   if (!pools.length) return out;
   const PER = 6;
@@ -176,7 +182,7 @@ export async function readPoolIdentities(reader: ChainReader, pools: readonly Di
       { address: p.pool, abi: v3PoolAbi, functionName: "token1" },
       { address: p.pool, abi: v3PoolAbi, functionName: "fee" },
       { address: p.pool, abi: v3PoolAbi, functionName: "tickSpacing" },
-      { address: UNISWAP_READ_CONTRACTS.v3Factory, abi: v3FactoryAbi, functionName: "getPool", args: [p.token0, p.token1, p.fee] },
+      { address: d.factory, abi: factoryAbiOf(d), functionName: "getPool", args: [p.token0, p.token1, poolKeyOf(d, p)] },
     ]),
     { blockNumber },
   );
@@ -196,19 +202,25 @@ export async function readPoolIdentities(reader: ChainReader, pools: readonly Di
     const checks: IdentityCheck[] = [];
     const chk = (check: string, ok: boolean | null, detail: string) => checks.push({ check, ok, detail });
     const eq = (a: Address | null, b: Address) => (a === null ? null : sameAddress(a, b));
-    chk("pool.factory() == v3 factory", eq(factory, UNISWAP_READ_CONTRACTS.v3Factory), `factory=${factory ?? "unreadable (no code?)"}`);
-    chk("factory.getPool(token0, token1, fee) == pool", viaFactory === null ? null : !sameAddress(viaFactory, ZERO_ADDRESS) && sameAddress(viaFactory, p.pool), `getPool=${viaFactory ?? "unreadable"}`);
+    chk(`pool.factory() == ${d.factoryLabel}`, eq(factory, d.factory), `factory=${factory ?? "unreadable (no code?)"}`);
+    chk(`factory.getPool(token0, token1, ${d.poolKey === "FEE" ? "fee" : "tickSpacing"}) == pool`, viaFactory === null ? null : !sameAddress(viaFactory, ZERO_ADDRESS) && sameAddress(viaFactory, p.pool), `getPool=${viaFactory ?? "unreadable"}`);
     chk("pool.token0() == discovered token0", eq(t0, p.token0), `token0=${t0 ?? "unreadable"}`);
     chk("pool.token1() == discovered token1", eq(t1, p.token1), `token1=${t1 ?? "unreadable"}`);
-    chk("pool.fee() == discovered fee", fee === null ? null : Number(fee) === p.fee, `fee=${fee ?? "unreadable"}`);
+    // Static-fee dialects: fee() must equal the discovered tier. Dynamic-fee dialects: fee() must be readable and sane.
+    if (d.dynamicFee) chk("pool.fee() readable (dynamic fee)", fee === null ? null : Number(fee) > 0 && Number(fee) < 1_000_000, `fee=${fee ?? "unreadable"}`);
+    else chk("pool.fee() == discovered fee", fee === null ? null : Number(fee) === p.fee, `fee=${fee ?? "unreadable"}`);
     chk("token0 < token1 (Uniswap ordering)", BigInt(p.token0) < BigInt(p.token1), `${p.token0} < ${p.token1}`);
-    const expectedTs = V3_FEE_TIERS[p.fee];
-    chk("tickSpacing matches the fee tier", ts === null ? null : expectedTs !== undefined && Number(ts) === expectedTs && p.tickSpacing === expectedTs, `tickSpacing=${ts ?? "?"} expected ${expectedTs ?? "unknown tier"}`);
+    if (d.poolKey === "FEE") {
+      const expectedTs = d.tiers[p.fee];
+      chk("tickSpacing matches the fee tier", ts === null ? null : expectedTs !== undefined && Number(ts) === expectedTs && p.tickSpacing === expectedTs, `tickSpacing=${ts ?? "?"} expected ${expectedTs ?? "unknown tier"}`);
+    } else {
+      chk("tickSpacing is an enabled spacing and matches discovery", ts === null ? null : d.tiers[Number(ts)] !== undefined && Number(ts) === p.tickSpacing, `tickSpacing=${ts ?? "?"} discovered ${p.tickSpacing}`);
+    }
     out.set(p.pool.toLowerCase(), {
       pool: p.pool,
       token0: p.token0,
       token1: p.token1,
-      fee: p.fee,
+      fee: d.dynamicFee && fee !== null ? Number(fee) : p.fee,
       tickSpacing: p.tickSpacing,
       meta: { [p.token0.toLowerCase()]: meta.get(p.token0.toLowerCase())!, [p.token1.toLowerCase()]: meta.get(p.token1.toLowerCase())! },
       checks,
@@ -227,17 +239,20 @@ export interface PoolState {
   liquidity: bigint | null;
   balance0: bigint | null;
   balance1: bigint | null;
+  /** Dynamic-fee dialects: pool.fee() at this block (ppm). */
+  fee?: number | null;
   errors: string[];
 }
 
-export async function readPoolStates(reader: ChainReader, ids: readonly PoolIdentity[], blockNumber: bigint, blockTimestamp: bigint): Promise<Map<string, PoolState>> {
-  const PER = 4;
+export async function readPoolStates(reader: ChainReader, ids: readonly PoolIdentity[], blockNumber: bigint, blockTimestamp: bigint, d: V3Dialect = UNISWAP_V3): Promise<Map<string, PoolState>> {
+  const PER = d.dynamicFee ? 5 : 4;
   const r = await reader.multicall(
     ids.flatMap((p): ContractCall[] => [
       { address: p.pool, abi: v3PoolAbi, functionName: "slot0" },
       { address: p.pool, abi: v3PoolAbi, functionName: "liquidity" },
       { address: p.token0, abi: erc20Abi, functionName: "balanceOf", args: [p.pool] },
       { address: p.token1, abi: erc20Abi, functionName: "balanceOf", args: [p.pool] },
+      ...(d.dynamicFee ? [{ address: p.pool, abi: v3PoolAbi, functionName: "fee" } as ContractCall] : []),
     ]),
     { blockNumber },
   );
@@ -260,11 +275,14 @@ export async function readPoolStates(reader: ChainReader, ids: readonly PoolIden
       liquidity: g<bigint>(1, "liquidity"),
       balance0: g<bigint>(2, "token0.balanceOf(pool)"),
       balance1: g<bigint>(3, "token1.balanceOf(pool)"),
+      ...(d.dynamicFee ? { fee: dynFee(g<number>(4, "fee")) } : {}),
       errors,
     });
   });
   return out;
 }
+
+const dynFee = (f: number | null) => (f === null ? null : Number(f));
 
 export interface SingleQuote {
   amountOut: bigint;
@@ -274,10 +292,12 @@ export interface SingleQuote {
 }
 
 /** One-hop exact-input quote through QuoterV2 (eth_call only). */
-export async function quoteExactInputSingle(reader: ChainReader, tokenIn: Address, tokenOut: Address, fee: number, amountIn: bigint, blockNumber: bigint): Promise<SingleQuote> {
-  const r = (await reader.readContract(
-    { address: UNISWAP_READ_CONTRACTS.quoterV2, abi: quoterV2Abi, functionName: "quoteExactInputSingle", args: [{ tokenIn, tokenOut, amountIn, fee, sqrtPriceLimitX96: 0n }] },
-    { blockNumber },
-  )) as readonly [bigint, bigint, number, bigint];
+/** `key` is the pool's fee (FEE dialect) or tickSpacing (TICK_SPACING dialect). */
+export async function quoteExactInputSingle(reader: ChainReader, tokenIn: Address, tokenOut: Address, key: number, amountIn: bigint, blockNumber: bigint, d: V3Dialect = UNISWAP_V3): Promise<SingleQuote> {
+  const call: ContractCall =
+    d.poolKey === "FEE"
+      ? { address: d.quoter, abi: quoterV2Abi, functionName: "quoteExactInputSingle", args: [{ tokenIn, tokenOut, amountIn, fee: key, sqrtPriceLimitX96: 0n }] }
+      : { address: d.quoter, abi: quoterV2TickSpacingAbi, functionName: "quoteExactInputSingle", args: [{ tokenIn, tokenOut, amountIn, tickSpacing: key, sqrtPriceLimitX96: 0n }] };
+  const r = (await reader.readContract(call, { blockNumber })) as readonly [bigint, bigint, number, bigint];
   return { amountOut: r[0], sqrtPriceX96After: r[1], initializedTicksCrossed: Number(r[2]), gasEstimate: r[3] };
 }

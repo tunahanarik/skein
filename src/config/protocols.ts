@@ -122,6 +122,28 @@ export const PROTOCOLS: ProtocolConfig[] = [
     checkedAt: "2026-09-24",
   },
   {
+    id: "ramses",
+    name: "Ramses",
+    categories: ["TRADE"],
+    verification: "VERIFIED_ONCHAIN",
+    deploymentSource: "https://www.ramses.xyz/docs/contract-addresses",
+    docs: "https://www.ramses.xyz/docs/contract-addresses",
+    dataSources: [
+      { kind: "ONCHAIN", url: "RamsesV3Factory PoolCreated logs + pool views + factory.getPool(tickSpacing) round trip (shared v3 adapter)", covers4663: true },
+      { kind: "ONCHAIN", url: "QuoterV2.quoteExactInputSingle (tickSpacing-keyed) via eth_call", covers4663: true },
+    ],
+    contracts: {
+      ramsesV3Factory: "0xE0c4ceb92d08CA985bB70fe0a22fEb121A9854A8",
+      ramsesV3PoolDeployer: "0x4b37359BF291AbE8453692DB58d515a8b013Dca9",
+      quoterV2: "0x4730e03EB4a58A5e20244062D5f9A99bCf5770a6",
+      swapRouter: "0xFCBBe2Af83F94e7E2a9C35a535B3A04719aFD2Ae",
+    },
+    linkHosts: ["www.ramses.xyz"],
+    appUrl: "https://www.ramses.xyz/",
+    appSource: "www.ramses.xyz serves both the official docs (contract addresses) and the app",
+    checkedAt: "2026-09-24",
+  },
+  {
     id: "beefy",
     name: "Beefy",
     categories: ["LP", "VAULT"],
