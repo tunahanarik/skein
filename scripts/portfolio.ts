@@ -1,179 +1,98 @@
 /**
- * Read-only portfolio probe: which canonical assets does a wallet hold, what is the correct
- * display balance, and what is it worth — with every number's source printed.
+ * Developer CLI for the Portfolio Engine. Read-only; needs only a public wallet address.
  *
- *   pnpm portfolio 0xWallet
- *
- * Balances: one Multicall3 aggregate3 over the registry (195 Stock Tokens + WETH + USDG + ETH).
- * Prices: Chainlink token feed when one exists and is within its heartbeat; otherwise the
- * Robinhood quote mid × uiMultiplier; otherwise "unpriced" (never a guess).
+ *   pnpm portfolio --address 0x…                 human-readable
+ *   pnpm portfolio --address 0x… --json          machine-readable (bigints as strings)
+ *   pnpm portfolio --address 0x… --include-zero  also list zero balances
+ *   pnpm portfolio --address 0x… --token 0x…     inspect an extra (unknown) token
  */
-import { formatUnits, type Address } from "viem";
-import { chainlinkAggregatorAbi, erc20Abi, stockTokenAbi } from "../src/config/abis.js";
-import { ROBINHOOD_CHAIN_ID } from "../src/config/chains.js";
-import {
-  shareEquivalentRaw,
-  stockTokenUsdE18,
-  underlyingMidFromQuote,
-  type StockPrice,
-} from "../src/lib/stockToken.js";
-import { formatFixed, usdValueE18 } from "../src/lib/units.js";
-import { parseWalletAddress } from "../src/lib/validation.js";
-import { CHAINLINK_DIRECTORY_URL, chainlinkDirectorySchema, findFeedByName, stockFeedTicker } from "../src/sources/chainlink.js";
-import { canonicalStockTokens, rhjAssetsResponseSchema, rhjPricesResponseSchema, RHJ_BASE_URL } from "../src/sources/robinhood.js";
-import { getJson, makeClient } from "./lib/rpc.js";
-import { Report } from "./lib/report.js";
+import { portfolioToJson } from "../src/portfolio/engine.js";
+import type { Portfolio, PortfolioAsset } from "../src/portfolio/types.js";
+import { createRuntime } from "../src/runtime.js";
+import { ValidationError } from "../src/lib/validation.js";
 
-const WETH: Address = "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73";
-const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
-
-const usd = (e18: bigint) => `$${Number(formatFixed(e18, 18)).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
-
-export async function portfolio(wallet: Address, report = new Report("portfolio")) {
-  const client = makeClient();
-  const block = await client.getBlock({ blockTag: "latest" });
-  const now = Number(block.timestamp);
-
-  const [assetsRes, pricesRes, dirRes] = await Promise.all([
-    getJson(`${RHJ_BASE_URL}/assets`),
-    getJson(`${RHJ_BASE_URL}/prices`),
-    getJson(CHAINLINK_DIRECTORY_URL),
-  ]);
-  const canonical = canonicalStockTokens(rhjAssetsResponseSchema.parse(assetsRes.body).assets, ROBINHOOD_CHAIN_ID);
-  const quotes = new Map(rhjPricesResponseSchema.parse(pricesRes.body).quotes.map((q) => [q.tokenSymbol, q] as const));
-  const feeds = chainlinkDirectorySchema.parse(dirRes.body);
-  const feedByTicker = new Map(feeds.map((f) => [stockFeedTicker(f), f] as const).filter((e): e is [string, (typeof feeds)[number]] => e[0] !== null));
-  const ethFeed = findFeedByName(feeds, "ETH / USD")!;
-  const usdgFeed = findFeedByName(feeds, "USDG / USD")!;
-
-  // ---- balances + multipliers in one multicall, pinned to one block ----
-  const stocks = [...canonical.entries()];
-  const t0 = Date.now();
-  // Balances and multipliers are all uint256: one multicall. Feeds use a different ABI: a second one.
-  const res = await client.multicall({
-    blockNumber: block.number,
-    contracts: [
-      { address: WETH, abi: erc20Abi, functionName: "balanceOf", args: [wallet] },
-      { address: USDG, abi: erc20Abi, functionName: "balanceOf", args: [wallet] },
-      ...stocks.flatMap(([address]) => [
-        { address, abi: erc20Abi, functionName: "balanceOf", args: [wallet] } as const,
-        { address, abi: stockTokenAbi, functionName: "uiMultiplier" } as const,
-      ]),
-    ],
-  });
-  const [ethRoundRes, usdgRoundRes] = await client.multicall({
-    blockNumber: block.number,
-    contracts: [
-      { address: ethFeed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "latestRoundData" },
-      { address: usdgFeed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "latestRoundData" },
-    ],
-  });
-  const ethBalance = await client.getBalance({ address: wallet, blockNumber: block.number });
-  report.info("scan", `${wallet} at block ${block.number}: ${res.length + 2} reads in ${Date.now() - t0} ms`);
-
-  let totalE18 = 0n;
-  const unpriced: string[] = [];
-  const ethRound = ethRoundRes?.status === "success" ? ethRoundRes.result : null;
-  const usdgRound = usdgRoundRes?.status === "success" ? usdgRoundRes.result : null;
-
-  // ETH + WETH at Chainlink ETH/USD (8 decimals)
-  const wethBal = res[0]?.status === "success" ? (res[0].result as bigint) : 0n;
-  if (ethRound) {
-    for (const [label, bal] of [["ETH", ethBalance], ["WETH", wethBal]] as const) {
-      if (bal === 0n) continue;
-      const v = usdValueE18(bal, 18, ethRound[1], 8);
-      totalE18 += v;
-      report.info(label, `${formatUnits(bal, 18)} × ETH/USD ${formatFixed(ethRound[1], 8)} (Chainlink, age ${now - Number(ethRound[3])}s) = ${usd(v)}`);
-    }
+function parseArgs(argv: string[]) {
+  const out: { address?: string; json: boolean; includeZero: boolean; tokens: string[] } = { json: false, includeZero: false, tokens: [] };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]!;
+    if (a === "--json") out.json = true;
+    else if (a === "--include-zero") out.includeZero = true;
+    else if (a === "--address") out.address = argv[++i] ?? "";
+    else if (a === "--token") out.tokens.push(argv[++i] ?? "");
+    else if (!a.startsWith("--") && !out.address) out.address = a; // positional shorthand
   }
-  const usdgBal = res[1]?.status === "success" ? (res[1].result as bigint) : 0n;
-  if (usdgBal > 0n && usdgRound) {
-    const v = usdValueE18(usdgBal, 6, usdgRound[1], 8);
-    totalE18 += v;
-    report.info("USDG", `${formatUnits(usdgBal, 6)} × USDG/USD ${formatFixed(usdgRound[1], 8)} (Chainlink, age ${now - Number(usdgRound[3])}s) = ${usd(v)}`);
-  }
-
-  // Stock feeds are read lazily only for tokens the wallet holds.
-  const held = stocks
-    .map(([address, a], i) => ({ address, a, bal: res[2 + i * 2], mult: res[3 + i * 2] }))
-    .filter((h) => h.bal?.status === "success" && (h.bal.result as bigint) > 0n);
-  const feedReads = await client.multicall({
-    blockNumber: block.number,
-    contracts: held.map((h) => {
-      const f = feedByTicker.get(h.a.tokenSymbol);
-      return { address: f?.proxyAddress ?? WETH, abi: chainlinkAggregatorAbi, functionName: "latestRoundData" } as const;
-    }),
-  });
-
-  const rows: Record<string, unknown>[] = [];
-  held.forEach((h, i) => {
-    const raw = h.bal!.result as bigint;
-    const mult = h.mult?.status === "success" ? (h.mult.result as bigint) : null;
-    if (!mult) {
-      unpriced.push(`${h.a.tokenSymbol} (uiMultiplier read failed)`);
-      return;
-    }
-    const feed = feedByTicker.get(h.a.tokenSymbol);
-    const fr = feed && feedReads[i]?.status === "success" ? (feedReads[i].result as readonly [bigint, bigint, bigint, bigint, bigint]) : null;
-    const feedAge = fr ? now - Number(fr[3]) : null;
-    let price: StockPrice | null = null;
-    let priceSource = "";
-    if (fr && feed && fr[1] > 0n && feedAge !== null && feedAge <= feed.heartbeat) {
-      price = { kind: "TOKEN_PRICE", raw: fr[1], decimals: 8 };
-      priceSource = `Chainlink token feed ${feed.proxyAddress} (multiplier included), age ${feedAge}s`;
-    } else {
-      const q = quotes.get(h.a.tokenSymbol);
-      const mid = q && !q.isTradingHalt ? underlyingMidFromQuote(q.bid, q.ask) : null;
-      if (mid) {
-        price = mid;
-        priceSource = `Robinhood /rhj/prices mid (underlying) × uiMultiplier, quote ${q!.generatedAt}`;
-      }
-    }
-    const shares = shareEquivalentRaw(raw, mult);
-    if (!price) {
-      unpriced.push(h.a.tokenSymbol);
-      rows.push({ symbol: h.a.tokenSymbol, raw, tokens: formatFixed(raw, 18), shareEquivalent: formatFixed(shares, 18), usd: null });
-      return;
-    }
-    const v = stockTokenUsdE18(raw, 18, price, mult);
-    totalE18 += v;
-    rows.push({
-      symbol: h.a.tokenSymbol,
-      address: h.address,
-      raw,
-      tokens: formatFixed(raw, 18),
-      uiMultiplier: formatFixed(mult, 18),
-      shareEquivalent: formatFixed(shares, 18),
-      priceKind: price.kind,
-      price: formatFixed(price.raw, price.decimals),
-      priceSource,
-      usdE18: v,
-    });
-  });
-  rows.sort((x, y) => Number(((y.usdE18 as bigint) ?? 0n) - ((x.usdE18 as bigint) ?? 0n)));
-  for (const r of rows.slice(0, 10)) {
-    report.info(
-      r.symbol as string,
-      r.usdE18 === undefined
-        ? `${r.tokens} tokens (≈ ${r.shareEquivalent} shares) — UNPRICED`
-        : `${r.tokens} tokens × mult ${r.uiMultiplier} = ${r.shareEquivalent} share-equiv; ${r.priceKind} ${r.price} → ${usd(r.usdE18 as bigint)} [${r.priceSource}]`,
-    );
-  }
-  if (rows.length > 10) report.info("…", `${rows.length - 10} more Stock Token holdings in the snapshot`);
-  report.pass("portfolio", `${held.length} Stock Tokens held; total priced value ${usd(totalE18)}; unpriced: ${unpriced.length ? unpriced.join(", ") : "none"}`, {
-    wallet,
-    block: block.number,
-    rows,
-  });
-  return report;
+  return out;
 }
 
-if (import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`) {
-  const arg = process.argv[2];
-  if (!arg) {
-    console.error("usage: pnpm portfolio <wallet address>");
+const usd = (s: string | null) => (s === null ? "—" : "$" + Number(s).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+const num = (s: string | null, max = 8) => (s === null ? "—" : Number(s).toLocaleString("en-US", { maximumFractionDigits: max }));
+const pad = (label: string) => `  ${label.padEnd(18)} `;
+
+function printAsset(r: PortfolioAsset): void {
+  const q = r.price;
+  const tag = r.asset.canonical ? r.asset.type : `${r.asset.type} (NOT CANONICAL)`;
+  console.log(`\n${r.asset.symbol}  ·  ${tag}  ·  ${r.asset.address ?? "native"}`);
+  if (r.balanceStatus === "FAILED") {
+    console.log(pad("Balance") + "READ FAILED");
+  } else if (r.stock) {
+    console.log(pad("Raw balance") + `${r.rawBalance} (token base units, 18 dp)`);
+    console.log(pad("Tokens held") + num(r.displayBalance, 12));
+    console.log(pad("Multiplier") + `${r.stock.uiMultiplier} (${r.stock.multiplierSource})`);
+    console.log(pad("Display shares") + `${num(r.stock.displayShareBalance, 12)} share-equivalents`);
+  } else {
+    console.log(pad("Balance") + `${num(r.displayBalance, 12)} (raw ${r.rawBalance})`);
+  }
+  if (q?.status === "PRICED") {
+    console.log(pad("Price") + `${usd(q.priceUsdDisplay)} per token`);
+    console.log(pad("Value") + usd(r.valueUsd));
+    console.log(pad("Price source") + `${q.method} · ${q.source?.provider}${q.source?.contract ? " " + q.source.contract : ""}`);
+    console.log(pad("Freshness") + `${q.freshnessStatus}, age ${q.ageSeconds}s, confidence ${q.confidence}, ${q.verificationStatus}`);
+    if (q.robinhoodQuote) {
+      const rq = q.robinhoodQuote;
+      console.log(pad("RH quote") + `bid ${rq.bid} / ask ${rq.ask} (underlying), spread ${rq.spreadBps?.toFixed(1) ?? "—"} bps, ${rq.freshness}`);
+    }
+    if (q.crossCheck?.performed) console.log(pad("Cross-check") + `${q.crossCheck.percentageDifference?.toFixed(3)}% vs Robinhood-implied${q.crossCheck.conflict ? "  ⚠ CONFLICT" : ""}`);
+    if (q.pegDeviationBps !== null) console.log(pad("Peg deviation") + `${q.pegDeviationBps.toFixed(1)} bps`);
+  } else if (r.balanceStatus === "OK") {
+    console.log(pad("Price") + `UNPRICED — ${q?.unpricedReason ?? "not priced"}`);
+  }
+  for (const w of r.warnings.filter((x) => x.code !== "UNPRICED_ASSET")) console.log(pad("⚠ " + w.code) + w.message);
+}
+
+function printPortfolio(p: Portfolio): void {
+  console.log("PORTFOLIO");
+  console.log(`\nWallet   ${p.walletAddress}`);
+  console.log(`Network  Robinhood Chain (chainId ${p.chainId}) · block ${p.blockNumber} · ${p.blockTimestamp}`);
+  console.log(`Registry ${p.registry.mode} · ${p.registry.stockTokenCount} Stock Tokens · data ${p.registry.freshness.status} (${p.registry.freshness.ageSeconds}s) · onchain-verified ${p.registry.onchainVerified ?? "—"}`);
+  for (const r of p.assets) printAsset(r);
+  const c = p.valuationCoverage;
+  console.log("\nSUMMARY");
+  console.log(pad("Priced value") + usd(p.totals.pricedValueUsd) + (c.coverageStatus === "COMPLETE" ? "  (complete: this is the total)" : "  (NOT a total: coverage " + c.coverageStatus + ")"));
+  console.log(pad("Priced assets") + c.pricedAssets);
+  console.log(pad("Unpriced assets") + c.unpricedAssets);
+  console.log(pad("Failed balances") + c.failedBalances);
+  const counts = p.warnings.concat(p.assets.flatMap((a) => a.warnings)).reduce<Record<string, number>>((m, w) => ((m[w.code] = (m[w.code] ?? 0) + 1), m), {});
+  console.log(pad("Warnings") + (Object.keys(counts).length ? Object.entries(counts).map(([k, v]) => `${k}×${v}`).join(", ") : "none"));
+  for (const w of p.warnings) console.log(pad("  " + w.code) + w.message);
+  const t = p.timingsMs;
+  console.log(pad("Duration") + `${t.total} ms (registry ${t.registry}, balances ${t.balances}, prices ${t.prices}, normalize ${t.normalization})`);
+  console.log(pad("RPC") + `${p.rpc.status} · ${p.rpc.requests} requests · avg ${p.rpc.avgLatencyMs} ms · p95 ${p.rpc.p95LatencyMs} ms · ${p.rpc.endpoint}`);
+}
+
+const args = parseArgs(process.argv.slice(2));
+if (!args.address) {
+  console.error("usage: pnpm portfolio --address 0x… [--json] [--include-zero] [--token 0x…]");
+  process.exit(2);
+}
+try {
+  const rt = createRuntime();
+  const p = await rt.getPortfolio(args.address, { includeZeroBalances: args.includeZero, extraTokens: args.tokens });
+  if (args.json) console.log(portfolioToJson(p));
+  else printPortfolio(p);
+} catch (e) {
+  if (e instanceof ValidationError) {
+    console.error(`invalid input: ${e.message}`);
     process.exit(2);
   }
-  const r = await portfolio(parseWalletAddress(arg));
-  process.exitCode = r.finish();
+  throw e;
 }

@@ -2,6 +2,23 @@
 
 Each item names what would resolve it.
 
+## Added in Phase 1 (decide before Phase 2)
+P1-1. **Unknown-token discovery.** Phase 1 scans only the canonical registry (195 Stock Tokens + ETH/WETH/USDG); other tokens appear only if named explicitly (`--token`). Full discovery needs an indexer: Alchemy Token API (`alchemy_getTokenBalances`, documented for 4663, key needed), Goldsky, Envio, or our own Transfer indexer. Which one, and do unknown tokens matter for the product?
+
+P1-2. **Provider choice** (restates #1): the engine refuses the public RPC in production. Alchemy or QuickNode?
+
+P1-3. **USDG cross-check.** Should a DEX-implied USDG price (for example the WETH/USDG 0.01 % pool × ETH/USD) be added as a depeg cross-check? That touches Uniswap pool reads, which are Phase 2 territory.
+
+P1-4. **Frozen / blocked holders.** Paxos can freeze USDG (`isFrozen`) and Robinhood can block Stock Token holders (`isBlocked`). Should the portfolio check both per wallet (2 extra calls) and mark such balances as not spendable?
+
+P1-5. **Market hours.** Chainlink stock feeds hold the last price while markets are closed, and the Robinhood bulk quote stamps `generatedAt` continuously. Neither tells us "market closed". Should the UI say "last traded price" outside US hours? That needs a market-calendar source.
+
+P1-6. **Quote endpoint.** We use bulk `GET /rhj/prices` (live-verified, not in the docs) to avoid N+1 per-symbol calls. Is Robinhood OK with that for production volume (documented limit 60 req/s)?
+
+P1-7. **Conflict threshold.** 1.0 % between Chainlink and the Robinhood-implied price. The observed maximum was 0.41 %. Keep it, or tighten it during market hours?
+
+P1-8. **Registry refresh ownership.** Who reviews `pnpm registry:check` failures (identity changes) before `--accept-identity-changes`?
+
 ## Needs a decision from you
 1. **Keyed RPC provider.** Alchemy (official "recommended") or QuickNode (documented archive)? Needed before Phase 1 goes beyond the validation scripts.
 2. **Product name and legal posture.** The working name "defi-router" is internal only. Robinhood's ToS forbid "Robinhood Chain" as a product name and require "Stock Tokens" wording. Stock Tokens are not offered to US persons: will the app geo-gate, show a disclaimer, or both?

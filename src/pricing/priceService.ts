@@ -1,0 +1,381 @@
+/**
+ * Price Service: the ONLY place assets are priced. Future protocol adapters must call it
+ * rather than price Stock Tokens themselves.
+ *
+ * Output price is always USD per ONE WHOLE TOKEN. For Stock Tokens:
+ *   - Chainlink Stock Token feed = token price (multiplier included; docs /chain/oracles-and-price-feeds)
+ *   - Robinhood quote mid = underlying share price → × uiMultiplier ONCE here → token price
+ * so callers value any holding as `rawBalance × priceUsd` and never touch the multiplier.
+ *
+ * Policy (docs/pricing.md):
+ *   Stock Token: Chainlink if FRESH/AGING and valid → else Robinhood mid × m if FRESH/AGING and
+ *                not halted → else UNPRICED. Both available → cross-check; > threshold → PRICE_CONFLICT
+ *                (Chainlink stays selected, conflict is surfaced).
+ *   ETH, WETH:   Chainlink ETH/USD (WETH is 1:1 redeemable for ETH) → else UNPRICED.
+ *   USDG:        Chainlink USDG/USD → else UNPRICED (never an assumed $1). pegDeviationBps exposed.
+ */
+import { ROBINHOOD_CHAIN_ID } from "../config/chains.js";
+import {
+  classifyFreshness,
+  STOCK_PRICE_CONFLICT_PCT,
+  USDG_PEG_WARNING_BPS,
+  type FreshnessRuleId,
+} from "../config/freshness.js";
+import type { ChainReader } from "../chain/reader.js";
+import type { HttpClient } from "../lib/http.js";
+import { relativeDeviation, tokenPriceFromUnderlying, underlyingMidFromQuote } from "../lib/stockToken.js";
+import { formatFixed, pow10 } from "../lib/units.js";
+import type { DataSource } from "../model/provenance.js";
+import { weakestStatus, type VerificationStatus } from "../model/verification.js";
+import { warn, type Warning } from "../model/warnings.js";
+import type { Asset } from "../registry/asset.js";
+import type { ChainlinkFeed } from "../sources/chainlink.js";
+import type { RhjQuote } from "../sources/robinhood.js";
+import {
+  loadFeedIndex,
+  loadQuoteBook,
+  readFeedRounds,
+  roundProblem,
+  RHJ_PRICES_URL,
+  type FeedIndex,
+  type QuoteBook,
+  type RawRound,
+} from "./sources.js";
+import type { ChainlinkReading, Confidence, CrossCheck, MultiplierInput, PriceQuote, RobinhoodQuoteReading, UsdPrice } from "./types.js";
+
+export interface PriceRequest {
+  asset: Asset;
+  /** Required to turn a Robinhood underlying quote into a token price. */
+  multiplier?: MultiplierInput | null;
+}
+
+export interface PriceContext {
+  blockNumber: bigint;
+}
+
+export interface PriceServiceDeps {
+  reader: ChainReader;
+  http: HttpClient;
+  now?: () => Date;
+  /** Injected for tests; default to the cached upstream loaders. */
+  loadFeedIndex?: () => Promise<FeedIndex>;
+  loadQuoteBook?: () => Promise<QuoteBook>;
+}
+
+export interface PriceBatch {
+  quotes: Map<string, PriceQuote>;
+  warnings: Warning[];
+  timings: { directoryMs: number; roundsMs: number; quotesMs: number };
+}
+
+function usdDisplay(p: UsdPrice): string {
+  return formatFixed(p.raw, p.decimals);
+}
+
+function chainlinkSource(feed: ChainlinkFeed, blockNumber: bigint, fetchedAt: string, updatedAt: number | null): DataSource {
+  return {
+    type: "ONCHAIN",
+    provider: "chainlink",
+    chainId: ROBINHOOD_CHAIN_ID,
+    contract: feed.proxyAddress,
+    method: `latestRoundData() — ${feed.name}`,
+    blockNumber,
+    observedAt: fetchedAt,
+    ...(updatedAt ? { sourceTimestamp: new Date(updatedAt * 1000).toISOString() } : {}),
+  };
+}
+
+export class PriceService {
+  private readonly now: () => Date;
+
+  constructor(private readonly deps: PriceServiceDeps) {
+    this.now = deps.now ?? (() => new Date());
+  }
+
+  async priceAssets(requests: readonly PriceRequest[], ctx: PriceContext): Promise<PriceBatch> {
+    const warnings: Warning[] = [];
+    const fetchedAt = this.now().toISOString();
+    const nowS = Math.floor(this.now().getTime() / 1000);
+
+    const t0 = performance.now();
+    let index: FeedIndex | null = null;
+    try {
+      index = await (this.deps.loadFeedIndex ?? (() => loadFeedIndex(this.deps.http)))();
+    } catch (e) {
+      warnings.push(warn("FEED_DIRECTORY_UNAVAILABLE", `Chainlink directory unavailable: ${(e as Error).message}`));
+    }
+    const directoryMs = performance.now() - t0;
+
+    // Which feeds do we need? One multicall for all of them.
+    const feedFor = (a: Asset): ChainlinkFeed | null => {
+      if (!index) return null;
+      if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
+      if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+      if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
+      return null;
+    };
+    const feeds = new Map(requests.map((r) => [r.asset.key, feedFor(r.asset)] as const));
+    const t1 = performance.now();
+    const proxies = [...feeds.values()].filter((f): f is ChainlinkFeed => !!f).map((f) => f.proxyAddress);
+    const rounds = proxies.length ? await readFeedRounds(this.deps.reader, proxies, ctx.blockNumber) : new Map<string, RawRound>();
+    const roundsMs = performance.now() - t1;
+
+    const t2 = performance.now();
+    let book: QuoteBook | null = null;
+    if (requests.some((r) => r.asset.type === "STOCK_TOKEN")) {
+      try {
+        book = await (this.deps.loadQuoteBook ?? (() => loadQuoteBook(this.deps.http)))();
+      } catch (e) {
+        warnings.push(warn("QUOTES_UNAVAILABLE", `Robinhood quotes unavailable: ${(e as Error).message}`));
+      }
+    }
+    const quotesMs = performance.now() - t2;
+
+    const quotes = new Map<string, PriceQuote>();
+    for (const r of requests) {
+      const feed = feeds.get(r.asset.key) ?? null;
+      const round = feed ? rounds.get(feed.proxyAddress.toLowerCase()) ?? null : null;
+      const reading = feed && round ? this.reading(feed, round, r.asset, nowS) : null;
+      quotes.set(r.asset.key, this.priceOne(r, feed, reading, book, ctx, fetchedAt, nowS));
+    }
+    return { quotes, warnings, timings: { directoryMs, roundsMs, quotesMs } };
+  }
+
+  private reading(feed: ChainlinkFeed, round: RawRound, asset: Asset, nowS: number): ChainlinkReading {
+    const rule: FreshnessRuleId =
+      asset.type === "STOCK_TOKEN" ? "CHAINLINK_STOCK_FEED" : asset.priceMethods.includes("CHAINLINK_USDG_USD") ? "CHAINLINK_USDG_USD" : "CHAINLINK_ETH_USD";
+    const problem = roundProblem(round, feed.decimals);
+    const updatedAt = Number(round.updatedAt);
+    const f = classifyFreshness(rule, problem ? null : updatedAt, nowS, feed.heartbeat);
+    return {
+      proxy: feed.proxyAddress,
+      feedName: feed.name,
+      roundId: round.roundId,
+      answer: round.answer,
+      decimals: round.decimals ?? feed.decimals,
+      updatedAt,
+      heartbeatSeconds: feed.heartbeat,
+      freshness: problem ? "UNKNOWN" : f.status,
+      ageSeconds: f.ageSeconds,
+      valid: problem === null,
+      invalidReason: problem,
+    };
+  }
+
+  private quoteReading(q: RhjQuote, multiplier: MultiplierInput | null | undefined, nowS: number): RobinhoodQuoteReading {
+    const mid = underlyingMidFromQuote(q.bid, q.ask);
+    const ts = Date.parse(q.generatedAt);
+    const f = classifyFreshness("ROBINHOOD_QUOTE", Number.isFinite(ts) ? Math.floor(ts / 1000) : null, nowS);
+    let spreadAbsolute: string | null = null;
+    let spreadBps: number | null = null;
+    if (mid) {
+      // spread = ask − bid, both at the mid's scale
+      const askRaw = parseScaled(q.ask, mid.decimals);
+      const bidRaw = parseScaled(q.bid, mid.decimals);
+      if (askRaw !== null && bidRaw !== null) {
+        const spread = askRaw - bidRaw;
+        spreadAbsolute = formatFixed(spread, mid.decimals);
+        spreadBps = Number((spread * 10_000n * 1_000_000n) / mid.raw) / 1_000_000;
+      }
+    }
+    return {
+      symbol: q.tokenSymbol,
+      bid: q.bid,
+      ask: q.ask,
+      underlyingMid: mid ? { raw: mid.raw, decimals: mid.decimals } : null,
+      spreadAbsolute,
+      spreadBps,
+      generatedAt: q.generatedAt,
+      isTradingHalt: q.isTradingHalt,
+      freshness: f.status,
+      ageSeconds: f.ageSeconds,
+      tokenMid: mid && multiplier ? (({ raw, decimals }) => ({ raw, decimals }))(tokenPriceFromUnderlying(mid, multiplier.valueE18)) : null,
+    };
+  }
+
+  private priceOne(
+    r: PriceRequest,
+    feed: ChainlinkFeed | null,
+    cl: ChainlinkReading | null,
+    book: QuoteBook | null,
+    ctx: PriceContext,
+    fetchedAt: string,
+    nowS: number,
+  ): PriceQuote {
+    const a = r.asset;
+    const w: Warning[] = [];
+    const provenance: DataSource[] = [];
+    const base: PriceQuote = {
+      assetKey: a.key,
+      symbol: a.symbol,
+      status: "UNPRICED",
+      priceUsd: null,
+      priceUsdDisplay: null,
+      method: null,
+      sourceType: null,
+      source: null,
+      observedAt: null,
+      fetchedAt,
+      ageSeconds: null,
+      freshnessStatus: "UNKNOWN",
+      confidence: null,
+      verificationStatus: "UNVERIFIED",
+      chainlink: cl,
+      robinhoodQuote: null,
+      crossCheck: null,
+      pegDeviationBps: null,
+      unpricedReason: null,
+      warnings: w,
+      provenance,
+    };
+    const clSource = feed && cl ? chainlinkSource(feed, ctx.blockNumber, fetchedAt, cl.valid ? cl.updatedAt : null) : null;
+    if (clSource) provenance.push(clSource);
+    if (cl && !cl.valid) w.push(warn("INVALID_FEED_ROUND", `${cl.feedName}: ${cl.invalidReason}`, { assetKey: a.key }));
+    const clUsable = !!cl && cl.valid && (cl.freshness === "FRESH" || cl.freshness === "AGING");
+    if (cl && cl.valid && cl.freshness === "STALE") {
+      w.push(warn("STALE_PRICE", `${cl.feedName} is ${cl.ageSeconds}s old (heartbeat ${cl.heartbeatSeconds}s); not used`, { assetKey: a.key, details: { ageSeconds: cl.ageSeconds, heartbeatSeconds: cl.heartbeatSeconds } }));
+    }
+    const fromChainlink = (method: PriceQuote["method"], verification: VerificationStatus): PriceQuote => ({
+      ...base,
+      status: "PRICED",
+      priceUsd: { raw: cl!.answer, decimals: cl!.decimals },
+      priceUsdDisplay: formatFixed(cl!.answer, cl!.decimals),
+      method,
+      sourceType: "ONCHAIN",
+      source: clSource,
+      observedAt: new Date(cl!.updatedAt * 1000).toISOString(),
+      ageSeconds: cl!.ageSeconds,
+      freshnessStatus: cl!.freshness,
+      verificationStatus: verification,
+    });
+    const unpriced = (reason: string): PriceQuote => {
+      w.push(warn("UNPRICED_ASSET", `${a.symbol}: ${reason}`, { assetKey: a.key }));
+      return { ...base, unpricedReason: reason };
+    };
+
+    // ---------- UNKNOWN / unsupported ----------
+    if (a.priceMethods.length === 0) return unpriced("no verified price source for this asset");
+
+    // ---------- ETH / WETH ----------
+    if (a.priceMethods.includes("CHAINLINK_ETH_USD")) {
+      if (!feed) return unpriced("ETH / USD feed not found in the Chainlink directory");
+      if (!clUsable) return unpriced(`ETH / USD feed not usable (${cl?.invalidReason ?? cl?.freshness ?? "unread"})`);
+      if (cl!.freshness === "AGING") w.push(warn("AGING_PRICE", `ETH / USD is ${cl!.ageSeconds}s old`, { assetKey: a.key }));
+      // Chainlink answer is onchain; the feed address comes from the official directory.
+      const q = fromChainlink("CHAINLINK_ETH_USD", "VERIFIED_OFFICIAL_DOCS");
+      return { ...q, confidence: cl!.freshness === "FRESH" ? "HIGH" : "MEDIUM" };
+    }
+
+    // ---------- USDG ----------
+    if (a.priceMethods.includes("CHAINLINK_USDG_USD")) {
+      if (!feed) return unpriced("USDG / USD feed not found in the Chainlink directory");
+      if (!clUsable) return unpriced(`USDG / USD feed not usable (${cl?.invalidReason ?? cl?.freshness ?? "unread"}); no assumed-peg fallback`);
+      if (cl!.freshness === "AGING") w.push(warn("AGING_PRICE", `USDG / USD is ${cl!.ageSeconds}s old`, { assetKey: a.key }));
+      const one = pow10(cl!.decimals);
+      const devBps = Number(((cl!.answer - one) * 10_000n * 1_000_000n) / one) / 1_000_000;
+      if (Math.abs(devBps) > USDG_PEG_WARNING_BPS) {
+        w.push(warn("USDG_PEG_DEVIATION", `USDG/USD ${formatFixed(cl!.answer, cl!.decimals)} is ${devBps.toFixed(1)} bps from $1`, { assetKey: a.key, details: { pegDeviationBps: devBps } }));
+      }
+      const q = fromChainlink("CHAINLINK_USDG_USD", "VERIFIED_OFFICIAL_DOCS");
+      return { ...q, pegDeviationBps: devBps, confidence: cl!.freshness === "FRESH" && Math.abs(devBps) <= USDG_PEG_WARNING_BPS ? "HIGH" : "MEDIUM" };
+    }
+
+    // ---------- Stock Tokens ----------
+    if (a.type !== "STOCK_TOKEN" || !a.address) return unpriced("unsupported price method");
+    if (!feed) w.push(warn("NO_CHAINLINK_FEED", `${a.symbol} has no Chainlink feed in the directory`, { assetKey: a.key }));
+    const rq = book?.byAddress.get(a.address.toLowerCase());
+    const qr = rq ? this.quoteReading(rq, r.multiplier, nowS) : null;
+    const quoteSource: DataSource | null = qr
+      ? {
+          type: "OFFICIAL_API",
+          provider: "robinhood-rhj-api",
+          url: RHJ_PRICES_URL,
+          chainId: ROBINHOOD_CHAIN_ID,
+          method: `quotes[${qr.symbol}] bid/ask (underlying) × uiMultiplier (${r.multiplier?.source ?? "none"})`,
+          observedAt: book!.fetchedAt,
+          sourceTimestamp: qr.generatedAt,
+        }
+      : null;
+    if (quoteSource) provenance.push(quoteSource);
+    if (r.multiplier) provenance.push(r.multiplier.provenance);
+    if (qr?.isTradingHalt) w.push(warn("TRADING_HALTED", `${a.symbol}: Robinhood reports a trading halt`, { assetKey: a.key }));
+    const quoteUsable =
+      !!qr && !!qr.tokenMid && !qr.isTradingHalt && (qr.freshness === "FRESH" || qr.freshness === "AGING");
+
+    // Cross-check whenever both sides are usable.
+    let cross: CrossCheck | null = null;
+    if (clUsable && qr?.tokenMid && !qr.isTradingHalt && (qr.freshness === "FRESH" || qr.freshness === "AGING")) {
+      const feedPrice = { kind: "TOKEN_PRICE" as const, raw: cl!.answer, decimals: cl!.decimals };
+      const pct = relativeDeviation(feedPrice, { kind: "TOKEN_PRICE", ...qr.tokenMid }) * 100;
+      const scale = Math.max(cl!.decimals, qr.tokenMid.decimals);
+      const fa = cl!.answer * pow10(scale - cl!.decimals);
+      const qa = qr.tokenMid.raw * pow10(scale - qr.tokenMid.decimals);
+      cross = {
+        performed: true,
+        reason: null,
+        absoluteDifference: formatFixed(fa > qa ? fa - qa : qa - fa, scale),
+        percentageDifference: +pct.toFixed(6),
+        thresholdPct: STOCK_PRICE_CONFLICT_PCT,
+        conflict: pct > STOCK_PRICE_CONFLICT_PCT,
+      };
+      if (cross.conflict) {
+        w.push(
+          warn("PRICE_CONFLICT", `${a.symbol}: Chainlink ${formatFixed(cl!.answer, cl!.decimals)} vs Robinhood-implied ${formatFixed(qr.tokenMid.raw, qr.tokenMid.decimals)} differ by ${pct.toFixed(3)}%`, {
+            assetKey: a.key,
+            details: { percentageDifference: +pct.toFixed(6), thresholdPct: STOCK_PRICE_CONFLICT_PCT, multiplierE18: r.multiplier?.valueE18.toString() ?? null },
+          }),
+        );
+      }
+    } else {
+      cross = {
+        performed: false,
+        reason: !clUsable ? "no usable Chainlink price" : !qr ? "no Robinhood quote" : !qr.tokenMid ? "no multiplier or no valid mid" : qr.isTradingHalt ? "trading halted" : `quote ${qr.freshness}`,
+        absoluteDifference: null,
+        percentageDifference: null,
+        thresholdPct: STOCK_PRICE_CONFLICT_PCT,
+        conflict: false,
+      };
+    }
+
+    const withQuote = { robinhoodQuote: qr, crossCheck: cross };
+    if (clUsable) {
+      if (cl!.freshness === "AGING") w.push(warn("AGING_PRICE", `${cl!.feedName} is ${cl!.ageSeconds}s old`, { assetKey: a.key }));
+      const confidence: Confidence = cross.conflict ? "LOW" : cl!.freshness === "FRESH" && cross.performed ? "HIGH" : cl!.freshness === "FRESH" || cross.performed ? "MEDIUM" : "LOW";
+      // Feed value is onchain; feed↔token mapping is by ticker from the official directory.
+      return { ...fromChainlink("CHAINLINK_STOCK_TOKEN_FEED", "VERIFIED_OFFICIAL_DOCS"), ...withQuote, confidence };
+    }
+    if (quoteUsable) {
+      w.push(warn("PRICE_FALLBACK_USED", `${a.symbol}: priced from Robinhood quote mid × uiMultiplier (${feed ? "Chainlink not usable" : "no Chainlink feed"})`, { assetKey: a.key }));
+      if (qr!.freshness === "AGING") w.push(warn("AGING_PRICE", `${a.symbol} quote is ${qr!.ageSeconds}s old`, { assetKey: a.key }));
+      const verification = weakestStatus(["VERIFIED_OFFICIAL_API", r.multiplier!.source === "ONCHAIN" ? "VERIFIED_ONCHAIN" : "VERIFIED_OFFICIAL_API"]);
+      return {
+        ...base,
+        ...withQuote,
+        status: "PRICED",
+        priceUsd: qr!.tokenMid,
+        priceUsdDisplay: usdDisplay(qr!.tokenMid!),
+        method: "ROBINHOOD_QUOTE_MID",
+        sourceType: "OFFICIAL_API",
+        source: quoteSource,
+        observedAt: qr!.generatedAt,
+        ageSeconds: qr!.ageSeconds,
+        freshnessStatus: qr!.freshness,
+        confidence: qr!.freshness === "FRESH" ? "MEDIUM" : "LOW",
+        verificationStatus: verification,
+      };
+    }
+    const why = [
+      !feed ? "no Chainlink feed" : !cl ? "feed unread" : !cl.valid ? `feed invalid (${cl.invalidReason})` : `feed ${cl.freshness}`,
+      !qr ? "no Robinhood quote" : qr.isTradingHalt ? "quote halted" : !qr.underlyingMid ? "quote has no valid bid/ask" : !r.multiplier ? "no multiplier for quote conversion" : `quote ${qr.freshness}`,
+    ].join("; ");
+    return { ...unpriced(why), ...withQuote };
+  }
+}
+
+/** Exact decimal string → integer at `decimals`, or null (never throws). */
+function parseScaled(v: string, decimals: number): bigint | null {
+  const m = /^([0-9]+)(?:\.([0-9]+))?$/.exec(v.trim());
+  if (!m) return null;
+  const frac = (m[2] ?? "").slice(0, decimals).padEnd(decimals, "0");
+  return BigInt(m[1]!) * pow10(decimals) + (decimals ? BigInt(frac) : 0n);
+}

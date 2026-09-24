@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { freshness, unixToIso } from "../src/lib/freshness.js";
-import { toTrustedLink } from "../src/lib/links.js";
+import { freshness, unixToIso } from "../../src/lib/freshness.js";
+import { toTrustedLink } from "../../src/lib/links.js";
 import {
   aprToApy,
   apyToApr,
@@ -8,10 +8,10 @@ import {
   rewardShare,
   supplyApyFromBorrow,
   utilization,
-} from "../src/lib/rates.js";
-import { parseAddress, parseChainId, parseWalletAddress, ValidationError } from "../src/lib/validation.js";
-import { computed, supplied, type DataSource } from "../src/model/provenance.js";
-import { isAuthoritative, requiresDisclosure, weakestStatus } from "../src/model/verification.js";
+} from "../../src/lib/rates.js";
+import { parseAddress, parseChainId, parseWalletAddress, ValidationError } from "../../src/lib/validation.js";
+import { computed, supplied, type DataSource } from "../../src/model/provenance.js";
+import { isAuthoritative, requiresDisclosure, weakestStatus } from "../../src/model/verification.js";
 
 const src = (over: Partial<DataSource> = {}): DataSource => ({
   type: "ONCHAIN",

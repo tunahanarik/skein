@@ -1,7 +1,7 @@
 {
   "script": "network",
-  "startedAt": "2026-09-24T06:23:31.424Z",
-  "finishedAt": "2026-09-24T06:23:33.938Z",
+  "startedAt": "2026-09-24T06:44:32.606Z",
+  "finishedAt": "2026-09-24T06:44:35.086Z",
   "checks": [
     {
       "name": "rpc",
@@ -24,11 +24,11 @@
     {
       "name": "latest block",
       "status": "PASS",
-      "detail": "#71152997 age 0s",
+      "detail": "#71165392 age 0s",
       "evidence": {
-        "number": "71152997",
-        "hash": "0xaf06d4239f1d0b4bc035563a7e79669e82ef354a08948ec5dd5822d4058dfc34",
-        "timestamp": "1790231012"
+        "number": "71165392",
+        "hash": "0x4308d33f379b4649d84edb80ce8d52358ffabf3c5a5385d03bd49cb6b09bc32a",
+        "timestamp": "1790232273"
       }
     },
     {
@@ -36,8 +36,8 @@
       "status": "INFO",
       "detail": "0.101 s/block over 1000 blocks",
       "evidence": {
-        "from": "71151997",
-        "to": "71152997"
+        "from": "71164392",
+        "to": "71165392"
       }
     },
     {
@@ -63,12 +63,12 @@
     {
       "name": "safe tag",
       "status": "INFO",
-      "detail": "#71147399, 5598 blocks / 564 s behind latest"
+      "detail": "#71158864, 6528 blocks / 664 s behind latest"
     },
     {
       "name": "finalized tag",
       "status": "INFO",
-      "detail": "#71143459, 9538 blocks / 963 s behind latest"
+      "detail": "#71154809, 10583 blocks / 1077 s behind latest"
     }
   ]
 }

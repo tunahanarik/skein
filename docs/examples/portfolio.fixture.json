@@ -1,0 +1,415 @@
+{
+  "chainId": 4663,
+  "walletAddress": "0x1111111111111111111111111111111111111111",
+  "blockNumber": "71000000",
+  "blockTimestamp": "2026-09-24T12:00:00.000Z",
+  "assets": [
+    {
+      "asset": {
+        "key": "4663:0x000000000000000000000000000000000000a001",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "name": "NVDA • Robinhood Token",
+        "decimals": 18,
+        "type": "STOCK_TOKEN",
+        "canonical": true
+      },
+      "balanceStatus": "OK",
+      "rawBalance": "2000000000000000000",
+      "displayBalance": "2",
+      "stock": {
+        "uiMultiplierE18": "1000775159164630595",
+        "uiMultiplier": "1.000775159164630595",
+        "multiplierSource": "ONCHAIN",
+        "displayShareBalanceRaw": "2001550318329261190",
+        "displayShareBalance": "2.00155031832926119",
+        "pendingMultiplier": null,
+        "pendingEffectiveAt": null
+      },
+      "price": {
+        "assetKey": "4663:0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "status": "PRICED",
+        "priceUsd": {
+          "raw": "22441382169",
+          "decimals": 8
+        },
+        "priceUsdDisplay": "224.41382169",
+        "method": "CHAINLINK_STOCK_TOKEN_FEED",
+        "sourceType": "ONCHAIN",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "chainlink",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000F003",
+          "method": "latestRoundData() — Robinhood NVDA / USD",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:55:00.000Z"
+        },
+        "observedAt": "2026-09-24T11:55:00.000Z",
+        "fetchedAt": "2026-09-24T12:00:00.000Z",
+        "ageSeconds": 300,
+        "freshnessStatus": "FRESH",
+        "confidence": "HIGH",
+        "verificationStatus": "VERIFIED_OFFICIAL_DOCS",
+        "chainlink": {
+          "proxy": "0x000000000000000000000000000000000000F003",
+          "answer": "22441382169",
+          "updatedAt": 1790250900,
+          "freshness": "FRESH"
+        },
+        "robinhoodQuote": {
+          "symbol": "NVDA",
+          "bid": "224.20",
+          "ask": "224.22",
+          "underlyingMid": {
+            "raw": "224210000000000000000",
+            "decimals": 18
+          },
+          "spreadAbsolute": "0.02",
+          "spreadBps": 0.89202,
+          "generatedAt": "2026-09-24T11:59:55.000Z",
+          "isTradingHalt": false,
+          "freshness": "FRESH",
+          "ageSeconds": 5,
+          "tokenMid": {
+            "raw": "224383798436301825704",
+            "decimals": 18
+          }
+        },
+        "crossCheck": {
+          "performed": true,
+          "reason": null,
+          "absoluteDifference": "0.030023253698174296",
+          "percentageDifference": 0.01338,
+          "thresholdPct": 1,
+          "conflict": false
+        },
+        "pegDeviationBps": null,
+        "unpricedReason": null,
+        "warnings": []
+      },
+      "pricingStatus": "PRICED",
+      "valueUsdE18": "448827643380000000000",
+      "valueUsd": "448.82764338",
+      "verificationStatus": "VERIFIED_OFFICIAL_DOCS",
+      "warnings": [],
+      "provenance": [
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000a001",
+          "method": "balanceOf(wallet)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000a001",
+          "method": "uiMultiplier()",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "asset": {
+        "key": "4663:0x000000000000000000000000000000000000a003",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a003",
+        "symbol": "SPLT",
+        "name": "SPLT • Robinhood Token",
+        "decimals": 18,
+        "type": "STOCK_TOKEN",
+        "canonical": true
+      },
+      "balanceStatus": "OK",
+      "rawBalance": "3000000000000000000",
+      "displayBalance": "3",
+      "stock": {
+        "uiMultiplierE18": "4000000000000000000",
+        "uiMultiplier": "4",
+        "multiplierSource": "ONCHAIN",
+        "displayShareBalanceRaw": "12000000000000000000",
+        "displayShareBalance": "12",
+        "pendingMultiplier": null,
+        "pendingEffectiveAt": null
+      },
+      "price": {
+        "assetKey": "4663:0x000000000000000000000000000000000000a003",
+        "symbol": "SPLT",
+        "status": "PRICED",
+        "priceUsd": {
+          "raw": "100200000000000000000",
+          "decimals": 18
+        },
+        "priceUsdDisplay": "100.2",
+        "method": "ROBINHOOD_QUOTE_MID",
+        "sourceType": "OFFICIAL_API",
+        "source": {
+          "type": "OFFICIAL_API",
+          "provider": "robinhood-rhj-api",
+          "url": "https://api.robinhood.com/rhj/prices",
+          "chainId": 4663,
+          "method": "quotes[SPLT] bid/ask (underlying) × uiMultiplier (ONCHAIN)",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:59:55.000Z"
+        },
+        "observedAt": "2026-09-24T11:59:55.000Z",
+        "fetchedAt": "2026-09-24T12:00:00.000Z",
+        "ageSeconds": 5,
+        "freshnessStatus": "FRESH",
+        "confidence": "MEDIUM",
+        "verificationStatus": "VERIFIED_OFFICIAL_API",
+        "chainlink": null,
+        "robinhoodQuote": {
+          "symbol": "SPLT",
+          "bid": "25.00",
+          "ask": "25.10",
+          "underlyingMid": {
+            "raw": "25050000000000000000",
+            "decimals": 18
+          },
+          "spreadAbsolute": "0.1",
+          "spreadBps": 39.920159,
+          "generatedAt": "2026-09-24T11:59:55.000Z",
+          "isTradingHalt": false,
+          "freshness": "FRESH",
+          "ageSeconds": 5,
+          "tokenMid": {
+            "raw": "100200000000000000000",
+            "decimals": 18
+          }
+        },
+        "crossCheck": {
+          "performed": false,
+          "reason": "no usable Chainlink price",
+          "absoluteDifference": null,
+          "percentageDifference": null,
+          "thresholdPct": 1,
+          "conflict": false
+        },
+        "pegDeviationBps": null,
+        "unpricedReason": null,
+        "warnings": [
+          {
+            "code": "NO_CHAINLINK_FEED",
+            "severity": "INFO",
+            "message": "SPLT has no Chainlink feed in the directory",
+            "assetKey": "4663:0x000000000000000000000000000000000000a003"
+          },
+          {
+            "code": "PRICE_FALLBACK_USED",
+            "severity": "INFO",
+            "message": "SPLT: priced from Robinhood quote mid × uiMultiplier (no Chainlink feed)",
+            "assetKey": "4663:0x000000000000000000000000000000000000a003"
+          }
+        ]
+      },
+      "pricingStatus": "PRICED",
+      "valueUsdE18": "300600000000000000000",
+      "valueUsd": "300.6",
+      "verificationStatus": "VERIFIED_OFFICIAL_API",
+      "warnings": [
+        {
+          "code": "NO_CHAINLINK_FEED",
+          "severity": "INFO",
+          "message": "SPLT has no Chainlink feed in the directory",
+          "assetKey": "4663:0x000000000000000000000000000000000000a003"
+        },
+        {
+          "code": "PRICE_FALLBACK_USED",
+          "severity": "INFO",
+          "message": "SPLT: priced from Robinhood quote mid × uiMultiplier (no Chainlink feed)",
+          "assetKey": "4663:0x000000000000000000000000000000000000a003"
+        }
+      ],
+      "provenance": [
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000a003",
+          "method": "balanceOf(wallet)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000a003",
+          "method": "uiMultiplier()",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "asset": {
+        "key": "4663:0x000000000000000000000000000000000000a004",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000A004",
+        "symbol": "NOFD",
+        "name": "NOFD • Robinhood Token",
+        "decimals": 18,
+        "type": "STOCK_TOKEN",
+        "canonical": true
+      },
+      "balanceStatus": "OK",
+      "rawBalance": "1000000000000000000",
+      "displayBalance": "1",
+      "stock": {
+        "uiMultiplierE18": "1000000000000000000",
+        "uiMultiplier": "1",
+        "multiplierSource": "ONCHAIN",
+        "displayShareBalanceRaw": "1000000000000000000",
+        "displayShareBalance": "1",
+        "pendingMultiplier": null,
+        "pendingEffectiveAt": null
+      },
+      "price": {
+        "assetKey": "4663:0x000000000000000000000000000000000000a004",
+        "symbol": "NOFD",
+        "status": "UNPRICED",
+        "priceUsd": null,
+        "priceUsdDisplay": null,
+        "method": null,
+        "sourceType": null,
+        "source": null,
+        "observedAt": null,
+        "fetchedAt": "2026-09-24T12:00:00.000Z",
+        "ageSeconds": null,
+        "freshnessStatus": "UNKNOWN",
+        "confidence": null,
+        "verificationStatus": "UNVERIFIED",
+        "chainlink": null,
+        "robinhoodQuote": null,
+        "crossCheck": {
+          "performed": false,
+          "reason": "no usable Chainlink price",
+          "absoluteDifference": null,
+          "percentageDifference": null,
+          "thresholdPct": 1,
+          "conflict": false
+        },
+        "pegDeviationBps": null,
+        "unpricedReason": "no Chainlink feed; no Robinhood quote",
+        "warnings": [
+          {
+            "code": "NO_CHAINLINK_FEED",
+            "severity": "INFO",
+            "message": "NOFD has no Chainlink feed in the directory",
+            "assetKey": "4663:0x000000000000000000000000000000000000a004"
+          },
+          {
+            "code": "UNPRICED_ASSET",
+            "severity": "WARNING",
+            "message": "NOFD: no Chainlink feed; no Robinhood quote",
+            "assetKey": "4663:0x000000000000000000000000000000000000a004"
+          }
+        ]
+      },
+      "pricingStatus": "UNPRICED",
+      "valueUsdE18": null,
+      "valueUsd": null,
+      "verificationStatus": "VERIFIED_OFFICIAL_API",
+      "warnings": [
+        {
+          "code": "NO_CHAINLINK_FEED",
+          "severity": "INFO",
+          "message": "NOFD has no Chainlink feed in the directory",
+          "assetKey": "4663:0x000000000000000000000000000000000000a004"
+        },
+        {
+          "code": "UNPRICED_ASSET",
+          "severity": "WARNING",
+          "message": "NOFD: no Chainlink feed; no Robinhood quote",
+          "assetKey": "4663:0x000000000000000000000000000000000000a004"
+        }
+      ],
+      "provenance": [
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000A004",
+          "method": "balanceOf(wallet)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x000000000000000000000000000000000000A004",
+          "method": "uiMultiplier()",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "pricedValueUsdE18": "2385989028780000000000",
+    "pricedValueUsd": "2385.98902878",
+    "pricedAssetCount": 5,
+    "unpricedAssetCount": 1,
+    "failedBalanceCount": 1,
+    "heldAssetCount": 7
+  },
+  "valuationCoverage": {
+    "pricedAssets": 5,
+    "unpricedAssets": 1,
+    "failedBalances": 1,
+    "coverageStatus": "PARTIAL",
+    "totalValueUsd": null
+  },
+  "registry": {
+    "mode": "LIVE",
+    "dataAsOf": "2026-09-24T12:00:00.000Z",
+    "freshness": {
+      "status": "FRESH",
+      "ageSeconds": 0,
+      "rule": "ASSET_REGISTRY"
+    },
+    "stockTokenCount": 5,
+    "scannedAssetCount": 8,
+    "onchainVerified": null
+  },
+  "rpc": {
+    "status": "HEALTHY",
+    "requests": 19
+  },
+  "warnings": [],
+  "timingsMs": {
+    "registry": 0,
+    "balances": 0,
+    "prices": 2,
+    "normalization": 0,
+    "total": 2
+  },
+  "generatedAt": "2026-09-24T12:00:00.000Z",
+  "provenance": [
+    {
+      "type": "ONCHAIN",
+      "provider": "robinhood-chain-rpc",
+      "chainId": 4663,
+      "method": "block 71000000 (0xabababababababababababababababababababababababababababababababab)",
+      "blockNumber": "71000000",
+      "observedAt": "2026-09-24T12:00:00.000Z"
+    },
+    {
+      "type": "OFFICIAL_API",
+      "provider": "robinhood-rhj-api",
+      "url": "https://api.robinhood.com/rhj/assets",
+      "method": "registry LIVE",
+      "observedAt": "2026-09-24T12:00:00.000Z"
+    }
+  ]
+}

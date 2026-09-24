@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatFixed, parseFixed, rescale, usdE18ToNumber, usdValueE18 } from "../src/lib/units.js";
+import { formatFixed, parseFixed, rescale, usdE18ToNumber, usdValueE18 } from "../../src/lib/units.js";
 
 describe("decimal conversion", () => {
   it("formats raw amounts exactly, trimming trailing zeros", () => {

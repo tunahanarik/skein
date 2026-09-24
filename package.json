@@ -11,12 +11,17 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
     "validate": "tsx scripts/validate-all.ts",
     "validate:network": "tsx scripts/validate-network.ts",
     "validate:assets": "tsx scripts/validate-assets.ts",
     "validate:oracles": "tsx scripts/validate-oracles.ts",
     "validate:morpho": "tsx scripts/validate-morpho.ts",
     "validate:pendle": "tsx scripts/validate-pendle.ts",
+    "validate:portfolio": "tsx scripts/validate-portfolio.ts",
+    "registry:snapshot": "tsx scripts/registry-snapshot.ts",
+    "registry:check": "tsx scripts/registry-snapshot.ts --check",
     "portfolio": "tsx scripts/portfolio.ts"
   },
   "dependencies": {

@@ -3,14 +3,14 @@ import {
   effectiveMultiplier,
   parseMultiplier,
   relativeDeviation,
-  shareEquivalentRaw,
+  calculateStockDisplayBalance,
   stockTokenUsdE18,
   tokenPriceFromUnderlying,
   underlyingFromTokenPrice,
   underlyingMidFromQuote,
   type TokenPrice,
-} from "../src/lib/stockToken.js";
-import { formatFixed, parseFixed } from "../src/lib/units.js";
+} from "../../src/lib/stockToken.js";
+import { formatFixed, parseFixed } from "../../src/lib/units.js";
 
 // Live values read 2026-09-24 (docs/research/stock-tokens.md): NVDA uiMultiplier.
 const NVDA_MULT = 1000775159164630595n;
@@ -18,20 +18,20 @@ const ONE = 10n ** 18n;
 
 describe("share-equivalent balance (balanceOfUI)", () => {
   it("is the raw balance when the multiplier is 1.0", () => {
-    expect(shareEquivalentRaw(5n * ONE, ONE)).toBe(5n * ONE);
+    expect(calculateStockDisplayBalance(5n * ONE, ONE).displayShareBalanceRaw).toBe(5n * ONE);
   });
 
   it("scales by the multiplier and floors like the contract", () => {
     // 10 NVDA tokens → 10.00775159164630595 share-equivalents
-    expect(formatFixed(shareEquivalentRaw(10n * ONE, NVDA_MULT), 18)).toBe("10.00775159164630595");
+    expect(formatFixed(calculateStockDisplayBalance(10n * ONE, NVDA_MULT).displayShareBalanceRaw, 18)).toBe("10.00775159164630595");
   });
 
   it("applies a 4:1 split as multiplier 4.0 without touching the raw balance", () => {
-    expect(shareEquivalentRaw(3n * ONE, 4n * ONE)).toBe(12n * ONE);
+    expect(calculateStockDisplayBalance(3n * ONE, 4n * ONE).displayShareBalanceRaw).toBe(12n * ONE);
   });
 
   it("rejects a zero multiplier instead of zeroing balances", () => {
-    expect(() => shareEquivalentRaw(ONE, 0n)).toThrow(RangeError);
+    expect(() => calculateStockDisplayBalance(ONE, 0n)).toThrow(RangeError);
   });
 });
 

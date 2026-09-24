@@ -1,6 +1,17 @@
-# Phase 1 MVP (proposal: not started, awaiting approval)
+# MVP plan
 
 **Read-only.** No signing, approvals, deposits, withdrawals, borrowing, swaps, LP creation or transaction submission. The codebase contains no wallet client.
+
+## Phase status
+
+| Phase | Scope | Status |
+|---|---|---|
+| 0 | research, live validation, data model | done (commit `d49ff0c`) |
+| 1 | **Portfolio Engine + Asset Registry + Price Service** (no opportunities, no UI) | done; see [portfolio-engine.md](portfolio-engine.md), [asset-registry.md](asset-registry.md), [pricing.md](pricing.md), [rpc.md](rpc.md) |
+| 2 | protocol opportunity adapters (Morpho → Spark → Pendle → Uniswap …) | not started; needs approval |
+| 3 | minimal comparison UI | not started |
+
+The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–9 belong to later phases.
 
 ## User flow
 1. Connect wallet: read the address only, validate it, require chain 4663 (or accept a pasted address).

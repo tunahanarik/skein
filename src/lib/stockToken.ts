@@ -37,10 +37,37 @@ function assertMultiplier(multiplierE18: bigint): void {
   if (multiplierE18 <= 0n) throw new RangeError(`invalid uiMultiplier ${multiplierE18}`);
 }
 
-/** Share-equivalent raw units: what balanceOfUI() returns. */
-export function shareEquivalentRaw(rawBalance: bigint, multiplierE18: bigint): bigint {
+/** Share-equivalent raw units: what balanceOfUI() returns. Internal; use calculateStockDisplayBalance. */
+function shareEquivalentRaw(rawBalance: bigint, multiplierE18: bigint): bigint {
   assertMultiplier(multiplierE18);
   return (rawBalance * multiplierE18) / ONE_MULTIPLIER;
+}
+
+/**
+ * THE Stock Token balance function. Every component that shows or values a Stock Token
+ * balance goes through this; nothing else applies uiMultiplier to a balance.
+ *
+ * Units:
+ *   rawTokenBalance          token base units (18 decimals): balanceOf(); what transfers move
+ *   uiMultiplierE18          1e18 fixed point (1.0 = 1e18): uiMultiplier() at the same block
+ *   displayShareBalanceRaw   share-equivalent base units (18 decimals) = raw × m / 1e18
+ *                            (equals balanceOfUI(); floors like the contract)
+ */
+export interface StockDisplayBalance {
+  rawTokenBalance: bigint;
+  tokenDecimals: number;
+  uiMultiplierE18: bigint;
+  displayShareBalanceRaw: bigint;
+}
+
+export function calculateStockDisplayBalance(rawTokenBalance: bigint, uiMultiplierE18: bigint, tokenDecimals = 18): StockDisplayBalance {
+  if (rawTokenBalance < 0n) throw new RangeError("negative balance");
+  return {
+    rawTokenBalance,
+    tokenDecimals,
+    uiMultiplierE18,
+    displayShareBalanceRaw: shareEquivalentRaw(rawTokenBalance, uiMultiplierE18),
+  };
 }
 
 /** Underlying share price → price of one token (apply the multiplier once). */
