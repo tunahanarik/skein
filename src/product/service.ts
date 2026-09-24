@@ -339,7 +339,10 @@ export class AssetIntelligenceService {
           if (q.ok) return routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS });
           return routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason);
         };
-        const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(routes, QUOTE_CONCURRENCY, quoteCard);
+        // A route through two venues has no single quoter: it stays in the route view but is not
+        // offered as a quote for an amount (its output cannot be estimated consistently).
+        const quotable = routes.filter((r) => new Set(r.properties.protocols).size === 1);
+        const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(quotable, QUOTE_CONCURRENCY, quoteCard);
         tradeGroups.push({ target, cards });
       }
     }
@@ -429,7 +432,7 @@ export class AssetIntelligenceService {
         capabilities: capabilitiesOf(everyCard),
         counts,
         productCards: productCards.length,
-        protocols: [...new Set(usable.map((c) => c.protocol.name))].sort(),
+        protocols: [...new Set(usable.flatMap((c) => c.protocol.name.split(" + ")))].sort(),
         allDiscoveredProtocols: [...new Set(opps.map((o) => o.protocol.name))].sort(),
       },
       dataQuality,
