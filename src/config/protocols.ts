@@ -133,9 +133,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       { kind: "API", url: "https://api.beefy.finance/apy/breakdown", covers4663: true },
     ],
     contracts: {}, // per-vault addresses come from the API and are checked onchain before display
-    linkHosts: [],
-    appUrl: null,
-    appSource: null,
+    linkHosts: ["app.beefy.com"],
+    appUrl: "https://app.beefy.com/",
+    appSource: "github.com/beefyfinance/beefy-v2 (the official frontend) README: “app.beefy.com”",
     checkedAt: "2026-09-24",
   },
   {

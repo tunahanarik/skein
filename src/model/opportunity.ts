@@ -388,6 +388,17 @@ export type OpportunityDetails =
       rateRay: bigint;
       totalAssets: Measured<TokenAmount> | null;
       depositCap: TokenAmount | null;
+    }
+  | {
+      /** Beefy Cowcentrated Liquidity Manager over an official Uniswap v3 pool. */
+      kind: "BEEFY_CLM";
+      clm: Address;
+      pool: Address;
+      feePpm: number;
+      tokens: [AssetRef, AssetRef];
+      /** CLM.balances() at the block (raw, token order as in `tokens`). */
+      balances: [bigint, bigint];
+      apiId: string;
     };
 
 export interface Opportunity {

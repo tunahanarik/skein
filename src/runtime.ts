@@ -16,6 +16,7 @@ import { PendleAdapter } from "./protocols/pendle/adapter.js";
 import { UniswapAdapter } from "./protocols/uniswap/adapter.js";
 import { FilePoolListStore } from "./protocols/uniswap/poolStore.js";
 import { SparkSavingsAdapter } from "./protocols/spark/adapter.js";
+import { BeefyAdapter } from "./protocols/beefy/adapter.js";
 import { PriceService } from "./pricing/priceService.js";
 import { loadAssetRegistry, type AssetRegistry } from "./registry/registry.js";
 import { DEFAULT_SNAPSHOT_PATH, readSnapshotFile, type RegistrySnapshot } from "./registry/snapshot.js";
@@ -55,7 +56,7 @@ export function createRuntime(env: Record<string, string | undefined> = process.
       return loadAssetRegistry({ http, baseline, ...(verify ? { reader, blockNumber: blockNumber! } : {}) });
     });
 
-  const engine = new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) }), new SparkSavingsAdapter()], { reader, getRegistry, prices });
+  const engine = new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) }), new SparkSavingsAdapter(), new BeefyAdapter(http)], { reader, getRegistry, prices });
   const portfolioFn: Runtime["getPortfolio"] = (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o);
   return {
     rpc,
