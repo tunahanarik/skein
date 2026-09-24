@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { linkProps, useRoute } from "./router";
 import { shortAddr } from "./format";
 import { AboutPage } from "./pages/About";
@@ -60,8 +61,14 @@ function Footer() {
   );
 }
 
+const TITLES: Record<string, string> = { home: "Explore", wallet: "Wallet", coverage: "Coverage", about: "How it works", notfound: "Not found" };
+
 function Page() {
   const route = useRoute();
+  useEffect(() => {
+    const t = route.name === "asset" ? route.ref.slice(0, 16) : TITLES[route.name];
+    document.title = t ? `${t} · Waypoint` : "Waypoint";
+  }, [route]);
   switch (route.name) {
     case "home":
       return <HomePage />;

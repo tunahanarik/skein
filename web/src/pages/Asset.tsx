@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { api, ApiFailure, type Card, type Intelligence, type Sub } from "../api";
 import { CardView } from "../components/CardView";
 import { RouteTable } from "../components/RouteTable";
-import { Avatar, ErrorBox, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
+import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
 import { ago, amount, usd } from "../format";
 import { linkProps } from "../router";
 import { CATEGORY_TEXT, COMPARATOR_TEXT, EMPTY_TEXT, QUALITY_TEXT, SUB_TEXT, TYPE_TEXT } from "../text";
@@ -117,7 +117,7 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
           {a && (
             <>
               {name ? " · " : ""}
-              <span className="mono">{a.address}</span>
+              <ExplorerLink address={a.address} />
             </>
           )}
         </div>

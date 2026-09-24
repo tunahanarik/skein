@@ -31,6 +31,12 @@ export function ago(iso: string | null | undefined, nowMs = Date.now()): string 
   return `${Math.round(s / 86400)}d ago`;
 }
 
+/** Official Robinhood Chain explorer (src/config/chains.ts, from the chain docs). Addresses only. */
+export const EXPLORER = "https://robinhoodchain.blockscout.com";
+export function explorerAddress(a: string): string | null {
+  return /^0x[0-9a-fA-F]{40}$/.test(a) ? `${EXPLORER}/address/${a}` : null;
+}
+
 export function shortAddr(a: string): string {
   return a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a;
 }

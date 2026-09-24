@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiFailure, type AssetListItem } from "../api";
+import { explorerAddress } from "../format";
 import { USABILITY_LABEL } from "../text";
 
 /** Fetch with abort on dependency change. */
@@ -41,6 +42,17 @@ export function useAssetList(): AssetListItem[] | null {
     };
   }, []);
   return list;
+}
+
+/** External explorer link for a contract address (new tab, no referrer). */
+export function ExplorerLink({ address, children }: { address: string; children?: ReactNode }) {
+  const href = explorerAddress(address);
+  if (!href) return <span className="mono">{children ?? address}</span>;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="mono" title="Open in Blockscout">
+      {children ?? address} ↗
+    </a>
+  );
 }
 
 export function Avatar({ symbol, size }: { symbol: string; size?: "lg" }) {

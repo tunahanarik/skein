@@ -2,7 +2,7 @@ import { Fragment, useState } from "react";
 import type { Card } from "../api";
 import { amount, feePpm, pctE18, usd } from "../format";
 import { NOTE_TEXT, REASON_TEXT } from "../text";
-import { UsabilityBadge } from "./common";
+import { ExplorerLink, UsabilityBadge } from "./common";
 
 /** Compact, ranked list of trade routes (with quotes when an amount was given). Rows expand to pool detail. */
 export function RouteTable({ cards }: { cards: Card[] }) {
@@ -77,7 +77,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                         {t.route.markets.map((m, i) => (
                           <div key={m.marketId} className="muted">
                             Pool {i + 1}: {m.protocol} · fee {feePpm(m.feePpm)} · TVL {usd(m.tvlUsd?.display, { compact: true })} ·{" "}
-                            <span className="mono">{m.marketId.split(":").at(-1)}</span>
+                            <ExplorerLink address={m.marketId.split(":").at(-1) ?? ""} />
                           </div>
                         ))}
                         {q && (
