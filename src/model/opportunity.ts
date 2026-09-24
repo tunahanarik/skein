@@ -390,14 +390,15 @@ export type OpportunityDetails =
       depositCap: TokenAmount | null;
     }
   | {
-      /** Beefy Cowcentrated Liquidity Manager over an official Uniswap v3 pool. */
-      kind: "BEEFY_CLM";
-      clm: Address;
+      /** Managed Uniswap v3 liquidity (Beefy CLM, Steer vault) over an official v3 pool. */
+      kind: "MANAGED_LP";
+      manager: "BEEFY_CLM" | "STEER";
+      vault: Address;
       pool: Address;
       feePpm: number;
       tokens: [AssetRef, AssetRef];
-      /** CLM.balances() at the block (raw, token order as in `tokens`). */
-      balances: [bigint, bigint];
+      /** The manager's onchain token amounts at the block (raw, order as in `tokens`). */
+      amounts: [bigint, bigint];
       apiId: string;
     };
 

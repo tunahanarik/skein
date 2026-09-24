@@ -13,25 +13,18 @@
  */
 import { parseAbi, type Address } from "viem";
 import { z } from "zod";
-import { CACHE_TTL_MS, classifyFreshness } from "../../config/freshness.js";
+import { CACHE_TTL_MS } from "../../config/freshness.js";
 import { TtlCache } from "../../lib/cache.js";
-import { fixed18FromNumber } from "../../lib/fixed.js";
 import type { HttpClient } from "../../lib/http.js";
-import { sanitizeSymbol } from "../../lib/sanitize.js";
-import { formatFixed, usdValueE18, USD_DECIMALS } from "../../lib/units.js";
-import { opportunityId, type AmountWithUsd, type AssetRef, type Measured, type Opportunity, type OpportunityCategory, type YieldMetric } from "../../model/opportunity.js";
+import type { Opportunity, OpportunityCategory } from "../../model/opportunity.js";
 import type { DataSource } from "../../model/provenance.js";
-import { weakestStatus } from "../../model/verification.js";
 import { warn, type Warning } from "../../model/warnings.js";
 import type { AdapterCapabilities, AdapterContext, AdapterIssue, AdapterResult, OpportunityAdapter } from "../../opportunities/adapter.js";
-import { priceCanonicalAssets } from "../../opportunities/assetPricing.js";
-import { openEndedLifecycle } from "../../opportunities/lifecycle.js";
-import { UNISWAP_READ_CONTRACTS } from "../uniswap/constants.js";
+import { managedLpOpportunities, same, V3_FACTORY, verifyV3Pools, type ManagedLpInput } from "../shared/managedLp.js";
 
 export const PROTOCOL = { id: "beefy", name: "Beefy" } as const;
 export const BEEFY_COW_URL = "https://api.beefy.finance/cow-vaults";
 export const BEEFY_APY_URL = "https://api.beefy.finance/apy/breakdown";
-const V3_FACTORY = UNISWAP_READ_CONTRACTS.v3Factory as Address;
 
 const addr = z.string().regex(/^0x[0-9a-fA-F]{40}$/);
 export const cowVaultSchema = z
@@ -91,15 +84,9 @@ export const clmAbi = parseAbi([
   "function balances() view returns (uint256, uint256)",
   "function strategy() view returns (address)",
   "function pool() view returns (address)",
-  "function factory() view returns (address)",
-  "function fee() view returns (uint24)",
-  "function token0() view returns (address)",
-  "function token1() view returns (address)",
-  "function getPool(address, address, uint24) view returns (address)",
 ]);
 
 const ms = (t: number) => Math.round(performance.now() - t);
-const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
 export class BeefyAdapter implements OpportunityAdapter {
   readonly protocol = { ...PROTOCOL };
@@ -134,159 +121,57 @@ export class BeefyAdapter implements OpportunityAdapter {
     });
     if (!vaults.length) return { data: [], status: "COMPLETE", issues, warnings, timingsMs: { total: ms(t0) } };
 
-    // ---- onchain identity: wants, balances, strategy → pool → factory/fee/tokens ----
+    // ---- onchain identity: wants, balances, strategy → pool (official v3: factory + getPool) ----
     const b = { blockNumber: ctx.blockNumber };
     const step1 = await ctx.reader.multicall(
-      vaults.flatMap((v) => [
-        { address: v.earnContractAddress as Address, abi: clmAbi, functionName: "wants" },
-        { address: v.earnContractAddress as Address, abi: clmAbi, functionName: "balances" },
-        { address: v.earnContractAddress as Address, abi: clmAbi, functionName: "strategy" },
-      ]),
+      vaults.flatMap((v) => (["wants", "balances", "strategy"] as const).map((functionName) => ({ address: v.earnContractAddress as Address, abi: clmAbi, functionName }))),
       b,
     );
     const ok = <T>(i: number): T | null => (step1[i]?.status === "success" ? (step1[i] as { result: T }).result : null);
     const strat = vaults.map((_, i) => ok<Address>(i * 3 + 2));
     const step2 = await ctx.reader.multicall(strat.map((s) => ({ address: (s ?? V3_FACTORY) as Address, abi: clmAbi, functionName: "pool" })), b);
     const pools = step2.map((r, i) => (strat[i] && r?.status === "success" ? (r.result as Address) : null));
-    const step3 = await ctx.reader.multicall(
-      pools.flatMap((p) => [
-        { address: (p ?? V3_FACTORY) as Address, abi: clmAbi, functionName: "factory" },
-        { address: (p ?? V3_FACTORY) as Address, abi: clmAbi, functionName: "fee" },
-        { address: (p ?? V3_FACTORY) as Address, abi: clmAbi, functionName: "token0" },
-        { address: (p ?? V3_FACTORY) as Address, abi: clmAbi, functionName: "token1" },
-      ]),
-      b,
-    );
-    const s3 = <T>(i: number, k: number): T | null => (pools[i] && step3[i * 4 + k]?.status === "success" ? (step3[i * 4 + k] as { result: T }).result : null);
-    const step4 = await ctx.reader.multicall(
-      pools.map((p, i) => {
-        const t0a = s3<Address>(i, 2);
-        const t1a = s3<Address>(i, 3);
-        const fee = s3<number>(i, 1);
-        return { address: V3_FACTORY, abi: clmAbi, functionName: "getPool", args: [t0a ?? V3_FACTORY, t1a ?? V3_FACTORY, fee ?? 0] };
-      }),
-      b,
-    );
+    const poolInfo = await verifyV3Pools(ctx, pools);
 
-    const verified: { v: CowVault; tokens: [Address, Address]; balances: [bigint, bigint]; pool: Address; fee: number }[] = [];
+    const inputs: ManagedLpInput[] = [];
+    const fetchedAt = apy?.fetchedAt ?? apiAt;
     vaults.forEach((v, i) => {
       const wants = ok<readonly [Address, Address]>(i * 3);
       const bal = ok<readonly [bigint, bigint]>(i * 3 + 1);
-      const pool = pools[i];
-      const factory = s3<Address>(i, 0);
-      const fee = s3<number>(i, 1);
-      const p0 = s3<Address>(i, 2);
-      const p1 = s3<Address>(i, 3);
-      const canonicalPool = step4[i]?.status === "success" ? (step4[i]!.result as Address) : null;
+      const info = poolInfo[i];
       const short = `${v.earnContractAddress.slice(0, 10)}…`;
-      const apiTokens = v.depositTokenAddresses;
-      const wantsMatch = !!wants && ((same(wants[0], apiTokens[0]!) && same(wants[1], apiTokens[1]!)) || (same(wants[0], apiTokens[1]!) && same(wants[1], apiTokens[0]!)));
-      const poolOk = !!pool && !!factory && same(factory, V3_FACTORY) && !!canonicalPool && same(canonicalPool, pool) && !!p0 && !!p1 && !!wants && ((same(p0, wants[0]) && same(p1, wants[1])) || (same(p0, wants[1]) && same(p1, wants[0])));
-      if (!wantsMatch || !poolOk || !bal || fee === null) {
-        warnings.push(warn("MARKET_UNVERIFIED_ONCHAIN", `Beefy CLM ${short}: onchain identity check failed (${!wantsMatch ? "wants ≠ API tokens" : !poolOk ? "pool not an official Uniswap v3 pool of these tokens" : "balances unreadable"}); not published`));
+      const api = v.depositTokenAddresses;
+      const wantsMatch = !!wants && ((same(wants[0], api[0]!) && same(wants[1], api[1]!)) || (same(wants[0], api[1]!) && same(wants[1], api[0]!)));
+      const poolMatch = !!info && !!wants && ((same(info.token0, wants[0]) && same(info.token1, wants[1])) || (same(info.token0, wants[1]) && same(info.token1, wants[0])));
+      if (!wantsMatch || !poolMatch || !bal) {
+        warnings.push(warn("MARKET_UNVERIFIED_ONCHAIN", `Beefy CLM ${short}: onchain identity check failed (${!wantsMatch ? "wants ≠ API tokens" : !poolMatch ? "pool not an official Uniswap v3 pool of these tokens" : "balances unreadable"}); not published`));
         return;
       }
-      verified.push({ v, tokens: [wants![0], wants![1]], balances: [bal[0], bal[1]], pool: pool!, fee });
+      const ap = apy?.data.get(v.id) ?? null;
+      const src: DataSource = { type: "OFFICIAL_API", provider: "beefy-api", url: BEEFY_APY_URL, chainId: ctx.chainId, method: `apy/breakdown[${v.id.slice(0, 80)}]`, observedAt: fetchedAt };
+      const risks = Object.entries(v.risks ?? {}).filter(([, x]) => x).map(([k]) => k);
+      const chain = (contract: Address, method: string): DataSource => ({ type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract, method, blockNumber: ctx.blockNumber, observedAt: ctx.now().toISOString() });
+      inputs.push({
+        protocol: PROTOCOL,
+        manager: "BEEFY_CLM",
+        managerLabel: "Beefy CLM",
+        vault: v.earnContractAddress as Address,
+        pool: pools[i]!,
+        feePpm: info!.fee,
+        tokens: [wants![0], wants![1]],
+        amounts: [bal[0], bal[1]],
+        amountsMethod: "balances()",
+        rate: ap?.totalApy != null ? { type: "NET_APY", value: ap.totalApy, label: "Beefy CLM APY (Uniswap v3 fees, compounded, after Beefy's performance fee)", compounding: "COMPOUNDED", source: src, fetchedAt } : null,
+        apiId: v.id,
+        identitySources: [chain(v.earnContractAddress as Address, "wants()"), chain(pools[i]!, "factory()"), chain(V3_FACTORY, "getPool()")],
+        protocolWarnings: risks.map((r) => ({ type: r, level: "INFO" })),
+        extraWarnings: risks.includes("notAudited") ? [warn("PROTOCOL_WARNING", "Beefy lists this CLM as not audited")] : [],
+        entryNote: "Deposits take both {pair} tokens in the pool's current ratio. Concentrated liquidity: the position's token mix changes with price (impermanent loss).",
+        mutability: "the CLM strategy rebalances the Uniswap v3 range automatically",
+      });
     });
-    if (verified.length < vaults.length) issues.push({ scope: "beefy:identity", message: `${vaults.length - verified.length} CLMs failed onchain identity checks`, severity: "DEGRADED" });
-
-    // ---- assets and prices ----
-    const refOf = (a: Address): AssetRef => {
-      const r = ctx.registry.get(ctx.chainId, a);
-      return r?.canonical
-        ? { key: r.key, chainId: ctx.chainId, address: r.address!, symbol: r.symbol, decimals: r.decimals, canonical: true, registryType: r.type }
-        : { key: `${ctx.chainId}:${a.toLowerCase()}`, chainId: ctx.chainId, address: a, symbol: "unknown", decimals: 18, canonical: false, registryType: null };
-    };
-    const keys = new Set(verified.flatMap((x) => x.tokens.map((a) => refOf(a).key)));
-    const { priceOf } = await priceCanonicalAssets(ctx, keys);
-    const observedAt = new Date(Number(ctx.blockTimestamp) * 1000).toISOString();
-    const nowS = Math.floor(ctx.now().getTime() / 1000);
-    const fresh = classifyFreshness("ONCHAIN_STATE", Number(ctx.blockTimestamp), nowS);
-    const apiFresh = classifyFreshness("PROTOCOL_API_MARKET_STATE", Math.floor(Date.parse(apy?.fetchedAt ?? apiAt) / 1000), nowS);
-    const chainSrc = (contract: Address, method: string): DataSource => ({ type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract, method, blockNumber: ctx.blockNumber, observedAt: ctx.now().toISOString() });
-    const apiSrc = (id: string): DataSource => ({ type: "OFFICIAL_API", provider: "beefy-api", url: BEEFY_APY_URL, chainId: ctx.chainId, method: `apy/breakdown[${id.slice(0, 80)}]`, observedAt: apy?.fetchedAt ?? apiAt });
-
-    const out: Opportunity[] = [];
-    for (const x of verified) {
-      const [a0, a1] = x.tokens.map(refOf) as [AssetRef, AssetRef];
-      const p0 = a0.canonical ? priceOf(a0.key).price : null;
-      const p1 = a1.canonical ? priceOf(a1.key).price : null;
-      const usd0 = p0 ? usdValueE18(x.balances[0], a0.decimals, p0.raw, p0.decimals) : null;
-      const usd1 = p1 ? usdValueE18(x.balances[1], a1.decimals, p1.raw, p1.decimals) : null;
-      const tvlUsd = usd0 !== null && usd1 !== null ? usd0 + usd1 : null;
-      const ap = apy?.data.get(x.v.id) ?? null;
-      const yields: YieldMetric[] =
-        ap?.totalApy != null
-          ? [{ type: "NET_APY", side: "EARN", basis: "VARIABLE", compounding: "COMPOUNDED", window: "protocol-defined", denominatedIn: null, label: "Beefy CLM APY (Uniswap v3 fees, compounded, after Beefy's performance fee)", value: fixed18FromNumber(ap.totalApy), origin: "SUPPLIED", source: apiSrc(x.v.id), observedAt: apy!.fetchedAt, freshness: apiFresh, verification: "VERIFIED_OFFICIAL_API" }]
-          : [];
-      const tvl: Measured<AmountWithUsd> | null =
-        tvlUsd !== null
-          ? { value: { asset: a0, amount: null, usd: { e18: tvlUsd, display: formatFixed(tvlUsd, USD_DECIMALS) } }, origin: "COMPUTED", formula: "balances() × Phase 1 prices", source: chainSrc(x.v.earnContractAddress as Address, "balances()"), observedAt, freshness: fresh, verification: "VERIFIED_ONCHAIN" } as Measured<AmountWithUsd>
-          : null;
-      const risks = Object.entries(x.v.risks ?? {}).filter(([, v]) => v).map(([k]) => k);
-      const pairLabel = `${sanitizeSymbol(a0.symbol)}/${sanitizeSymbol(a1.symbol)}`;
-      for (const primary of [a0, a1]) {
-        if (!primary.canonical) continue;
-        const other = primary === a0 ? a1 : a0;
-        const w: Warning[] = [];
-        if (!tvl) w.push(warn("UNPRICED_METRIC", `Beefy CLM ${pairLabel}: a token is unpriced; TVL unavailable`));
-        if (risks.includes("notAudited")) w.push(warn("PROTOCOL_WARNING", `Beefy lists this CLM as not audited`));
-        out.push({
-          id: opportunityId(ctx.chainId, PROTOCOL.id, "LP", "beefy-clm", `${x.v.earnContractAddress}:${primary.address}`),
-          chainId: ctx.chainId,
-          protocol: { ...PROTOCOL },
-          category: "LP",
-          title: `Provide ${pairLabel} liquidity through a Beefy CLM (Uniswap v3 ${(x.fee / 10_000).toFixed(2)}% pool)`,
-          venue: { kind: "BEEFY_CLM", id: (x.v.earnContractAddress as string).toLowerCase(), address: x.v.earnContractAddress as Address },
-          primaryAsset: primary,
-          inputAssets: [primary, other],
-          outputAssets: [],
-          collateralAssets: [],
-          borrowAssets: [],
-          yields,
-          tvl,
-          availableLiquidity: tvl,
-          liquidityKind: "POOL_LIQUIDITY",
-          utilization: null,
-          liquidation: null,
-          term: { maturity: null, lockSeconds: null, withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" },
-          lifecycle: openEndedLifecycle({ number: ctx.blockNumber, timestamp: ctx.blockTimestamp }),
-          entry: {
-            kind: "MULTI_STEP",
-            requiredAsset: primary,
-            steps: [{ action: "ADD_LIQUIDITY", from: primary, to: null, venue: `Beefy CLM ${x.v.earnContractAddress}`, verified: true, source: chainSrc(x.v.earnContractAddress as Address, "wants()") }],
-            singleTransactionAvailable: { known: false, reason: "a CLM deposit takes both tokens; the Beefy app's single-token zap is not verified here" },
-            note: `Deposits take both ${pairLabel} tokens in the pool's current ratio. Concentrated liquidity: the position's token mix changes with price (impermanent loss).`,
-          },
-          relationships: [],
-          eligibility: null,
-          contracts: [
-            { role: "vault", address: x.v.earnContractAddress as Address },
-            { role: "pool", address: x.pool },
-          ],
-          risk: {
-            oracle: null,
-            lltv: { known: false, reason: "not a lending market" },
-            utilization: { known: false, reason: "liquidity manager" },
-            availableLiquidityUsd: tvl?.value.usd ? { known: true, value: tvl.value.usd, source: tvl.source } : { known: false, reason: "unpriced" },
-            marketSizeUsd: tvl?.value.usd ? { known: true, value: tvl.value.usd, source: tvl.source } : { known: false, reason: "unpriced" },
-            rewardDependence: { known: false, reason: "fee APR only; rewards not broken out" },
-            parameterMutability: { known: true, value: "the CLM strategy rebalances the Uniswap v3 range automatically", source: apiSrc(x.v.id) },
-            protocolListed: { known: true, value: true, source: { ...apiSrc(x.v.id), url: BEEFY_COW_URL } },
-            protocolWarnings: risks.map((r) => ({ type: r, level: "INFO" })),
-            allAssetsCanonical: a0.canonical && a1.canonical,
-          },
-          details: { kind: "BEEFY_CLM", clm: x.v.earnContractAddress as Address, pool: x.pool, feePpm: x.fee, tokens: [a0, a1], balances: [x.balances[0], x.balances[1]], apiId: x.v.id.slice(0, 200) },
-          provenance: [chainSrc(x.v.earnContractAddress as Address, "wants()"), chainSrc(x.pool, "factory()"), chainSrc(V3_FACTORY, "getPool()"), apiSrc(x.v.id)],
-          conflicts: [],
-          warnings: w,
-          freshness: yields.length ? apiFresh : fresh,
-          verificationStatus: weakestStatus([a0.canonical && a1.canonical ? "VERIFIED_ONCHAIN" : "UNVERIFIED", tvl ? "VERIFIED_ONCHAIN" : "UNVERIFIED", ...yields.map((y) => y.verification)]),
-          observedAt,
-          generatedAt: ctx.now().toISOString(),
-        });
-      }
-    }
+    if (inputs.length < vaults.length) issues.push({ scope: "beefy:identity", message: `${vaults.length - inputs.length} CLMs failed onchain identity checks`, severity: "DEGRADED" });
+    const out = await managedLpOpportunities(ctx, inputs);
     return { data: out, status: issues.length ? "PARTIAL" : "COMPLETE", issues, warnings, timingsMs: { total: ms(t0) } };
   }
 }

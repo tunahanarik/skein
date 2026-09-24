@@ -155,9 +155,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       },
     ],
     contracts: { vaultRegistry: "0x5c7d564fA5CE0e874367121E33c1ff10dB2115dC" },
-    linkHosts: [],
-    appUrl: null,
-    appSource: null,
+    linkHosts: ["app.steer.finance"],
+    appUrl: "https://app.steer.finance/",
+    appSource: "steer.finance (listed on github.com/SteerProtocol) links its app at app.steer.finance",
     checkedAt: "2026-09-24",
   },
 ];
