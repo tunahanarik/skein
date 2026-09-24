@@ -244,6 +244,14 @@ export const en = {
   "link.open": "Open {p} app",
   "link.note": "Opens the protocol's own site in a new tab. Nothing is signed here.",
 
+  // rate history
+  "rates.title": "Rate history recorded by this server since {since} ({n} points)",
+  "rates.range": "Range {lo} – {hi}",
+  "rates.note": "sampled every {m} min while the server runs",
+  "rates.aria": "Rate history from {lo} to {hi}",
+  "rates.none": "No rate history recorded yet.",
+  "rates.tooFew": "Recording since {since}; not enough points yet.",
+
   // positions
   "pos.title": "Your open positions",
   "pos.hint": "Read directly from the chain. Your address is not sent to any protocol.",
@@ -613,6 +621,13 @@ export const tr: Record<StringKey, string> = {
   "est.noteUnit": "Oran token değil, hisse cinsindendir.",
   "link.open": "{p} uygulamasını aç",
   "link.note": "Protokolün kendi sitesini yeni sekmede açar. Burada hiçbir şey imzalanmaz.",
+
+  "rates.title": "Bu sunucunun {since} itibarıyla kaydettiği oran geçmişi ({n} nokta)",
+  "rates.range": "Aralık {lo} – {hi}",
+  "rates.note": "sunucu çalışırken {m} dakikada bir örneklenir",
+  "rates.aria": "{lo} ile {hi} arasında oran geçmişi",
+  "rates.none": "Henüz oran geçmişi kaydedilmedi.",
+  "rates.tooFew": "{since} itibarıyla kaydediliyor; henüz yeterli nokta yok.",
 
   "pos.title": "Açık pozisyonlarınız",
   "pos.hint": "Doğrudan zincirden okunur. Adresiniz hiçbir protokole gönderilmez.",

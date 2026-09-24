@@ -7,6 +7,7 @@
  *   GET /api/portfolio/:address?mode=                 PortfolioIntelligence (never cached, never logged)
  *   GET /api/coverage                                 coverage matrix
  *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
+ *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
  *
  * Only GET/HEAD. Every input is validated; errors never carry stack traces. Request logs carry
@@ -19,6 +20,7 @@ import type { AssetRegistry } from "../registry/registry.js";
 import type { AssetIntelligenceService } from "../product/service.js";
 import type { ProductMode } from "../product/types.js";
 import type { LogoStore } from "./logos.js";
+import type { RateHistory } from "./rateHistory.js";
 import { RateLimiter } from "./rateLimit.js";
 import { SECURITY_HEADERS, sendJson } from "./json.js";
 import type { AssetListItem, Wire } from "./wire.js";
@@ -34,6 +36,7 @@ export interface ApiDeps {
   /** Trust X-Forwarded-For for rate limiting (only behind a known proxy). */
   trustProxy?: boolean;
   logos?: LogoStore;
+  rates?: RateHistory;
 }
 
 export class ApiError extends Error {
@@ -108,6 +111,12 @@ export function createApi(deps: ApiDeps) {
         };
       }
       return { template: "/api/assets", body: { assets: assetList.body }, cache: "public, max-age=300", expensive: false };
+    }
+    if (p === "/api/rates/history") {
+      const id = q.get("id") ?? "";
+      if (!/^4663:[a-z0-9-]{1,40}:[A-Z_]{2,20}:[a-z0-9_-]{1,40}:[0-9a-zx:]{1,200}$/i.test(id)) throw new ApiError(400, "BAD_ID", "not an opportunity id");
+      if (!deps.rates) throw new ApiError(404, "NO_HISTORY", "rate history is not recorded on this server");
+      return { template: "/api/rates/history", body: { id, ...deps.rates.get(id) }, cache: "public, max-age=60", expensive: false };
     }
     if (p === "/api/coverage") {
       return { template: "/api/coverage", body: { rows: await deps.intelligence.getCoverage() }, cache: "public, max-age=15", expensive: true };

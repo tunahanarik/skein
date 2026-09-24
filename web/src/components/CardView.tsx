@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Card } from "../api";
 import { amount, date, feePpm, pctE18, pctText, usd } from "../format";
 import { useI18n, type StringKey } from "../i18n";
 import { actionLabel, ago, code, contextLine } from "../text";
 import { ProtocolLink, UsabilityBadge } from "./common";
 import { Estimate } from "./Estimate";
+import { RateHistory } from "./RateHistory";
 
 const HEADLINE_LABEL: Record<string, StringKey> = {
   SUPPLY_APY: "card.supplyApy",
@@ -21,6 +22,7 @@ function reasonClass(status: string): string {
 /** One product card: action, headline, liquidity, usability with reasons, and expandable provenance. */
 export function CardView({ card, showRank = true }: { card: Card; showRank?: boolean }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(false);
   const h = card.headline;
   const tr = card.trade;
   const q = tr?.quote ?? null;
@@ -137,9 +139,10 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
 
       <Estimate card={card} />
       {card.protocolApp && <ProtocolLink name={card.protocol.name} url={card.protocolApp.url} />}
-      <details className="more">
+      <details className="more" onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
         <summary>{t("card.details")}</summary>
         <div className="body">
+          {open && h && card.sourceOpportunityIds[0] && !tr && <RateHistory opportunityId={card.sourceOpportunityIds[0]} />}
           {card.fixedYield && (
             <ul style={{ margin: 0, paddingLeft: 18 }} className="muted">
               <li>{t("card.cond1")}</li>

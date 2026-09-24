@@ -61,6 +61,8 @@ export interface IntelligenceDeps {
   maxStaleMs?: number;
   /** Phase 1 Price Service, for price history (optional; history is unavailable without it). */
   prices?: PriceService;
+  /** Called with every new engine snapshot (e.g. to record rate history). Errors are ignored. */
+  onSnapshot?: (opps: readonly Opportunity[], takenAt: number) => void;
 }
 
 export interface PriceHistory {
@@ -189,7 +191,13 @@ export class AssetIntelligenceService {
       const tradeMarkets = all.data.flatMap((o) => (o.trade ? [o.trade.market] : []));
       const graph = buildTradeGraph(tradeMarkets);
       const hopOpportunities = new Map(all.data.flatMap((o) => (o.trade ? [[`${o.trade.market.id}|${o.primaryAsset.key}`, o.id] as const] : [])));
-      return { ctx, all, byPrimary, graph, markets: new Map(tradeMarkets.map((m) => [m.id, m])), hopOpportunities, takenAt: this.now().getTime() };
+      const takenAt = this.now().getTime();
+      try {
+        this.deps.onSnapshot?.(all.data, takenAt);
+      } catch {
+        /* history is best effort */
+      }
+      return { ctx, all, byPrimary, graph, markets: new Map(tradeMarkets.map((m) => [m.id, m])), hopOpportunities, takenAt };
     });
   }
 

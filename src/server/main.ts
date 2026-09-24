@@ -14,6 +14,7 @@ import { createRuntime } from "../runtime.js";
 import { createApi } from "./api.js";
 import { sendJson } from "./json.js";
 import { LogoStore } from "./logos.js";
+import { RateHistory } from "./rateHistory.js";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createStatic, CSP, shellWithMeta } from "./static.js";
@@ -21,13 +22,15 @@ import { SECURITY_HEADERS } from "./json.js";
 
 const env = process.env;
 const rt = createRuntime(env);
+const rates = new RateHistory(env.RATE_HISTORY_FILE ?? ".cache/history/rates.jsonl");
 const intelligence = new AssetIntelligenceService({
   engine: rt.opportunities,
   getPortfolio: (w) => rt.getPortfolio(w),
   prices: rt.prices,
+  onSnapshot: (opps, takenAt) => rates.record(opps, takenAt),
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
-const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos" }) });
+const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos" }), rates });
 const webDist = env.WEB_DIST ?? "web/dist";
 const serveStatic = createStatic(webDist);
 
