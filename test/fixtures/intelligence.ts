@@ -14,7 +14,7 @@ import { defaultWorld, NOW, testStack } from "./world.js";
 
 export type Protocol = "morpho" | "pendle" | "uniswap";
 
-export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { t: number }; mutateWorld?: (w: ReturnType<typeof defaultWorld>) => void; mutatePools?: (p: Record<string, FixturePool>) => void; pendleBalances?: Parameters<typeof installPendle>[2] } = {}) {
+export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { t: number }; mutateWorld?: (w: ReturnType<typeof defaultWorld>) => void; mutatePools?: (p: Record<string, FixturePool>) => void; pendleBalances?: Parameters<typeof installPendle>[2]; maxStaleMs?: number } = {}) {
   const world = defaultWorld();
   const pools = fixtureUniswapPools();
   opts.mutatePools?.(pools);
@@ -44,6 +44,7 @@ export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { 
       return getPortfolio(w, { ...s.deps, now });
     },
     now,
+    ...(opts.maxStaleMs !== undefined ? { maxStaleMs: opts.maxStaleMs } : {}),
   });
   return { s, world, pools, mm, pm, engine, service, clock, portfolioCalls: () => portfolioCalls };
 }

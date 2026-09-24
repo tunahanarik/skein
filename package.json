@@ -2,14 +2,14 @@
   "name": "defi-router",
   "private": true,
   "version": "0.0.0",
-  "description": "Read-only DeFi opportunity discovery for Robinhood Chain assets (Morpho + Pendle; no execution).",
+  "description": "Read-only DeFi opportunity discovery for Robinhood Chain assets (Uniswap v3, Morpho, Pendle; no execution).",
   "type": "module",
   "packageManager": "pnpm@10.28.2",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p web",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
@@ -32,16 +32,27 @@
     "asset": "tsx scripts/asset.ts",
     "portfolio:view": "tsx scripts/portfolio-view.ts",
     "coverage": "tsx scripts/coverage.ts",
-    "validate:intelligence": "tsx scripts/validate-intelligence.ts"
+    "validate:intelligence": "tsx scripts/validate-intelligence.ts",
+    "serve": "tsx src/server/main.ts",
+    "web:dev": "vite --config web/vite.config.ts",
+    "web:build": "vite build --config web/vite.config.ts",
+    "web:typecheck": "tsc --noEmit -p web",
+    "start": "pnpm web:build && pnpm serve"
   },
   "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "viem": "2.56.8",
     "zod": "4.6.5"
   },
   "devDependencies": {
     "@types/node": "^24.13.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
+    "vite": "8.3.0",
     "vitest": "5.0.1"
   }
 }

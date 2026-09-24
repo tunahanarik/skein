@@ -12,7 +12,8 @@
 | 3 | **Pendle adapter + maturity-based opportunities + default eligibility** (read-only; no UI) | done; see [protocols/pendle-adapter.md](protocols/pendle-adapter.md), [pendle-semantics.md](pendle-semantics.md), [asset-relationships.md](asset-relationships.md), [opportunity-comparison.md](opportunity-comparison.md) |
 | 4 | **DEX discovery + Uniswap v3 TRADE adapter** (markets, DIRECT/ONE_HOP routes, indicative quotes; read-only) | done; see [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md), [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md), [research/dex-ecosystem.md](research/dex-ecosystem.md) |
 | 5 | **Product read API**: AssetIntelligence / PortfolioIntelligence / coverage as a projection of raw opportunities; usability, per-category ranking, data quality (read-only; no UI, no HTTP) | done; see [asset-intelligence.md](asset-intelligence.md), [product-usability.md](product-usability.md), [product-ranking.md](product-ranking.md), [coverage.md](coverage.md) |
-| 6+ | frontend, execution, other DEXes (v4, Ramses …) | not started; needs approval |
+| 6 | **Web app + read-only HTTP API** (explore, asset, wallet, coverage; same-origin, strict CSP) | done; see [api.md](api.md) |
+| 7+ | execution, other DEXes (v4, Ramses …) | not started |
 
 The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–8 are served by the Phase 5 read API (`AssetIntelligenceService`, CLIs `pnpm asset` / `pnpm portfolio:view`). Step 7 is now per-category deterministic ordering (product-ranking.md), still with no blended "best". Step 9 and the UI belong to later phases.
 

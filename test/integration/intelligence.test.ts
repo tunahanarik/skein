@@ -366,3 +366,20 @@ describe("coverage matrix", () => {
     expect(j(rows)).not.toMatch(/\bbest\b|safest|(?<!not[ _]|not a )guaranteed/i);
   });
 });
+
+describe("server mode: stale-while-revalidate snapshot", () => {
+  it("serves the expired snapshot within the window and refreshes in the background; freshness is still evaluated now", async () => {
+    const clock = { t: NOW.getTime() };
+    const { service } = await intelligenceStack({ clock, maxStaleMs: 60_000 });
+    const a = await service.getAssetIntelligence(USDG);
+    clock.t += 30_000; // past the 15 s TTL, inside the stale window
+    const b = await service.getAssetIntelligence(USDG, { mode: "DEBUG" });
+    expect(b.blockNumber).toBe(a.blockNumber);
+    expect(b.freshness.evaluatedAt).toBe(new Date(clock.t).toISOString());
+    const c = service.metrics.snapshot().counters;
+    expect(c["cache_hit{cache=snapshot_stale}"]).toBe(1);
+    clock.t += 120_000; // beyond the window: a blocking reload
+    await service.getAssetIntelligence(USDG);
+    expect(service.metrics.snapshot().counters["cache_miss{cache=snapshot}"]).toBeGreaterThanOrEqual(2);
+  });
+});

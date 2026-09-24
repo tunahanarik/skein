@@ -2,7 +2,7 @@
 
 Read-only DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?"
 
-**Status: Phase 5 done: product read API** ("I own this asset. What can I actually do with it?"): AssetIntelligence / PortfolioIntelligence / coverage as a projection of the raw engine, with usability, per-category ranking, data quality and freshness. It sits on top of Phase 4 (Uniswap v3 TRADE), Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
+**Status: Phase 6: web app + HTTP API** (`pnpm start` → http://127.0.0.1:8787; see [docs/api.md](docs/api.md)). Before that, **Phase 5: product read API** ("I own this asset. What can I actually do with it?"): AssetIntelligence / PortfolioIntelligence / coverage as a projection of the raw engine, with usability, per-category ranking, data quality and freshness. It sits on top of Phase 4 (Uniswap v3 TRADE), Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
 
 ## Layout
 ```
@@ -18,6 +18,8 @@ src/protocols/pendle/     Pendle adapter (onchain discovery via factory logs, id
 src/protocols/uniswap/    Uniswap v3 adapter (resumable pool-event index + factory sweep, pool verification, state/TVL, QuoterV2 quotes)
 src/trade/                generic trade graph, DIRECT/ONE_HOP routing, quote comparison (venue-independent)
 src/product/              Phase 5 product read API: AssetIntelligenceService, usability, cards, ranking, quality, metrics
+src/server/               Phase 6 read-only HTTP API (node:http), rate limiting, static web app with strict CSP
+web/                      Phase 6 web app (React + Vite): explore, asset, wallet, coverage
 src/model/                Opportunity, RiskMetadata, provenance (DataSource / Sourced<T>), verification states, warning codes
 src/lib/                  exact decimal math, Stock Token balance + valuation, rates, freshness, validation, trusted links
 src/sources/              zod schemas for the Robinhood Stock Token API and the Chainlink directory
@@ -33,6 +35,8 @@ test/unit, test/integration  offline tests (fixture world in test/fixtures)
 ## Commands
 ```bash
 pnpm install
+pnpm start                      # build the web app and serve it with the API on http://127.0.0.1:8787
+pnpm web:dev                    # web dev server on :5173 (run `pnpm serve` alongside)
 pnpm test                       # unit + integration tests (offline)
 pnpm typecheck
 pnpm validate                   # all live checks: Phase 0–5 (read-only)

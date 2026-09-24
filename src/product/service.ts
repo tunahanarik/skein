@@ -11,7 +11,7 @@
  */
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
 import { CACHE_TTL_MS } from "../config/freshness.js";
-import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS } from "../config/trade.js";
+import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
 import type { AssetRef, Opportunity } from "../model/opportunity.js";
@@ -51,6 +51,12 @@ export interface IntelligenceDeps {
   getPortfolio: (wallet: string) => Promise<Portfolio>;
   now?: () => Date;
   metrics?: Metrics;
+  /**
+   * Stale-while-revalidate window for the engine snapshot (server mode). Within it, an expired
+   * snapshot is served while a refresh runs in the background. Freshness stays honest: every age
+   * is evaluated at response time from the data's own timestamps. Default 0 (CLIs, tests).
+   */
+  maxStaleMs?: number;
 }
 
 export interface AssetQueryOptions {
@@ -75,6 +81,20 @@ interface Snapshot {
 }
 
 const ms = (t: number) => performance.now() - t;
+
+/** Order-preserving map with at most `limit` promises in flight. */
+async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (x: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++;
+      out[i] = await fn(items[i]!);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return out;
+}
 const usd = (e18: bigint) => ({ e18, display: formatFixed(e18, USD_DECIMALS) });
 
 function emptyCounts(): OpportunityCounts {
@@ -128,7 +148,24 @@ export class AssetIntelligenceService {
 
   private async snapshot(): Promise<Snapshot> {
     if (this.snapCache.get("snap")) this.metrics.inc("cache_hit", 1, { cache: "snapshot" });
-    else this.metrics.inc("cache_miss", 1, { cache: "snapshot" });
+    else {
+      const stale = this.snapCache.getStale("snap");
+      if (stale && this.now().getTime() - stale.storedAt < CACHE_TTL_MS.PRODUCT_SNAPSHOT + (this.deps.maxStaleMs ?? 0)) {
+        this.metrics.inc("cache_hit", 1, { cache: "snapshot_stale" });
+        this.loadSnapshot().catch(() => undefined); // background refresh (coalesced)
+        return stale.value;
+      }
+      this.metrics.inc("cache_miss", 1, { cache: "snapshot" });
+    }
+    return this.loadSnapshot();
+  }
+
+  /** Warm the snapshot (server start). */
+  async warm(): Promise<void> {
+    await this.loadSnapshot();
+  }
+
+  private loadSnapshot(): Promise<Snapshot> {
     return this.snapCache.getOrLoad("snap", CACHE_TTL_MS.PRODUCT_SNAPSHOT, async () => {
       const ctx = await this.deps.engine.context();
       const all = await this.deps.engine.getOpportunities({ eligibility: "ALL" }, ctx);
@@ -270,18 +307,14 @@ export class AssetIntelligenceService {
       for (const target of targets) {
         const found = findRoutes(s.graph, ref.key, target);
         const routes: TradeRoute[] = [...found.direct, ...found.oneHop];
-        const cards: ProductCard[] = [];
-        for (const r of routes) {
-          if (amountRaw === null) {
-            cards.push(routeCard(r, s, classifyRoute(r), null));
-            continue;
-          }
+        const quoteCard = async (r: TradeRoute): Promise<ProductCard> => {
           const tq = performance.now();
-          const q = await this.deps.engine.getTradeQuote(r, amountRaw, s.ctx);
+          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx);
           this.metrics.time("quote_latency_ms", ms(tq), { kind: r.kind });
-          if (q.ok) cards.push(routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS }));
-          else cards.push(routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason));
-        }
+          if (q.ok) return routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS });
+          return routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason);
+        };
+        const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(routes, QUOTE_CONCURRENCY, quoteCard);
         tradeGroups.push({ target, cards });
       }
     }

@@ -43,6 +43,13 @@ export const PRODUCT_TRADE_TARGET_KEYS: readonly string[] = [key(CORE_ASSETS.USD
 export const PRODUCT_MAX_ROUTES_PER_TARGET = 5;
 
 /**
+ * Quotes in flight at once for one explicit-amount request. Sequential quoting took ≈ 5.4 s for
+ * 14 NVDA→USDG routes on the public RPC (2026-09-24); 3 keeps the burst well under the provider's
+ * rate limit while cutting the wait roughly threefold. The reader still retries on 429.
+ */
+export const QUOTE_CONCURRENCY = 3;
+
+/**
  * Wall-clock budget for the resumable cold pool-event scan per adapter run. On the public RPC a
  * full scan takes several minutes (rate limits + server-side log timeouts, measured 2026-09-24);
  * each run advances it and persists progress, while the factory getPool sweep already covers the
