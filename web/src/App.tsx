@@ -7,6 +7,7 @@ import { CoveragePage } from "./pages/Coverage";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
 import { linkProps, useRoute } from "./router";
+import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
 function LanguagePicker() {
@@ -22,6 +23,17 @@ function LanguagePicker() {
         ))}
       </select>
     </label>
+  );
+}
+
+function ThemeToggle() {
+  const { t } = useI18n();
+  const { theme, toggle } = useTheme();
+  const label = theme === "dark" ? t("theme.toLight") : t("theme.toDark");
+  return (
+    <button className="theme-toggle" onClick={toggle} aria-label={label} title={label}>
+      <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+    </button>
   );
 }
 
@@ -57,6 +69,7 @@ function Header() {
             {shortAddr(w.address)}
           </a>
         ) : null}
+        <ThemeToggle />
         <LanguagePicker />
         <span className="readonly-pill" title={t("shell.readOnlyTitle")}>
           {t("shell.readOnly")}
