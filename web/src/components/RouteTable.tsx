@@ -6,6 +6,12 @@ import { code } from "../text";
 import { ExplorerLink, ProtocolLink, UsabilityBadge } from "./common";
 import { rowKeys } from "./keyboard";
 
+/** Venue of a market from its id (`4663:<protocol>:<venueKind>:<pool>`). */
+export function venueOf(marketId: string): string {
+  const p = marketId.split(":")[1] ?? "";
+  return p === "uniswap" ? "Uniswap v3" : p === "uniswap-v4" ? "Uniswap v4" : p === "ramses" ? "Ramses" : p;
+}
+
 /** Compact, ranked list of trade routes (with quotes when an amount was given). Rows expand to pool detail. */
 export function RouteTable({ cards }: { cards: Card[] }) {
   const { t } = useI18n();
@@ -57,6 +63,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                         </Fragment>
                       ))}
                     </span>
+                    <div className="small faint">{[...new Set(tr.route.markets.map((m) => venueOf(m.marketId)))].join(" + ")}</div>
                   </td>
                   {quoted && (
                     <td className="num" style={{ textAlign: "right", fontWeight: 600 }}>
