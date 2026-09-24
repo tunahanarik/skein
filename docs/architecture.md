@@ -62,13 +62,24 @@ API (read-only) ──► Comparison UI (Next.js)
 ## Phase 2 status
 Implemented as proposed, with one refinement: user-aware context (`PortfolioOpportunity`) is built from the canonical opportunity fields only. `LiquidationTerms.collateralPrice` carries the protocol's own collateral→loan conversion, so the engine computes protocol maximum borrow without protocol code. See [opportunity-engine.md](opportunity-engine.md) and [protocol-adapters.md](protocol-adapters.md).
 
+## Phase 3 status
+Pendle was added as an ordinary adapter. The engine gained only generic concepts, and none of them read `details`:
+- `Lifecycle` (maturity against the pinned block)
+- `EntryRequirement`
+- `LiquidityKind`
+- `AssetRelationship`
+- the eligibility layer (`src/opportunities/eligibility.ts` + `src/config/eligibility.ts`)
+- comparison groups
+
+`ChainReader` gained `getLogs` (range bisection) for onchain discovery. See [protocols/pendle-adapter.md](protocols/pendle-adapter.md).
+
 ## Protocol adapter system
 
 ```
 src/protocols/
   morpho/           IMPLEMENTED (Phase 2): API + onchain identity/totals; markets → LEND/COLLATERAL, vaultV2 → VAULT
                     (interface: src/opportunities/adapter.ts)
-  pendle/           API /v2/markets/all + onchain readTokens/expiry → FIXED_YIELD, YIELD, LP
+  pendle/           IMPLEMENTED (Phase 3): factory CreateNewMarket logs → onchain identity/state + API /v1/{chain}/markets/{addr} → FIXED_YIELD, YIELD, LP; positions
   spark/            onchain vsr/totalAssets → YIELD (savings)
   uniswap/          getPool (v3), curated v4 pool registry + StateView → TRADE, LP
   beefy/            API cow-vaults/vaults + apy → LP/VAULT

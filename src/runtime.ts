@@ -11,6 +11,7 @@ import { HttpClient } from "./lib/http.js";
 import { getPortfolio, type PortfolioOptions } from "./portfolio/engine.js";
 import { OpportunityEngine } from "./opportunities/engine.js";
 import { MorphoAdapter } from "./protocols/morpho/adapter.js";
+import { PendleAdapter } from "./protocols/pendle/adapter.js";
 import { PriceService } from "./pricing/priceService.js";
 import { loadAssetRegistry, type AssetRegistry } from "./registry/registry.js";
 import { DEFAULT_SNAPSHOT_PATH, readSnapshotFile, type RegistrySnapshot } from "./registry/snapshot.js";
@@ -53,6 +54,6 @@ export function createRuntime(env: Record<string, string | undefined> = process.
     baseline,
     getRegistry,
     getPortfolio: (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o),
-    opportunities: new OpportunityEngine([new MorphoAdapter(http)], { reader, getRegistry, prices }),
+    opportunities: new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http)], { reader, getRegistry, prices }),
   };
 }

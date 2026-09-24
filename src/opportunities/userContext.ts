@@ -6,7 +6,7 @@
  * liquidation threshold — by definition a position at that size is liquidatable after any
  * adverse move. It is labelled as such and is not a suggested or safe amount.
  */
-import type { AmountWithUsd, Opportunity, YieldMetric } from "../model/opportunity.js";
+import type { AmountWithUsd, EntryRequirement, Lifecycle, Opportunity, YieldMetric, YieldMetricType } from "../model/opportunity.js";
 import type { PortfolioAsset } from "../portfolio/types.js";
 import { mulDivDown, wMulDown } from "../lib/fixed.js";
 import { formatFixed, usdValueE18, USD_DECIMALS } from "../lib/units.js";
@@ -42,7 +42,32 @@ export type PortfolioOpportunityContext =
       referenceYield: YieldMetric | null;
       caveat: string;
     }
+  | {
+      /** Maturity-based or exposure positions (FIXED_YIELD, YIELD, LP). */
+      kind: "ENTER_POSITION";
+      /** The holding that could be used, in the opportunity's required entry asset. */
+      enterWith: AmountWithUsd;
+      entry: EntryRequirement;
+      lifecycle: Lifecycle;
+      /** The category's headline metric, unchanged (IMPLIED_APY / YIELD_EXPOSURE_APY / NET_APY). */
+      referenceYield: YieldMetric | null;
+      caveat: string;
+    }
   | { kind: "NONE"; reason: string };
+
+/** Headline metric per category for user context. Category semantics, not protocol logic. */
+const REFERENCE_METRIC: Partial<Record<Opportunity["category"], YieldMetricType[]>> = {
+  FIXED_YIELD: ["IMPLIED_APY", "FIXED_APY"],
+  YIELD: ["YIELD_EXPOSURE_APY", "NET_APY"],
+  LP: ["NET_APY", "LP_APR"],
+};
+
+const ENTER_CAVEAT: Partial<Record<Opportunity["category"], string>> = {
+  FIXED_YIELD:
+    "Market-implied rate at the snapshot, realised only if bought at this price and held to maturity; the actual price paid includes fees and slippage. Denominated in the accounting asset, not USD.",
+  YIELD: "Yield exposure: the position's value depends on future realised yield and decays toward zero at maturity. Not a fixed or guaranteed return.",
+  LP: "LP returns combine several components that change over time; value is exposed to the pool's assets and to price movements.",
+};
 
 export interface PortfolioOpportunity {
   opportunity: Opportunity;
@@ -81,7 +106,8 @@ export function buildPortfolioOpportunity(o: Opportunity, row: PortfolioAsset, b
     }
     const p = lt.collateralPrice.value;
     const maxRaw = wMulDown(mulDivDown(row.rawBalance, p.raw, p.scale), lt.lltv.value);
-    const liquidityRaw = o.availableLiquidity?.value.amount.raw ?? null;
+    // Only a borrowable liquidity figure can cap a borrow.
+    const liquidityRaw = o.liquidityKind === "BORROWABLE" ? (o.availableLiquidity?.value.amount?.raw ?? null) : null;
     const cappedRaw = liquidityRaw === null ? null : maxRaw < liquidityRaw ? maxRaw : liquidityRaw;
     return {
       opportunity: o,
@@ -94,7 +120,19 @@ export function buildPortfolioOpportunity(o: Opportunity, row: PortfolioAsset, b
       },
     };
   }
-  if (o.category === "LEND" || o.category === "VAULT" || o.category === "YIELD") {
+  if (o.category === "FIXED_YIELD" || o.category === "YIELD" || o.category === "LP") {
+    if (o.entry.requiredAsset.key !== row.asset.key) {
+      return { opportunity: o, holding, context: { kind: "NONE", reason: `entry requires ${o.entry.requiredAsset.symbol}, not the held asset` } };
+    }
+    const wanted = REFERENCE_METRIC[o.category] ?? [];
+    const reference = wanted.map((t) => o.yields.find((y) => y.type === t)).find((y) => !!y) ?? null;
+    return {
+      opportunity: o,
+      holding,
+      context: { kind: "ENTER_POSITION", enterWith: amount(o.primaryAsset, row.rawBalance, heldPrice), entry: o.entry, lifecycle: o.lifecycle, referenceYield: reference, caveat: ENTER_CAVEAT[o.category] ?? "" },
+    };
+  }
+  if (o.category === "LEND" || o.category === "VAULT") {
     const earn = o.yields.filter((y) => y.side === "EARN");
     const reference = earn.find((y) => y.type === "SUPPLY_APY") ?? earn.find((y) => y.type === "NET_APY") ?? null;
     return {

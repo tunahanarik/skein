@@ -8,13 +8,14 @@ Portfolio (Phase 1) ─┐
 OpportunityEngine ── context(): registry + latest block (every onchain read in a run is pinned to it)
    │  run(adapter)  ← failure isolation: a throwing adapter becomes status UNKNOWN + ADAPTER_FAILED
    ├── MorphoAdapter            (Phase 2 reference adapter)
-   └── <future adapters>        (Pendle, Uniswap, Spark … — no engine change needed)
-   │  merge → de-duplicate ids (DUPLICATE_OPPORTUNITY_ID) → filter → sort
+   ├── PendleAdapter            (Phase 3: maturity-based markets)
+   └── <future adapters>        (Uniswap, Spark … — no engine change needed)
+   │  merge → de-duplicate ids (DUPLICATE_OPPORTUNITY_ID) → eligibility (generic policy) → filter → sort
    ▼
-EngineResult<T> { data, status COMPLETE|PARTIAL|UNKNOWN, adapters[], warnings[], blockNumber, generatedAt, timingsMs }
+EngineResult<T> { data, status COMPLETE|PARTIAL|UNKNOWN, adapters[], warnings[], blockNumber, generatedAt, timingsMs, excluded{total, byReason}, notComparable? }
 ```
 
-The engine contains **no protocol logic**. It never reads `Opportunity.details`. A second, toy adapter in the integration tests plugs in without any engine change.
+The engine contains **no protocol logic**. It never reads `Opportunity.details`. A toy adapter in the integration tests plugs in without any engine change. Pendle was added in Phase 3 the same way: the engine gained only *generic* features (eligibility, lifecycle/maturity filters, MATURITY sort) and no Pendle conditions.
 
 ## API
 | Method | Returns |
@@ -23,6 +24,8 @@ The engine contains **no protocol logic**. It never reads `Opportunity.details`.
 | `getAssetOpportunities(assetKey, query?)` | opportunities whose **primary asset** is `assetKey` (`4663:<address>`, never a symbol) |
 | `getUserPositions(wallet)` | existing positions (separate from opportunities) |
 | `getPortfolioOpportunities(portfolio, query?)` | for each canonical asset held: its opportunities plus user-aware context |
+
+`query` = `{ filter?, sort?, eligibility?: "ELIGIBLE_ONLY" (default) | "ALL", includeReasons? }`. See [opportunity-comparison.md](opportunity-comparison.md) for the eligibility policy.
 
 ## Opportunity model (`src/model/opportunity.ts`)
 - **Identity:**
@@ -36,6 +39,12 @@ The engine contains **no protocol logic**. It never reads `Opportunity.details`.
   - `tvl`, `availableLiquidity` (token amount + USD via Phase 1 prices), `utilization`
   - `liquidation` (LLTV, incentive factor, price authority, protocol collateral price)
   - `term`, `contracts`, `risk` (objective facts, `Known<T>` = value or explicit unknown)
+  - Phase 3:
+    - `liquidityKind` (BORROWABLE / WITHDRAWABLE_SUPPLY / INSTANT_WITHDRAWAL / POOL_LIQUIDITY). This is what `availableLiquidity` measures; the kinds are never compared.
+    - `lifecycle` (state ACTIVE/EXPIRED/INACTIVE/UNKNOWN, `maturity` as a `Measured<string>`, `secondsToMaturity` against the **pinned block timestamp**, `canEnter`, `blockers`)
+    - `entry` (`EntryRequirement`: DIRECT / SWAP_REQUIRED / WRAP_REQUIRED / SY_CONVERSION_REQUIRED / MULTI_STEP / UNKNOWN, with steps and whether each was verified). Descriptive only, never calldata.
+    - `relationships` ([asset-relationships.md](asset-relationships.md))
+    - `eligibility` (set by the engine, never by adapters)
   - `details` (protocol payload)
   - `conflicts`, `warnings`, `provenance`, `freshness`, `verificationStatus`
 
@@ -47,15 +56,30 @@ The engine contains **no protocol logic**. It never reads `Opportunity.details`.
 | BASE_APY | EARN | organic yield, excluding incentives |
 | REWARD_APY | EARN | incentive rate; `compounding: SIMPLE` when the source gives an APR |
 | NET_APY | EARN or PAY | protocol-defined net figure (after fees, including rewards) |
-| IMPLIED_APY | EARN | market-implied fixed rate to maturity (Pendle, later) |
-| FIXED_APY | EARN | contractual fixed rate |
+| IMPLIED_APY | EARN | market-implied rate to maturity (Pendle PT, computed onchain); not guaranteed |
+| FIXED_APY | EARN | contractual fixed rate (not emitted by any adapter today) |
 | LP_APR | EARN | simple fee/incentive APR |
+| UNDERLYING_APY | EARN | the underlying's own yield as the protocol measures it; a reference, not earned by entering |
+| YIELD_EXPOSURE_APY | EARN | annualised return of a yield-exposure position (Pendle YT) if the current underlying yield persists; can be negative |
+| COMPONENT_APY | EARN | one component of a composite headline (`componentOf`, `component`); never ranked alone |
+
+Comparison groups decide what may be shown or ranked together: [opportunity-comparison.md](opportunity-comparison.md).
 
 Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denominatedIn` (the asset it accrues in; this matters for Pendle PTs on Stock Tokens), `label` and full provenance. **Sorting compares one metric type at a time and needs an explicit direction.** Opportunities without that metric are not ranked and are listed as `notComparable`, never treated as 0.
 
 ## Filtering and sorting (`src/opportunities/query.ts`)
-- **Filters:** `categories`, `protocols`, `assetKey` + `assetRole` (PRIMARY / INPUT / COLLATERAL / BORROW / ANY), `minLiquidityUsdE18`, `minTvlUsdE18`, `verificationStatuses`, `canonicalOnly`, `protocolListedOnly`. There are no subjective filters.
-- **Sorts:** `YIELD` (type + direction), `TVL_USD`, `LIQUIDITY_USD`, `UTILIZATION` (direction required). Deterministic, with ties broken by id.
+- **Filters:**
+  - `categories`, `protocols`
+  - `assetKey` + `assetRole` (PRIMARY / INPUT / COLLATERAL / BORROW / ANY)
+  - `minLiquidityUsdE18`, `minTvlUsdE18` (a missing USD figure is excluded, never treated as 0)
+  - `verificationStatuses`, `canonicalOnly`, `protocolListedOnly`
+  - Phase 3: `lifecycleStates`, `maturityFromS` / `maturityToS` (a maturity range excludes open-ended opportunities)
+  - There are no subjective filters.
+- **Sorts:**
+  - `YIELD` (type + direction), `TVL_USD`, `LIQUIDITY_USD`, `UTILIZATION` (direction required)
+  - Phase 3: `MATURITY` (soonest first; open-ended opportunities are `notComparable`)
+  - Deterministic, with ties broken by id.
+- **Eligibility** runs before filters. It is generic and derived from canonical fields: see [opportunity-comparison.md](opportunity-comparison.md). Excluded opportunities are counted in `excluded`, never deleted. When the advisory `LOW_LIQUIDITY` applies, the engine also appends a `LOW_LIQUIDITY` warning.
 
 ## User-aware context (`src/opportunities/userContext.ts`)
 `PortfolioAsset × Opportunity → PortfolioOpportunity`. This is generic: it uses only `liquidation`, `availableLiquidity` and `yields`.
@@ -64,6 +88,10 @@ Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denomi
   - `protocolMaximumBorrowLiquidityCapped` = the same, capped at available liquidity.
   - Both carry the caveat that a position at that size is **at** the liquidation threshold and that this is not a safe amount. A safety-buffer model is deliberately not built yet.
 - **LEND / VAULT:** `suppliable` = the holding (token + USD) and the opportunity's own EARN metric. There are no projections.
+- **FIXED_YIELD / YIELD / LP (Phase 3): `ENTER_POSITION`.**
+  - The holding is used only when it **is** `entry.requiredAsset`, matched by key.
+  - The context carries the entry requirement, the lifecycle, the category's headline metric (IMPLIED_APY / YIELD_EXPOSURE_APY / NET_APY) and a category caveat (not guaranteed, decays to zero, composite).
+  - The borrow-liquidity cap applies only when `liquidityKind = BORROWABLE`.
 - USD values come from the Phase 1 Price Service only.
 
 ## Status and failure isolation
@@ -74,9 +102,16 @@ Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denomi
 | one market with unreadable params/totals | only that market is dropped or degraded |
 | protocol API down, last-good state ≤ 6 h | stale state is served, PARTIAL, `STALE_PROTOCOL_DATA` |
 | protocol API down, no cache | the adapter fails; the engine returns that adapter as UNKNOWN (`ADAPTER_FAILED`) and other adapters continue |
+| Morpho COMPLETE + Pendle PARTIAL/UNKNOWN | overall PARTIAL; Morpho results unaffected (tested) |
 | every adapter failed | UNKNOWN |
 
-## Performance (live, public RPC, 2026-09-24)
+## Performance, Phase 3 (live, public RPC, 2026-09-24)
+Morpho and Pendle run in parallel.
+- **Pendle adapter cold:** 3.1–5.2 s. Breakdown: discovery 0.19 s, identity 0.62 s, state + API 1.5–3.7 s, prices 0.4–1.1 s.
+- **Combined engine:** 5–7.5 s cold end-to-end including the registry; about 1.3–1.4 s warm.
+- **Pendle-only, warm:** about 1.4 s.
+
+## Performance, Phase 2 (live, public RPC, 2026-09-24)
 Full discovery takes **3.0–3.5 s** inside the adapter:
 - Morpho API: ~0.9–1.6 s
 - onchain reads (params/totals/oracles/vaults): ~1.0 s

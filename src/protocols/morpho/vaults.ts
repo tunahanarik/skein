@@ -13,6 +13,7 @@ import type { DataSource } from "../../model/provenance.js";
 import { weakestStatus } from "../../model/verification.js";
 import { warn, type Warning } from "../../model/warnings.js";
 import { worstFreshness } from "../../opportunities/adapter.js";
+import { openEndedLifecycle } from "../../opportunities/lifecycle.js";
 import { MORPHO_API_URL, type ApiVault } from "./api.js";
 import type { NormalizeContext } from "./normalize.js";
 import { PROTOCOL } from "./normalize.js";
@@ -83,9 +84,21 @@ export function normalizeVault(input: VaultInput, ctx: NormalizeContext): { oppo
     yields,
     tvl,
     availableLiquidity: liquidity,
+    liquidityKind: "INSTANT_WITHDRAWAL",
     utilization: null,
     liquidation: null,
     term: { maturity: null, lockSeconds: null, withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" },
+    // A protocol-reported deposit_disabled warning closes entry (the vault stays discoverable).
+    lifecycle: openEndedLifecycle({ number: ctx.blockNumber, timestamp: ctx.blockTimestamp }, v.warnings.some((w) => w.type === "deposit_disabled") ? ["DEPOSIT_DISABLED"] : []),
+    entry: {
+      kind: "DIRECT",
+      requiredAsset: asset,
+      steps: [{ action: "DEPOSIT", from: asset, to: null, venue: `Morpho Vault V2 ${v.address}`, verified: input.isOfficialVault === true, source: factorySrc }],
+      singleTransactionAvailable: { known: true, value: true, source: { ...factorySrc, type: "OFFICIAL_DOCS", method: "ERC-4626 deposit()" } },
+      note: null,
+    },
+    relationships: [],
+    eligibility: null,
     contracts: [{ role: "vault", address: v.address }, { role: "factory", address: VAULT_V2_FACTORY }],
     risk: {
       oracle: null,
@@ -104,7 +117,7 @@ export function normalizeVault(input: VaultInput, ctx: NormalizeContext): { oppo
       vault: v.address,
       name: v.name.slice(0, 120),
       curator: v.curator?.address ?? null,
-      totalAssets: tvl
+      totalAssets: tvl && tvl.value.amount
         ? { ...tvl, value: tvl.value.amount }
         : v.totalAssets !== null
           ? { value: { raw: v.totalAssets, decimals: asset.decimals, display: formatFixed(v.totalAssets, asset.decimals) }, origin: "SUPPLIED", source: apiSrc, observedAt: ctx.apiFetchedAt, freshness: noTs, verification: "VERIFIED_OFFICIAL_API" }

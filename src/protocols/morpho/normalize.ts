@@ -38,6 +38,7 @@ import { weakestStatus, type VerificationStatus } from "../../model/verification
 import { warn, type Warning } from "../../model/warnings.js";
 import type { UsdPrice } from "../../pricing/types.js";
 import { worstFreshness } from "../../opportunities/adapter.js";
+import { openEndedLifecycle } from "../../opportunities/lifecycle.js";
 import type { ApiMarket } from "./api.js";
 import { MORPHO_API_URL } from "./api.js";
 import { checkOracle } from "./oracleCheck.js";
@@ -290,7 +291,7 @@ export function normalizeMarket(input: MarketInput, ctx: NormalizeContext): Norm
       oracle: p.oracle,
       irm: p.irm,
       lltv: p.lltv,
-      totalSupply: supplyTvl ? { ...supplyTvl, value: supplyTvl.value.amount } : null,
+      totalSupply: supplyTvl && supplyTvl.value.amount ? { ...supplyTvl, value: supplyTvl.value.amount } : null,
       totalBorrow,
       oraclePrice: input.oraclePrice === null ? null : measured(input.oraclePrice, "SUPPLIED", oracleSrc, blockFresh, "VERIFIED_ONCHAIN"),
     },
@@ -319,6 +320,18 @@ export function normalizeMarket(input: MarketInput, ctx: NormalizeContext): Norm
       liquidation: null,
       term: { maturity: null, lockSeconds: null, withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" },
       risk: baseRisk(yields.filter((m) => m.side === "EARN")),
+      // Morpho Blue markets have no maturity and no supply caps: open-ended, always enterable.
+      liquidityKind: category === "COLLATERAL" ? "BORROWABLE" : "WITHDRAWABLE_SUPPLY",
+      lifecycle: openEndedLifecycle({ number: ctx.blockNumber, timestamp: ctx.blockTimestamp }),
+      entry: {
+        kind: "DIRECT",
+        requiredAsset: primary,
+        steps: [{ action: category === "COLLATERAL" ? "POST_COLLATERAL" : "SUPPLY", from: primary, to: null, venue: `Morpho ${MORPHO_ADDRESS}`, verified: true, source: paramsSrc }],
+        singleTransactionAvailable: { known: true, value: true, source: { type: "OFFICIAL_DOCS", provider: "morpho-blue-source", url: "https://github.com/morpho-org/morpho-blue/blob/main/src/Morpho.sol", method: category === "COLLATERAL" ? "supplyCollateral()" : "supply()", observedAt: ctx.generatedAt } },
+        note: null,
+      },
+      relationships: [],
+      eligibility: null,
       provenance,
       warnings: [...warnings],
       freshness: worstFreshness(freshList, blockFresh),

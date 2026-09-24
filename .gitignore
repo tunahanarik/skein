@@ -8,4 +8,6 @@ research/snapshots/*.tmp.json
 research/snapshots/portfolio.json
 research/snapshots/portfolio-validation.json
 research/snapshots/opportunities-validation.json
+research/snapshots/pendle-adapter-validation.json
+research/snapshots/combined-validation.json
 .tmp/

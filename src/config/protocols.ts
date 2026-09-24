@@ -70,10 +70,16 @@ export const PROTOCOLS: ProtocolConfig[] = [
     verification: "VERIFIED_ONCHAIN",
     deploymentSource: "https://github.com/pendle-finance/pendle-core-v2-public/blob/main/deployments/4663-core.json",
     docs: "https://api-v2.pendle.finance/core/docs",
-    dataSources: [{ kind: "API", url: "https://api-v2.pendle.finance/core/v2/markets/all?chainId=4663", covers4663: true }],
+    dataSources: [
+      { kind: "ONCHAIN", url: "marketFactoryV6 CreateNewMarket logs + market/PT/YT/SY/RouterStatic reads", covers4663: true, note: "discovery and identity (Phase 3)" },
+      { kind: "API", url: "https://api-v2.pendle.finance/core/v1/4663/markets/{address}", covers4663: true, note: "per-market state with dataUpdatedAt" },
+      { kind: "API", url: "https://api-v2.pendle.finance/core/v2/markets/all?chainId=4663", covers4663: true, note: "listed markets only (validation cross-check)" },
+    ],
     contracts: {
       router: "0x888888888889758F76e7103c6CbF23ABbF58F946",
+      routerStatic: "0x6813d43782395A1F2AAb42f39aeEDE03ac655e09",
       marketFactoryV6: "0x544BF81c855AE84c1e8b65d5E38770898D01EeE2",
+      yieldContractFactoryV6: "0xa543BF1ac6441822E95eD408076bB53090a0a9d7",
     },
     linkHosts: [],
     checkedAt: "2026-09-24",

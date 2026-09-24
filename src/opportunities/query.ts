@@ -3,7 +3,7 @@
  * Yield sorting compares ONE yield metric type at a time and requires an explicit direction,
  * because a higher BORROW_APY is a higher cost, not a better opportunity.
  */
-import type { Opportunity, OpportunityCategory, YieldMetric, YieldMetricType } from "../model/opportunity.js";
+import type { LifecycleState, Opportunity, OpportunityCategory, YieldMetric, YieldMetricType } from "../model/opportunity.js";
 import type { VerificationStatus } from "../model/verification.js";
 
 export type AssetRole = "PRIMARY" | "INPUT" | "COLLATERAL" | "BORROW" | "ANY";
@@ -22,12 +22,29 @@ export interface OpportunityFilter {
   canonicalOnly?: boolean;
   /** Only opportunities the protocol itself lists (Morpho `listed`), where known. */
   protocolListedOnly?: boolean;
+  /** Lifecycle states to keep (e.g. ["ACTIVE"]). */
+  lifecycleStates?: readonly LifecycleState[];
+  /**
+   * Maturity range (unix seconds, inclusive). Opportunities WITHOUT a maturity (open-ended) are
+   * excluded when either bound is set — a range asks for maturity-based markets.
+   */
+  maturityFromS?: bigint;
+  maturityToS?: bigint;
 }
 
 export type SortSpec =
   | { by: "YIELD"; yieldType: YieldMetricType; direction: "ASC" | "DESC" }
   | { by: "TVL_USD" | "LIQUIDITY_USD"; direction?: "ASC" | "DESC" }
-  | { by: "UTILIZATION"; direction: "ASC" | "DESC" };
+  | { by: "UTILIZATION"; direction: "ASC" | "DESC" }
+  /** Soonest first by default; open-ended opportunities are not comparable. */
+  | { by: "MATURITY"; direction?: "ASC" | "DESC" };
+
+export function maturitySeconds(o: Opportunity): bigint | null {
+  const m = o.lifecycle.maturity?.value ?? o.term?.maturity;
+  if (!m) return null;
+  const ms = Date.parse(m);
+  return Number.isFinite(ms) ? BigInt(Math.floor(ms / 1000)) : null;
+}
 
 function hasAsset(o: Opportunity, key: string, role: AssetRole): boolean {
   const k = key.toLowerCase();
@@ -62,6 +79,13 @@ export function filterOpportunities(list: readonly Opportunity[], f: Opportunity
     if (f.verificationStatuses && !f.verificationStatuses.includes(o.verificationStatus)) return false;
     if (f.canonicalOnly && !o.risk.allAssetsCanonical) return false;
     if (f.protocolListedOnly && !(o.risk.protocolListed.known && o.risk.protocolListed.value)) return false;
+    if (f.lifecycleStates && !f.lifecycleStates.includes(o.lifecycle.state)) return false;
+    if (f.maturityFromS !== undefined || f.maturityToS !== undefined) {
+      const m = maturitySeconds(o);
+      if (m === null) return false;
+      if (f.maturityFromS !== undefined && m < f.maturityFromS) return false;
+      if (f.maturityToS !== undefined && m > f.maturityToS) return false;
+    }
     return true;
   });
 }
@@ -93,9 +117,11 @@ export function sortOpportunities(list: readonly Opportunity[], spec: SortSpec):
         return o.availableLiquidity?.value.usd?.e18 ?? null;
       case "UTILIZATION":
         return o.utilization?.value ?? null;
+      case "MATURITY":
+        return maturitySeconds(o);
     }
   };
-  const dir = spec.direction ?? "DESC";
+  const dir = spec.direction ?? (spec.by === "MATURITY" ? "ASC" : "DESC");
   const ranked = list.filter((o) => key(o) !== null);
   const rest = list.filter((o) => key(o) === null).sort((a, b) => a.id.localeCompare(b.id));
   ranked.sort((a, b) => {

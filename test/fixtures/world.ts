@@ -4,7 +4,7 @@
  * tests never touch the network.
  */
 import { getAddress, type Address, type Hex } from "viem";
-import type { BlockRef, CallResult, ChainReader, ContractCall } from "../../src/chain/reader.js";
+import type { BlockRef, CallResult, ChainReader, ContractCall, DecodedLog, LogQuery } from "../../src/chain/reader.js";
 import type { RpcHealthSnapshot } from "../../src/chain/health.js";
 import { CORE_ASSETS, STOCK_TOKEN_REGISTRY } from "../../src/config/assets.js";
 import { HttpClient, type FetchLike } from "../../src/lib/http.js";
@@ -142,6 +142,14 @@ export interface WorldState {
     /** `${marketId}:${user}` → position */
     positions: Map<string, { supplyShares: bigint; borrowShares: bigint; collateral: bigint }>;
   };
+  /**
+   * Phase 3: generic per-contract behaviour, checked before everything else.
+   * address → functionName → value, "revert", or a function of the call args.
+   */
+  contracts?: Map<string, Record<string, unknown | "revert" | ((args: readonly unknown[]) => unknown)>>;
+  /** Phase 3: event logs served by getLogs. */
+  logs?: { address: string; eventName: string; blockNumber: bigint; logIndex: number; args: Record<string, unknown> }[];
+  logsFail?: boolean;
   /** Count of calls per function name (Phase 2 cache tests). */
   callCounts?: Map<string, number>;
 }
@@ -222,6 +230,14 @@ export class FakeChainReader implements ChainReader {
     if (r!.status === "failure") throw new Error(r!.error);
     return r!.result;
   }
+  logQueries = 0;
+  async getLogs(q: LogQuery): Promise<DecodedLog[]> {
+    this.logQueries++;
+    if (this.world.rpcDown || this.world.logsFail) throw new Error("eth_getLogs failed");
+    return (this.world.logs ?? [])
+      .filter((l) => l.address.toLowerCase() === q.address.toLowerCase() && l.eventName === q.event.name && l.blockNumber >= q.fromBlock && l.blockNumber <= q.toBlock)
+      .map((l) => ({ address: l.address as Address, blockNumber: l.blockNumber, transactionHash: `0x${"cd".repeat(32)}` as Hex, logIndex: l.logIndex, args: l.args }));
+  }
   async multicall(calls: readonly ContractCall[]): Promise<CallResult[]> {
     this.multicallInvocations++;
     this.calls += calls.length;
@@ -235,6 +251,16 @@ export class FakeChainReader implements ChainReader {
     const m = this.world.meta.get(t);
     const counts = (this.world.callCounts ??= new Map());
     counts.set(c.functionName, (counts.get(c.functionName) ?? 0) + 1);
+    const h = this.world.contracts?.get(t);
+    if (h && c.functionName in h) {
+      const v = h[c.functionName];
+      if (v === "revert") return revert;
+      try {
+        return ok(typeof v === "function" ? (v as (a: readonly unknown[]) => unknown)(c.args ?? []) : v);
+      } catch {
+        return revert;
+      }
+    }
     const mo = this.world.morpho;
     const Z = "0x0000000000000000000000000000000000000000";
     if (mo) {

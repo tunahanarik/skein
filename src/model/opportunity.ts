@@ -16,6 +16,7 @@ import type { Fixed18 } from "../lib/fixed.js";
 import type { DataSource } from "./provenance.js";
 import type { VerificationStatus } from "./verification.js";
 import type { Warning } from "./warnings.js";
+import type { AssetRelationship } from "./assetRelationship.js";
 
 export const OPPORTUNITY_CATEGORIES = ["TRADE", "LEND", "BORROW", "COLLATERAL", "LP", "VAULT", "FIXED_YIELD", "YIELD"] as const;
 export type OpportunityCategory = (typeof OPPORTUNITY_CATEGORIES)[number];
@@ -68,7 +69,8 @@ export interface UsdAmount {
 
 export interface AmountWithUsd {
   asset: AssetRef;
-  amount: TokenAmount;
+  /** null when the source gives only a USD figure (e.g. a protocol API TVL). */
+  amount: TokenAmount | null;
   /** null when the asset could not be priced by the Phase 1 Price Service. */
   usd: UsdAmount | null;
 }
@@ -86,8 +88,25 @@ export interface AmountWithUsd {
  * IMPLIED_APY  market-implied fixed rate (e.g. Pendle PT), valid only to maturity
  * FIXED_APY    contractually fixed rate
  * LP_APR       fee/incentive APR for liquidity provision (simple, not compounded)
+ * UNDERLYING_APY      yield of the underlying asset itself, as the protocol measures it (a reference
+ *                     figure, not something the user earns by entering the opportunity)
+ * YIELD_EXPOSURE_APY  estimated annualized return of a yield-exposure position (e.g. Pendle YT) that
+ *                     assumes the current underlying yield persists; can be negative, not a fixed rate
+ * COMPONENT_APY       one component of a composite headline (see `componentOf`); never ranked alone
  */
-export const YIELD_METRIC_TYPES = ["SUPPLY_APY", "BORROW_APY", "BASE_APY", "REWARD_APY", "NET_APY", "IMPLIED_APY", "FIXED_APY", "LP_APR"] as const;
+export const YIELD_METRIC_TYPES = [
+  "SUPPLY_APY",
+  "BORROW_APY",
+  "BASE_APY",
+  "REWARD_APY",
+  "NET_APY",
+  "IMPLIED_APY",
+  "FIXED_APY",
+  "LP_APR",
+  "UNDERLYING_APY",
+  "YIELD_EXPOSURE_APY",
+  "COMPONENT_APY",
+] as const;
 export type YieldMetricType = (typeof YIELD_METRIC_TYPES)[number];
 
 export interface YieldMetric extends Measured<Fixed18> {
@@ -104,6 +123,96 @@ export interface YieldMetric extends Measured<Fixed18> {
   rewardAsset?: AssetRef | null;
   /** Human-readable label, e.g. "Morpho supply APY". */
   label: string;
+  /** COMPONENT_APY only: the headline metric this is part of, and which part. */
+  componentOf?: YieldMetricType | null;
+  component?: string | null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Lifecycle, entry and liquidity semantics (Phase 3)
+// ---------------------------------------------------------------------------------------------
+
+export type LifecycleState = "ACTIVE" | "EXPIRED" | "INACTIVE" | "UNKNOWN";
+/** Why an opportunity cannot currently be entered. Adapters set these from protocol facts. */
+export type EntryBlocker = "EXPIRED" | "DEPOSIT_DISABLED" | "MARKET_INACTIVE" | "PROTOCOL_PAUSED" | "STATE_UNKNOWN";
+
+/**
+ * Maturity is not a lock: a maturity-based position can usually be exited before maturity by
+ * trading (at market price), while a lock forbids exit. Both are modelled separately.
+ */
+export interface Lifecycle {
+  state: LifecycleState;
+  /** Maturity timestamp (ISO) and its source; null for open-ended opportunities. */
+  maturity: Measured<string> | null;
+  /** maturity − reference time (seconds), from `timeReference`; negative once expired. */
+  secondsToMaturity: number | null;
+  /** Clock used for the comparison: the pinned block's timestamp. */
+  timeReference: { kind: "BLOCK_TIMESTAMP"; blockNumber: bigint; timestamp: string } | null;
+  canEnter: boolean | null;
+  blockers: EntryBlocker[];
+}
+
+export type EntryKind = "DIRECT" | "SWAP_REQUIRED" | "WRAP_REQUIRED" | "SY_CONVERSION_REQUIRED" | "MULTI_STEP" | "UNKNOWN";
+
+export interface EntryStep {
+  action: "SUPPLY" | "POST_COLLATERAL" | "DEPOSIT" | "WRAP" | "SWAP" | "ADD_LIQUIDITY";
+  from: AssetRef | null;
+  to: AssetRef | null;
+  /** Contract or venue performing the step. */
+  venue: string;
+  /** True only when the step's feasibility was checked (e.g. token ∈ SY.getTokensIn()). */
+  verified: boolean;
+  source: DataSource;
+}
+
+/**
+ * What the holder of `requiredAsset` must do to enter. Descriptive only: this is not an
+ * execution route and produces no calldata.
+ */
+export interface EntryRequirement {
+  kind: EntryKind;
+  requiredAsset: AssetRef;
+  steps: EntryStep[];
+  /** Whether one protocol call performs all steps (e.g. a router), with its evidence. */
+  singleTransactionAvailable: Known<boolean>;
+  note: string | null;
+}
+
+/**
+ * What `availableLiquidity` measures. These are different quantities and are never compared:
+ *   BORROWABLE           loan assets a borrower can take now (lending market)
+ *   WITHDRAWABLE_SUPPLY  assets suppliers can withdraw now (supply − borrow)
+ *   INSTANT_WITHDRAWAL   assets a vault can pay out immediately
+ *   POOL_LIQUIDITY       value of the assets inside an AMM pool (e.g. Pendle PT + SY)
+ */
+export type LiquidityKind = "BORROWABLE" | "WITHDRAWABLE_SUPPLY" | "INSTANT_WITHDRAWAL" | "POOL_LIQUIDITY";
+
+// ---------------------------------------------------------------------------------------------
+// Eligibility (set by the Opportunity Engine, never by adapters)
+// ---------------------------------------------------------------------------------------------
+
+export type EligibilityReason =
+  | "DATA_CONFLICT"
+  | "UNVERIFIED_ASSET"
+  | "INSUFFICIENT_VERIFICATION"
+  | "EXPIRED"
+  | "INACTIVE"
+  | "DEPOSIT_DISABLED"
+  | "PROTOCOL_PAUSED"
+  | "ENTRY_STATE_UNKNOWN"
+  | "ENTRY_ROUTE_UNKNOWN"
+  | "PROTOCOL_UNLISTED"
+  | "LOW_LIQUIDITY"
+  | "ZERO_LIQUIDITY";
+
+export interface Eligibility {
+  /** Passes every excluding rule of the active policy. */
+  eligibleForDefaultDisplay: boolean;
+  /** Reasons that exclude it under the active policy. */
+  excludedBy: EligibilityReason[];
+  /** Reasons recorded but not excluding (advisory). */
+  advisories: EligibilityReason[];
+  policy: string;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -190,6 +299,47 @@ export type OpportunityDetails =
       oraclePrice: Measured<bigint> | null; // raw, scale 1e36 × 10^(loanDec − collDec)
     }
   | {
+      kind: "PENDLE_MARKET";
+      market: Address;
+      /** Which Pendle position this opportunity is: buy PT, buy YT or provide LP. */
+      position: "PT" | "YT" | "LP";
+      pt: AssetRef;
+      yt: AssetRef;
+      sy: AssetRef;
+      /** SY.yieldToken(): the token wrapped by SY. */
+      yieldToken: AssetRef;
+      /** SY.assetInfo() asset: what PT redeems into (1 PT = 1 accounting-asset unit at maturity). */
+      accountingAsset: AssetRef | null;
+      /**
+       * What one accounting unit is. TOKEN: one token unit. LIQUIDITY: a non-token unit (for
+       * Robinhood Stock Tokens: one underlying share, since SY.exchangeRate = uiMultiplier).
+       */
+      accountingUnit: { assetType: "TOKEN" | "LIQUIDITY" | "UNKNOWN"; description: string; syRateEqualsMultiplier: boolean | null };
+      /** Onchain market reward tokens (market.getRewardTokens()). */
+      rewardTokens: AssetRef[];
+      /** Structural onchain identity checks and their results. */
+      identityChecks: { check: string; ok: boolean | null; detail: string }[];
+      /** API impliedApy (1e18) as a cross-check of the onchain value; null if unavailable. */
+      apiImpliedApy: Measured<bigint> | null;
+      createdAtBlock: bigint;
+      /** SY.exchangeRate(): accounting-asset units per SY (1e18). For Stock Tokens it equals uiMultiplier. */
+      syExchangeRate: Measured<bigint> | null;
+      /** RouterStatic spot rates, accounting-asset units per token (1e18). */
+      ptToAssetRate: Measured<bigint> | null;
+      ytToAssetRate: Measured<bigint> | null;
+      lpToAssetRate: Measured<bigint> | null;
+      /** 1 − ptToAssetRate: the PT's current discount to its maturity redemption value (Fixed18). */
+      ptDiscount: Measured<bigint> | null;
+      /** Pendle API ROI at expiry (not annualized), where given. */
+      ptRoiToMaturity: Measured<bigint> | null;
+      ytRoiToMaturity: Measured<bigint> | null;
+      /** Pendle API `liquidity.usd` (PT + SY in the AMM, API prices). */
+      apiLiquidityUsd: Measured<UsdAmount> | null;
+      poolTotalPt: bigint | null;
+      poolTotalSy: bigint | null;
+      protocolListed: boolean | null;
+    }
+  | {
       kind: "MORPHO_VAULT_V2";
       vault: Address;
       name: string;
@@ -219,9 +369,17 @@ export interface Opportunity {
   yields: YieldMetric[];
   tvl: Measured<AmountWithUsd> | null;
   availableLiquidity: Measured<AmountWithUsd> | null;
+  /** What availableLiquidity measures (never compare across kinds). */
+  liquidityKind: LiquidityKind | null;
   utilization: Measured<Fixed18> | null;
   liquidation: LiquidationTerms | null;
-  term: { maturity: string | null; lockSeconds: number | null; withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" | "AT_MATURITY" | "LOCKED" | "UNKNOWN" } | null;
+  term: { maturity: string | null; lockSeconds: number | null; withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" | "AT_MATURITY" | "TRADE_BEFORE_MATURITY" | "LOCKED" | "UNKNOWN" } | null;
+  lifecycle: Lifecycle;
+  entry: EntryRequirement;
+  /** Verified relationships between the tokens involved (wrapper → underlying, PT → SY …). */
+  relationships: AssetRelationship[];
+  /** Filled by the Opportunity Engine from generic rules; adapters leave it null. */
+  eligibility: Eligibility | null;
   contracts: ContractRef[];
   risk: OpportunityRisk;
   details: OpportunityDetails;

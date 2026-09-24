@@ -7,6 +7,7 @@ import { validateOracles } from "./validate-oracles.js";
 import { validatePendle } from "./validate-pendle.js";
 import { validatePortfolio } from "./validate-portfolio.js";
 import { validateOpportunities } from "./validate-opportunities.js";
+import { validateCombined, validatePendleAdapter } from "./validate-pendle-adapter.js";
 
 const steps: [string, (r: Report) => Promise<Report>][] = [
   ["network", validateNetwork],
@@ -16,6 +17,8 @@ const steps: [string, (r: Report) => Promise<Report>][] = [
   ["pendle", validatePendle],
   ["portfolio-validation", validatePortfolio], // Phase 1
   ["opportunities-validation", validateOpportunities], // Phase 2
+  ["pendle-adapter-validation", validatePendleAdapter], // Phase 3
+  ["combined-validation", validateCombined], // Phase 3
 ];
 
 let failed = 0;

@@ -2,7 +2,7 @@
   "name": "defi-router",
   "private": true,
   "version": "0.0.0",
-  "description": "Read-only DeFi opportunity discovery for Robinhood Chain assets (Phase 0: research + validation).",
+  "description": "Read-only DeFi opportunity discovery for Robinhood Chain assets (Morpho + Pendle; no execution).",
   "type": "module",
   "packageManager": "pnpm@10.28.2",
   "engines": {
@@ -18,7 +18,8 @@
     "validate:assets": "tsx scripts/validate-assets.ts",
     "validate:oracles": "tsx scripts/validate-oracles.ts",
     "validate:morpho": "tsx scripts/validate-morpho.ts",
-    "validate:pendle": "tsx scripts/validate-pendle.ts",
+    "validate:pendle": "tsx scripts/validate-pendle-adapter.ts",
+    "validate:pendle:research": "tsx scripts/validate-pendle.ts",
     "validate:portfolio": "tsx scripts/validate-portfolio.ts",
     "registry:snapshot": "tsx scripts/registry-snapshot.ts",
     "registry:check": "tsx scripts/registry-snapshot.ts --check",

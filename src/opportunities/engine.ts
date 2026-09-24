@@ -6,7 +6,7 @@
 import type { Address } from "viem";
 import { ROBINHOOD_CHAIN_ID } from "../config/chains.js";
 import type { ChainReader } from "../chain/reader.js";
-import type { Opportunity } from "../model/opportunity.js";
+import type { EligibilityReason, Opportunity } from "../model/opportunity.js";
 import type { Position } from "../model/position.js";
 import { warn, type Warning } from "../model/warnings.js";
 import type { PriceService } from "../pricing/priceService.js";
@@ -16,12 +16,15 @@ import { parseWalletAddress } from "../lib/validation.js";
 import { combineStatus, type AdapterContext, type AdapterIssue, type AdapterResult, type OpportunityAdapter, type ResultStatus } from "./adapter.js";
 import { filterOpportunities, sortOpportunities, type OpportunityFilter, type SortSpec } from "./query.js";
 import { buildPortfolioOpportunity, type PortfolioOpportunity } from "./userContext.js";
+import { computeEligibility, passesEligibility } from "./eligibility.js";
+import { DEFAULT_ELIGIBILITY_POLICY, type EligibilityPolicy } from "../config/eligibility.js";
 
 export interface EngineDeps {
   reader: ChainReader;
   getRegistry: () => Promise<AssetRegistry>;
   prices: PriceService;
   now?: () => Date;
+  eligibilityPolicy?: EligibilityPolicy;
 }
 
 export interface AdapterRunSummary {
@@ -43,23 +46,35 @@ export interface EngineResult<T> {
   timingsMs: { total: number };
   /** Opportunity ids that the requested sort could not rank (no comparable metric). */
   notComparable?: string[];
+  /**
+   * Discovered opportunities NOT shown because of the eligibility policy, counted per excluding
+   * reason (one opportunity can count under several). Never deleted: query with
+   * eligibility "ALL" or includeReasons to see them.
+   */
+  excluded?: { total: number; byReason: Partial<Record<EligibilityReason, number>> };
 }
 
 export interface OpportunityQuery {
   filter?: OpportunityFilter;
   sort?: SortSpec;
+  /** Default ELIGIBLE_ONLY: the default user-facing view. ALL: debug / full discovery. */
+  eligibility?: "ELIGIBLE_ONLY" | "ALL";
+  /** Re-admit opportunities whose only excluding reasons are these (e.g. ["EXPIRED"]). */
+  includeReasons?: readonly EligibilityReason[];
 }
 
 const elapsed = (t: number) => Math.round(performance.now() - t);
 
 export class OpportunityEngine {
   private readonly now: () => Date;
+  private readonly policy: EligibilityPolicy;
 
   constructor(
     private readonly adapters: readonly OpportunityAdapter[],
     private readonly deps: EngineDeps,
   ) {
     this.now = deps.now ?? (() => new Date());
+    this.policy = deps.eligibilityPolicy ?? DEFAULT_ELIGIBILITY_POLICY;
     const ids = adapters.map((a) => a.protocol.id);
     if (new Set(ids).size !== ids.length) throw new Error(`duplicate adapter protocol ids: ${ids.join(", ")}`);
   }
@@ -100,10 +115,24 @@ export class OpportunityEngine {
           warnings.push(warn("DUPLICATE_OPPORTUNITY_ID", `duplicate opportunity id ${o.id} from ${r.protocol}; first kept`));
           continue;
         }
-        seen.set(o.id, o);
+        const eligibility = computeEligibility(o, this.policy);
+        // Generic advisory surfaced as a warning too (threshold: the eligibility policy).
+        const low = eligibility.advisories.includes("LOW_LIQUIDITY") && !o.warnings.some((w) => w.code === "LOW_LIQUIDITY");
+        seen.set(o.id, { ...o, eligibility, ...(low ? { warnings: [...o.warnings, warn("LOW_LIQUIDITY", `available liquidity ${o.availableLiquidity?.value.usd?.display ?? "?"} USD is below the ${this.policy.id} display threshold`)] } : {}) });
       }
     }
-    let data = filterOpportunities([...seen.values()], query.filter);
+    const filtered = filterOpportunities([...seen.values()], query.filter);
+    const mode = query.eligibility ?? "ELIGIBLE_ONLY";
+    let data: Opportunity[] = [];
+    const byReason: Partial<Record<EligibilityReason, number>> = {};
+    let excludedTotal = 0;
+    for (const o of filtered) {
+      if (passesEligibility(o.eligibility!, mode, query.includeReasons)) data.push(o);
+      else {
+        excludedTotal++;
+        for (const r of o.eligibility!.excludedBy) byReason[r] = (byReason[r] ?? 0) + 1;
+      }
+    }
     let notComparable: string[] | undefined;
     if (query.sort) {
       const s = sortOpportunities(data, query.sort);
@@ -120,6 +149,7 @@ export class OpportunityEngine {
       generatedAt: this.now().toISOString(),
       timingsMs: { total: elapsed(t0) },
       ...(notComparable ? { notComparable } : {}),
+      excluded: { total: excludedTotal, byReason },
     };
   }
 
@@ -169,7 +199,8 @@ export class OpportunityEngine {
   async getPortfolioOpportunities(portfolio: Portfolio, query: OpportunityQuery = {}): Promise<EngineResult<{ assetKey: string; items: PortfolioOpportunity[] }[]>> {
     const t0 = performance.now();
     const ctx = await this.context();
-    const all = await this.getOpportunities({ ...(query.filter ? { filter: query.filter } : {}) }, ctx);
+    const { sort: _sort, ...rest } = query;
+    const all = await this.getOpportunities(rest, ctx);
     const held = portfolio.assets.filter((r) => r.asset.canonical && r.balanceStatus === "OK" && (r.rawBalance ?? 0n) > 0n && r.asset.address !== null);
 
     // Price every borrow asset once via the Phase 1 Price Service (no protocol prices).

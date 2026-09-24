@@ -29,10 +29,26 @@ interface OpportunityAdapter {
 7. **Separate caches:** slow configuration and fast state, using `CACHE_TTL_MS`. Never cache failures; stale fallback must be bounded and reported.
 8. **Positions are not opportunities.**
 9. **Read-only.** No approvals, signatures, transaction building or submission.
+10. **(Phase 3) Describe facts; the engine applies policy.** Set:
+    - `lifecycle` (use `openEndedLifecycle` / `maturityLifecycle`, with blockers such as DEPOSIT_DISABLED or PROTOCOL_PAUSED)
+    - `entry` (an `EntryRequirement` with verified steps; UNKNOWN when there is no evidence)
+    - `liquidityKind`
+    - `relationships`
 
-## Adding a protocol (e.g. Pendle, next phase)
+    Leave `eligibility: null`: the engine computes it.
+11. **(Phase 3) Only advertise implemented capabilities.** Pendle declares `userPositions: true` because balances and rates are fully interpretable onchain.
+12. **(Phase 3) Sanitize token metadata.** Chain-read symbols go through `sanitizeSymbol` (`src/lib/sanitize.ts`), and API strings through `sanitizeLabel`.
+
+## Adding a protocol
 1. Create `src/protocols/<name>/` with API/onchain readers, a pure `normalize.ts`, and `adapter.ts`.
-2. Map venues to categories. Pendle PT → `FIXED_YIELD` with `IMPLIED_APY` and `denominatedIn` = the underlying; `term.maturity` set; `withdrawal: AT_MATURITY`.
+2. Map venues to categories and set lifecycle, entry, liquidity kind and relationships.
 3. Add a `details` member to `OpportunityDetails`.
-4. Register it in `src/runtime.ts`: `new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http)], …)`.
-5. **No change to `src/opportunities/engine.ts`, `query.ts` or `userContext.ts` is required.** The integration test `Opportunity Engine is protocol-agnostic` proves this with a toy FIXED_YIELD adapter.
+4. Register it in `src/runtime.ts`.
+5. **No protocol-specific change to the engine.**
+
+Phase 3 did exactly this for Pendle ([protocols/pendle-adapter.md](protocols/pendle-adapter.md)).
+
+**Assumptions from Phase 2 that changed, and why:**
+- **PT `denominatedIn`.** Phase 2 planned `denominatedIn` = the underlying. It is now the accounting asset only when the SY asset type is TOKEN, and `null` for Stock Token markets, where the accounting unit is a *share* (SY.exchangeRate == uiMultiplier, measured). Claiming token units would be wrong.
+- **PT withdrawal.** Phase 2 planned `withdrawal: AT_MATURITY`. It is now `TRADE_BEFORE_MATURITY`: Pendle positions can be sold at market price before maturity, while redemption at par happens at maturity. Maturity is modelled in `lifecycle`, separately from exit.
+- **Engine changes.** Phase 3 added *generic* engine features (eligibility, lifecycle/maturity filters, MATURITY sort), not Pendle logic.

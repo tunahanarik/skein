@@ -38,24 +38,29 @@ export async function validateOpportunities(report = new Report("opportunities-v
 
   // ---- discovery through the engine ----
   const t0 = performance.now();
-  const all = await rt.opportunities.getOpportunities();
+  // Phase 2 checks inspect everything Morpho discovers (incl. conflicted markets): full view, Morpho only.
+  const all = await rt.opportunities.getOpportunities({ eligibility: "ALL", filter: { protocols: ["morpho"] } });
   const ms = Math.round(performance.now() - t0);
   const cats = all.data.reduce<Record<string, number>>((m, o) => ((m[o.category] = (m[o.category] ?? 0) + 1), m), {});
   const vs = all.data.reduce<Record<string, number>>((m, o) => ((m[o.verificationStatus] = (m[o.verificationStatus] ?? 0) + 1), m), {});
-  const a = all.adapters[0]!;
+  const a = all.adapters.find((x) => x.protocol === "morpho")!;
   report.add(all.status === "UNKNOWN" ? "FAIL" : all.status === "PARTIAL" ? "WARN" : "PASS", "discovery", `${all.status}: ${all.data.length} opportunities ${JSON.stringify(cats)}; verification ${JSON.stringify(vs)}; ${ms} ms (adapter ${JSON.stringify(a.timingsMs)})`, { issues: a.issues });
 
   // ---- representative opportunities ----
   const canonicalStockCollateral = all.data.filter((o) => o.category === "COLLATERAL" && o.primaryAsset.canonical && o.primaryAsset.registryType === "STOCK_TOKEN" && o.borrowAssets[0]?.canonical);
-  const byLiquidity = (x: Opportunity, y: Opportunity) => Number((y.availableLiquidity?.value.amount.raw ?? 0n) - (x.availableLiquidity?.value.amount.raw ?? 0n) > 0n) - Number((y.availableLiquidity?.value.amount.raw ?? 0n) - (x.availableLiquidity?.value.amount.raw ?? 0n) < 0n);
+  const byLiquidity = (x: Opportunity, y: Opportunity) => Number((y.availableLiquidity?.value.amount?.raw ?? 0n) - (x.availableLiquidity?.value.amount?.raw ?? 0n) > 0n) - Number((y.availableLiquidity?.value.amount?.raw ?? 0n) - (x.availableLiquidity?.value.amount?.raw ?? 0n) < 0n);
   const stockPick = [...canonicalStockCollateral].filter((o) => o.risk.oracle?.multiplierCheck === "CONSISTENT").sort(byLiquidity)[0];
   const usdgLend = all.data.filter((o) => o.category === "LEND" && o.primaryAsset.key === USDG_KEY && o.risk.allAssetsCanonical).sort(byLiquidity)[0];
   const usdgLendListed = all.data.filter((o) => o.category === "LEND" && o.primaryAsset.key === USDG_KEY && o.risk.protocolListed.known && o.risk.protocolListed.value).sort(byLiquidity)[0];
   const doubles = canonicalStockCollateral.filter((o) => o.risk.oracle?.multiplierCheck === "DOUBLE_APPLIED");
-  const vault = all.data.filter((o) => o.category === "VAULT" && o.primaryAsset.key === USDG_KEY).sort((x, y) => Number((y.tvl?.value.amount.raw ?? 0n) > (x.tvl?.value.amount.raw ?? 0n)) - Number((y.tvl?.value.amount.raw ?? 0n) < (x.tvl?.value.amount.raw ?? 0n)))[0];
+  const vault = all.data.filter((o) => o.category === "VAULT" && o.primaryAsset.key === USDG_KEY).sort((x, y) => Number((y.tvl?.value.amount?.raw ?? 0n) > (x.tvl?.value.amount?.raw ?? 0n)) - Number((y.tvl?.value.amount?.raw ?? 0n) < (x.tvl?.value.amount?.raw ?? 0n)))[0];
   report.info("oracle multiplier checks", `stock collateral: ${JSON.stringify(canonicalStockCollateral.reduce<Record<string, number>>((m, o) => ((m[o.risk.oracle!.multiplierCheck] = (m[o.risk.oracle!.multiplierCheck] ?? 0) + 1), m), {}))}; DOUBLE_APPLIED → CONFLICT: ${doubles.map((o) => o.primaryAsset.symbol).join(", ") || "none"}`);
   if (doubles.some((o) => o.verificationStatus !== "CONFLICT")) report.fail("double-applied oracle handling", "a DOUBLE_APPLIED market is not CONFLICT");
   else report.pass("double-applied oracle handling", `${doubles.length} markets marked CONFLICT`);
+  // Phase 3 policy: conflicted markets and deposit-disabled vaults are discovered but not in the default view.
+  const def = await rt.opportunities.getOpportunities({ filter: { protocols: ["morpho"] } });
+  const leaked = def.data.filter((o) => o.verificationStatus === "CONFLICT" || o.lifecycle.blockers.includes("DEPOSIT_DISABLED") || !o.risk.allAssetsCanonical);
+  report.add(leaked.length ? "FAIL" : "PASS", "default eligibility (Morpho)", `default view ${def.data.length} of ${all.data.length} discovered; hidden ${JSON.stringify(def.excluded?.byReason ?? {})}; conflicted/deposit-disabled/non-canonical in default view: ${leaked.length}`);
 
   // Independent re-read: raw viem calls, not the adapter's readers.
   const head = await client.getBlockNumber();
@@ -101,7 +106,7 @@ export async function validateOpportunities(report = new Report("opportunities-v
   }
   if (vault && vault.details.kind === "MORPHO_VAULT_V2") {
     const ta = await client.readContract({ address: vault.details.vault, abi: parseAbi(["function totalAssets() view returns (uint256)"]), functionName: "totalAssets" });
-    const e = vault.tvl?.value.amount.raw ?? 0n;
+    const e = vault.tvl?.value.amount?.raw ?? 0n;
     const drift = Number(((ta > e ? ta - e : e - ta) * 1_000_000n) / (ta || 1n)) / 10_000;
     report.add(drift <= 0.5 ? "PASS" : "FAIL", "representative USDG vault", `${vault.title}: totalAssets drift ${drift}%, NET_APY ${vault.yields.find((y) => y.type === "NET_APY")?.value ?? "n/a"}, warnings ${vault.risk.protocolWarnings.map((w) => w.type).join(",") || "none"}`);
   } else report.warn("representative USDG vault", "none found");
@@ -117,7 +122,7 @@ export async function validateOpportunities(report = new Report("opportunities-v
       const pos = await rt.opportunities.getUserPositions(top.user.address);
       const marketId = usdgLendListed.details.marketId;
       const p = pos.data.find((x) => x.venue.id === marketId);
-      const ok = p && p.collateral?.value.amount.raw === BigInt(top.state.collateral);
+      const ok = p && p.collateral?.value.amount?.raw === BigInt(top.state.collateral);
       report.add(ok ? "PASS" : "WARN", "positions vs Morpho API", `${redact(top.user.address)}: ${pos.data.length} positions found onchain; collateral ${ok ? "matches" : "differs from"} API; HF ${p?.healthFactor ? (Number(p.healthFactor.value) / 1e18).toFixed(4) : "n/a"} (Morpho definition, computed); liquidatable ${p?.liquidatable}; ${pos.timingsMs.total} ms`);
     } else report.warn("positions vs Morpho API", "no borrower found");
   }
@@ -144,7 +149,7 @@ export async function validateOpportunities(report = new Report("opportunities-v
     if (withMax && withMax.context.kind === "COLLATERAL") {
       const lt = withMax.opportunity.liquidation!;
       const recomputed = wMulDown(mulDivDown(withMax.holding.rawBalance, lt.collateralPrice!.value.raw, ORACLE_PRICE_SCALE), lt.lltv.value);
-      check = `protocolMaximumBorrow ${withMax.context.protocolMaximumBorrow!.amount.display} ${withMax.context.protocolMaximumBorrow!.asset.symbol} ${recomputed === withMax.context.protocolMaximumBorrow!.amount.raw ? "= independent recomputation" : "≠ recomputation"}`;
+      check = `protocolMaximumBorrow ${withMax.context.protocolMaximumBorrow!.amount?.display} ${withMax.context.protocolMaximumBorrow!.asset.symbol} ${recomputed === withMax.context.protocolMaximumBorrow!.amount?.raw ? "= independent recomputation" : "≠ recomputation"}`;
     }
     const groups = po.data.filter((g) => g.items.length);
     report.add(withMax ? "PASS" : "WARN", "wallet → opportunities", `${redact(holder)}: ${portfolio.assets.length} held assets, ${groups.length} with opportunities (${groups.reduce((s, g) => s + g.items.length, 0)} total); ${check}; ${Math.round(performance.now() - t1)} ms`);

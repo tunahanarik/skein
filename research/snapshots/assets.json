@@ -1,12 +1,12 @@
 {
   "script": "assets",
-  "startedAt": "2026-09-24T08:01:14.924Z",
-  "finishedAt": "2026-09-24T08:01:19.843Z",
+  "startedAt": "2026-09-24T08:44:41.206Z",
+  "finishedAt": "2026-09-24T08:44:45.863Z",
   "checks": [
     {
       "name": "pinned block",
       "status": "INFO",
-      "detail": "71210873"
+      "detail": "71236745"
     },
     {
       "name": "GET /rhj/assets",
@@ -16,13 +16,13 @@
         "statuses": {
           "ASSET_STATUS_ACTIVE": 195
         },
-        "fetchedAt": "2026-09-24T08:01:15.489Z"
+        "fetchedAt": "2026-09-24T08:44:41.641Z"
       }
     },
     {
       "name": "onchain vs /rhj/assets",
       "status": "PASS",
-      "detail": "195 tokens × 5 reads in 570 ms at block 71210873; 0 mismatches; 37 with uiMultiplier ≠ 1"
+      "detail": "195 tokens × 5 reads in 507 ms at block 71236745; 0 mismatches; 37 with uiMultiplier ≠ 1"
     },
     {
       "name": "sample NVDA",
@@ -32,8 +32,8 @@
         "address": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
         "uid": "0x00000000000000000000000000000000915f477416294f5099a5e0e09f327ce5",
         "codeBytes": 283,
-        "totalSupply": "91560631487370000000000",
-        "totalSupplyUI": "91631605549986799482171",
+        "totalSupply": "92241572989320000000000",
+        "totalSupplyUI": "92313074889982613346847",
         "uiMultiplier": "1000775159164630595",
         "newUIMultiplier": "1000775159164630595",
         "effectiveAt": "1788998430",
@@ -92,8 +92,8 @@
         "address": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
         "uid": "0x0000000000000000000000000000000053b69e2076884cc9ae2ada9bc7095df3",
         "codeBytes": 283,
-        "totalSupply": "18436049889790000000000",
-        "totalSupplyUI": "18439625089963427949882",
+        "totalSupply": "18525117527400000000000",
+        "totalSupplyUI": "18528709999962867861350",
         "uiMultiplier": "1000193924414112587",
         "newUIMultiplier": "1000193924414112587",
         "effectiveAt": "1789485027",
@@ -109,7 +109,7 @@
       "status": "PASS",
       "detail": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73 \"WETH\" WETH dec 18",
       "evidence": {
-        "totalSupply": "36398252878862833063185",
+        "totalSupply": "37898074086208572912260",
         "eip1967Implementation": "0xC6B81b429797E0f555440b70cD99e032D7AE947e",
         "eip1967Admin": "0xa3Acd31AFb851B4eB9DAD00F5204c01D924267dF"
       }
@@ -119,7 +119,7 @@
       "status": "PASS",
       "detail": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168 \"Global Dollar\" USDG dec 6",
       "evidence": {
-        "totalSupply": "697630460765530",
+        "totalSupply": "696293057657527",
         "eip1967Implementation": "0x68184C449E1a8f34fA18d289737129FD27B66f8F",
         "eip1967Admin": null
       }

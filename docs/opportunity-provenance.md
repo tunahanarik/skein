@@ -23,8 +23,20 @@ The UI can therefore render "Updated 18 seconds ago · Source: Morpho API" per v
 
 Asset identity provenance is the Phase 1 registry (Robinhood `/rhj/assets` + onchain identity check). Prices come from the Phase 1 Price Service (Chainlink / Robinhood quote). Each opportunity also lists all sources in `provenance[]` and all disagreements in `conflicts[]`.
 
+Pendle examples (Phase 3):
+
+| Value | Source |
+|---|---|
+| IMPLIED_APY | `ONCHAIN`, `robinhood-chain-rpc`, `_storage().lastLnImpliedRate` at the block, `origin: COMPUTED`, formula `exp(lastLnImpliedRate / 1e18) − 1` |
+| YIELD_EXPOSURE_APY | `OFFICIAL_API`, `pendle-api`, `markets/{address}.ytFloatingApy`, `sourceTimestamp` = API `dataUpdatedAt` |
+| maturity | `ONCHAIN` `expiry()` read at the identity block |
+| pool liquidity | `COMPUTED` from `_storage`, RouterStatic rates, `SY.exchangeRate` and `SY.previewRedeem`, priced by the Phase 1 Price Service |
+| relationships | each edge carries the onchain call that proves it (see asset-relationships.md) |
+
 ## Opportunity-level status
-- `verificationStatus` = the weakest of: asset identities (canonical → VERIFIED_ONCHAIN, else UNVERIFIED), onchain totals, and yield metrics. It becomes **CONFLICT** on any identity conflict or a double-applied multiplier oracle.
+- `verificationStatus` = the weakest of: asset identities (canonical → VERIFIED_ONCHAIN, else UNVERIFIED), onchain totals, and yield metrics.
+  - It becomes **CONFLICT** on any identity conflict (Morpho params, Pendle PT/YT/SY/expiry) or a double-applied multiplier oracle.
+  - For Pendle, a failed structural check makes it **UNVERIFIED**. Value disagreements (totals, implied rate, pool USD) are recorded as `conflicts` with the onchain value kept, and they do not change the status.
 - `freshness` = the worst of the opportunity's measured values.
 
 ## Freshness rules (`src/config/freshness.ts`)
@@ -40,7 +52,8 @@ A missing source timestamp → **UNKNOWN**. For example, Morpho vault APYs have 
 ## Cache TTLs (`CACHE_TTL_MS`)
 | Cache | TTL | Notes |
 |---|---|---|
-| PROTOCOL_MARKET_CONFIG | 1 h (Morpho: process-lifetime per verified market, since params are immutable) | slow configuration |
+| PROTOCOL_MARKET_CONFIG | 1 h (Morpho: process-lifetime per verified market, since params are immutable) | slow configuration (Pendle identity) |
+| PROTOCOL_MARKET_LIST | 10 min | Pendle market list from factory logs; incremental rescans |
 | PROTOCOL_MARKET_STATE | 60 s | fast state |
 | PROTOCOL_STATE_STALE_FALLBACK | 6 h | last-good state after a failed refresh, flagged PARTIAL |
 
@@ -52,3 +65,6 @@ Failures are never cached.
 | PROTOCOL_TOTALS_CONFLICT_PCT | 2 % | API vs onchain totals; beyond it → DATA_CONFLICT (onchain kept) |
 | ORACLE_MATCH_TOLERANCE_PPM | 1 ppm | oracle ÷ expected is matched against the structures 1 / m / P_loan / m×P_loan; same-feed matches agree to ~1e-17. Unmatched → INCONCLUSIVE, never CONSISTENT |
 | ORACLE_DEVIATION_WARNING_PCT | 2 % | oracle vs independent price → ORACLE_PRICE_DEVIATION |
+| PROTOCOL_RATE_CONFLICT_PCT | 1 % relative | API rate vs the same rate onchain (Pendle impliedApy). Observed 5e-6. |
+| PROTOCOL_LIQUIDITY_CONFLICT_PCT | 5 % | API pool USD vs onchain pool value priced by us. Observed 0.01–0.3 %. |
+| eligibility `lowLiquidityUsdE18` | $10,000 | `src/config/eligibility.ts`; advisory only |

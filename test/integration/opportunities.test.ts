@@ -27,6 +27,9 @@ async function setup(opts: { markets?: ReturnType<typeof fixtureMarkets>; apiMar
   return { s, api, adapter, engine, world, markets, clock };
 }
 
+/** Phase 3: tests that inspect ineligible opportunities ask for the full discovery set. Same assertions. */
+const ALL = { eligibility: "ALL" as const };
+
 const idOf = (m: { params: Parameters<typeof marketIdOf>[0] }) => marketIdOf(m.params);
 const find = (list: Opportunity[], category: string, marketId: string) => list.find((o) => o.category === category && o.venue.id === marketId)!;
 
@@ -48,7 +51,7 @@ describe("Morpho market normalization (through the adapter)", () => {
     expect(lend.yields.some((y) => y.type === "BORROW_APY")).toBe(false);
     // onchain totals, computed utilization and liquidity
     expect(lend.utilization?.value).toBe(6n * 10n ** 17n); // 60 / 100
-    expect(lend.availableLiquidity?.value.amount.raw).toBe(40_000_000_000n);
+    expect(lend.availableLiquidity?.value.amount?.raw).toBe(40_000_000_000n);
     expect(lend.availableLiquidity?.origin).toBe("COMPUTED");
     expect(lend.tvl?.value.usd?.display).toBe("100009"); // 100,000 USDG × 1.00009 via Price Service
     // liquidation terms from onchain params + Morpho formula
@@ -72,7 +75,7 @@ describe("Morpho market normalization (through the adapter)", () => {
 
   it("flags the double-applied multiplier oracle as CONFLICT (never a normal verified opportunity)", async () => {
     const { engine, markets } = await setup();
-    const coll = find((await engine.getOpportunities()).data, "COLLATERAL", idOf(markets.nvdaDouble));
+    const coll = find((await engine.getOpportunities(ALL)).data, "COLLATERAL", idOf(markets.nvdaDouble));
     expect(coll.risk.oracle?.multiplierCheck).toBe("DOUBLE_APPLIED");
     expect(coll.verificationStatus).toBe("CONFLICT");
     expect(coll.warnings.map((w) => w.code)).toContain("ORACLE_MULTIPLIER_DOUBLE_APPLIED");
@@ -80,12 +83,12 @@ describe("Morpho market normalization (through the adapter)", () => {
 
   it("joins assets by address: a look-alike 'NVDA' is non-canonical, UNVERIFIED and not an NVDA opportunity", async () => {
     const { engine, markets } = await setup();
-    const all = await engine.getOpportunities();
+    const all = await engine.getOpportunities(ALL);
     const fake = find(all.data, "COLLATERAL", idOf(markets.fake));
     expect(fake.primaryAsset).toMatchObject({ address: FAKE_NVDA, symbol: "NVDA", canonical: false, registryType: null });
     expect(fake.verificationStatus).toBe("UNVERIFIED");
     expect(fake.warnings.map((w) => w.code)).toContain("LOOKALIKE_TOKEN");
-    const nvda = await engine.getAssetOpportunities(`4663:${NVDA.toLowerCase()}`);
+    const nvda = await engine.getAssetOpportunities(`4663:${NVDA.toLowerCase()}`, ALL);
     expect(nvda.data.some((o) => o.venue.id === idOf(markets.fake))).toBe(false);
   });
 
@@ -96,7 +99,7 @@ describe("Morpho market normalization (through the adapter)", () => {
     expect(r.warnings.map((w) => w.code)).toContain("MARKET_SKIPPED");
     const full = find(r.data, "LEND", idOf(markets.full));
     expect(full.utilization?.value).toBe(10n ** 18n);
-    expect(full.availableLiquidity?.value.amount.raw).toBe(0n);
+    expect(full.availableLiquidity?.value.amount?.raw).toBe(0n);
     expect(full.warnings.map((w) => w.code)).toEqual(expect.arrayContaining(["FULL_UTILIZATION", "ZERO_LIQUIDITY", "ORACLE_UNREADABLE"]));
     expect(find(r.data, "COLLATERAL", idOf(markets.full)).liquidation?.collateralPrice).toBeNull();
   });
@@ -106,7 +109,7 @@ describe("Morpho market normalization (through the adapter)", () => {
     const api = Object.values(m).map((x) => x.apiRaw);
     const tampered = { ...m.nvdaOk.apiRaw, collateralAsset: { address: AAPL, symbol: "AAPL", decimals: 18 } };
     const { engine } = await setup({ markets: m, apiMarkets: [tampered, ...api.slice(1)] });
-    const coll = find((await engine.getOpportunities()).data, "COLLATERAL", idOf(m.nvdaOk));
+    const coll = find((await engine.getOpportunities(ALL)).data, "COLLATERAL", idOf(m.nvdaOk));
     expect(coll.primaryAsset.address).toBe(NVDA); // onchain
     const c = coll.conflicts.find((x) => x.field === "collateralToken")!;
     expect(c.values.map((v) => [v.value.toLowerCase(), v.source.type])).toEqual([[AAPL.toLowerCase(), "OFFICIAL_API"], [NVDA.toLowerCase(), "ONCHAIN"]]);
@@ -120,7 +123,7 @@ describe("Morpho market normalization (through the adapter)", () => {
     const { engine } = await setup({ markets: m, apiMarkets: [stale, ...Object.values(m).slice(1).map((x) => x.apiRaw)] });
     const lend = find((await engine.getOpportunities()).data, "LEND", idOf(m.nvdaOk));
     expect(lend.conflicts.find((c) => c.field === "totalSupplyAssets")?.resolution).toMatch(/onchain value used/);
-    expect(lend.tvl?.value.amount.raw).toBe(100_000_000_000n);
+    expect(lend.tvl?.value.amount?.raw).toBe(100_000_000_000n);
   });
 
   it("missing API state keeps the opportunity (onchain facts) but with no yields; stale state is STALE", async () => {
@@ -168,10 +171,10 @@ describe("Morpho market normalization (through the adapter)", () => {
 describe("Morpho vaults", () => {
   it("publishes only factory-verified vaults, with onchain TVL and API yields of unknown freshness", async () => {
     const { engine } = await setup();
-    const r = await engine.getOpportunities({ filter: { categories: ["VAULT"] } });
+    const r = await engine.getOpportunities({ ...ALL, filter: { categories: ["VAULT"] } });
     expect(r.data.map((o) => o.venue.address)).toEqual([VAULT_OK]);
     const v = r.data[0]!;
-    expect(v.tvl?.value.amount.raw).toBe(150_000_000_000n);
+    expect(v.tvl?.value.amount?.raw).toBe(150_000_000_000n);
     expect(v.tvl?.source.type).toBe("ONCHAIN");
     expect(v.yields.map((y) => [y.type, y.value])).toEqual([["NET_APY", 39_700_000_000_000_000n], ["BASE_APY", 29_700_000_000_000_000n]]);
     expect(v.yields[0]!.freshness.status).toBe("UNKNOWN");
@@ -261,6 +264,11 @@ class ToyFixedYieldAdapter implements OpportunityAdapter {
       utilization: null,
       liquidation: null,
       term: { maturity: "2027-03-25T00:00:00.000Z", lockSeconds: null, withdrawal: "AT_MATURITY" as const },
+      liquidityKind: null,
+      lifecycle: { state: "ACTIVE" as const, maturity: null, secondsToMaturity: null, timeReference: null, canEnter: true, blockers: [] },
+      entry: { kind: "UNKNOWN" as const, requiredAsset: ref, steps: [], singleTransactionAvailable: { known: false as const, reason: "toy" }, note: null },
+      relationships: [],
+      eligibility: null,
       contracts: [],
       risk: { oracle: null, lltv: { known: false as const, reason: "n/a" }, utilization: { known: false as const, reason: "n/a" }, availableLiquidityUsd: { known: false as const, reason: "n/a" }, marketSizeUsd: { known: false as const, reason: "n/a" }, rewardDependence: { known: false as const, reason: "n/a" }, parameterMutability: { known: false as const, reason: "n/a" }, protocolListed: { known: false as const, reason: "n/a" }, protocolWarnings: [], allAssetsCanonical: true },
       details: { kind: "MORPHO_VAULT_V2" as const, vault: USDG as Address, name: "n/a", curator: null, totalAssets: null, performanceFee: null, managementFee: null },
@@ -308,7 +316,7 @@ describe("Opportunity Engine is protocol-agnostic", () => {
   it("yield sorting compares one metric type only; others are listed as not comparable", async () => {
     const { s, markets } = await setup();
     const engine = new OpportunityEngine([new MorphoAdapter(s.http, { api: new FakeMorphoApi(Object.values(markets).map((m) => m.apiRaw)), now: () => NOW.getTime() }), new ToyFixedYieldAdapter()], { reader: s.reader, getRegistry: async () => s.registry, prices: s.prices, now: s.now });
-    const r = await engine.getAssetOpportunities(`4663:${USDG.toLowerCase()}`, { sort: { by: "YIELD", yieldType: "SUPPLY_APY", direction: "DESC" } });
+    const r = await engine.getAssetOpportunities(`4663:${USDG.toLowerCase()}`, { ...ALL, sort: { by: "YIELD", yieldType: "SUPPLY_APY", direction: "DESC" } });
     const toy = r.data.find((o) => o.protocol.id === "toy")!;
     expect(r.notComparable).toContain(toy.id); // IMPLIED_APY is never ranked against SUPPLY_APY
     expect(r.data.indexOf(toy)).toBeGreaterThan(r.data.findIndex((o) => o.category === "LEND"));
@@ -350,8 +358,8 @@ describe("wallet → portfolio → opportunities", () => {
     if (po.context.kind !== "COLLATERAL") return;
     // 2 NVDA × oracle / 1e36 × 0.625 — computed with Morpho's own rounding
     const expected = (((2n * 10n ** 18n * NVDA_USDG_ORACLE) / 10n ** 36n) * LLTV_625) / 10n ** 18n;
-    expect(po.context.protocolMaximumBorrow?.amount.raw).toBe(expected);
-    expect(po.context.protocolMaximumBorrowLiquidityCapped?.amount.raw).toBe(expected < 40_000_000_000n ? expected : 40_000_000_000n);
+    expect(po.context.protocolMaximumBorrow?.amount?.raw).toBe(expected);
+    expect(po.context.protocolMaximumBorrowLiquidityCapped?.amount?.raw).toBe(expected < 40_000_000_000n ? expected : 40_000_000_000n);
     expect(po.context.caveat).toMatch(/Not a recommended or safe amount/);
     expect(po.context.protocolMaximumBorrow?.usd).not.toBeNull();
     // opportunities for an asset the wallet does not hold never appear
@@ -361,7 +369,7 @@ describe("wallet → portfolio → opportunities", () => {
   it("USDG holder sees LEND and VAULT with supply context; COLLATERAL with an unreadable oracle has no max borrow", async () => {
     const { s, engine, markets } = await setup();
     const portfolio = await getPortfolio(WALLET, s.deps);
-    const res = await engine.getPortfolioOpportunities(portfolio);
+    const res = await engine.getPortfolioOpportunities(portfolio, ALL);
     const usdg = res.data.find((g) => g.assetKey === `4663:${USDG.toLowerCase()}`)!;
     expect(new Set(usdg.items.map((p) => p.opportunity.category))).toEqual(new Set(["LEND", "VAULT"]));
     const lend = usdg.items.find((p) => p.opportunity.category === "LEND")!;
@@ -384,16 +392,16 @@ describe("Morpho user positions (onchain scan)", () => {
     const r = await engine.getUserPositions(WALLET);
     const market = r.data.find((p) => p.kind === "LENDING_MARKET")!;
     // supplied = 1e12 × (1e11 + 1) / (1e17 + 1e6) floored; borrowed rounds up
-    expect(market.supplied?.value.amount.raw).toBe((1_000_000_000_000n * (100_000_000_000n + 1n)) / (100_000_000_000_000_000n + 1_000_000n));
-    expect(market.borrowed?.value.amount.raw).toBe((100_000_000_000_000n * (60_000_000_000n + 1n) + (60_000_000_000_000_000n + 1_000_000n - 1n)) / (60_000_000_000_000_000n + 1_000_000n));
+    expect(market.supplied?.value.amount?.raw).toBe((1_000_000_000_000n * (100_000_000_000n + 1n)) / (100_000_000_000_000_000n + 1_000_000n));
+    expect(market.borrowed?.value.amount?.raw).toBe((100_000_000_000_000n * (60_000_000_000n + 1n) + (60_000_000_000_000_000n + 1_000_000n - 1n)) / (60_000_000_000_000_000n + 1_000_000n));
     const collValue = (2n * 10n ** 18n * NVDA_USDG_ORACLE) / 10n ** 36n;
-    expect(market.healthFactor?.value).toBe((collValue * LLTV_625) / market.borrowed!.value.amount.raw);
+    expect(market.healthFactor?.value).toBe((collValue * LLTV_625) / market.borrowed!.value.amount!.raw);
     expect(market.healthFactor?.formula).toMatch(/Morpho health factor definition/);
     expect(market.liquidatable).toBe(false);
     expect(market.relatedOpportunityIds).toEqual([`4663:morpho:LEND:market:${id}`, `4663:morpho:COLLATERAL:market:${id}`]);
     const vault = r.data.find((p) => p.kind === "VAULT")!;
     expect(vault.shares?.value).toBe(1_000_000n);
-    expect(vault.supplied?.value.amount.raw).toBe(1_050_000n);
+    expect(vault.supplied?.value.amount?.raw).toBe(1_050_000n);
   });
 
   it("a wallet with no positions returns an empty, COMPLETE list; invalid input is rejected", async () => {
@@ -406,3 +414,59 @@ describe("Morpho user positions (onchain scan)", () => {
 });
 
 
+
+describe("eligibility layer (Phase 3 §36/§37)", () => {
+  it("default view hides conflicted, unverified-asset and deposit-disabled items; ALL keeps every discovered one", async () => {
+    const { engine, markets } = await setup();
+    const def = await engine.getOpportunities();
+    const all = await engine.getOpportunities(ALL);
+    expect(all.data.length).toBeGreaterThan(def.data.length);
+    expect(def.excluded!.total).toBe(all.data.length - def.data.length);
+    expect(def.data.every((o) => o.eligibility!.eligibleForDefaultDisplay)).toBe(true);
+    // double-multiplier oracle: discovered, CONFLICT, not in the default view
+    const double = find(all.data, "COLLATERAL", idOf(markets.nvdaDouble));
+    expect(double.eligibility!.excludedBy).toContain("DATA_CONFLICT");
+    expect(def.data.find((o) => o.id === double.id)).toBeUndefined();
+    expect(def.excluded!.byReason.DATA_CONFLICT).toBeGreaterThan(0);
+    // non-canonical asset
+    expect(all.data.some((o) => !o.risk.allAssetsCanonical && o.eligibility!.excludedBy.includes("UNVERIFIED_ASSET"))).toBe(true);
+    expect(def.data.some((o) => !o.risk.allAssetsCanonical)).toBe(false);
+    // deposit-disabled vault
+    const vault = all.data.find((o) => o.category === "VAULT")!;
+    expect(vault.lifecycle.blockers).toContain("DEPOSIT_DISABLED");
+    expect(vault.lifecycle.canEnter).toBe(false);
+    expect(vault.eligibility!.excludedBy).toEqual(["DEPOSIT_DISABLED"]);
+    expect(def.data.some((o) => o.category === "VAULT")).toBe(false);
+  });
+
+  it("includeReasons re-admits only opportunities whose every excluding reason is listed", async () => {
+    const { engine } = await setup();
+    const r = await engine.getOpportunities({ includeReasons: ["DATA_CONFLICT"] });
+    expect(r.data.some((o) => o.verificationStatus === "CONFLICT")).toBe(true);
+    expect(r.data.every((o) => o.eligibility!.excludedBy.every((x) => x === "DATA_CONFLICT"))).toBe(true);
+    expect(r.data.some((o) => o.category === "VAULT")).toBe(false);
+  });
+
+  it("a USDG = $1 oracle assumption is a warning, never an exclusion", async () => {
+    const { engine } = await setup();
+    const all = await engine.getOpportunities(ALL);
+    for (const o of all.data) expect(o.eligibility!.excludedBy.join()).not.toMatch(/PEG/);
+  });
+
+  it("the default portfolio view does not offer the deposit-disabled vault", async () => {
+    const { s, engine } = await setup();
+    const portfolio = await getPortfolio(WALLET, s.deps);
+    const res = await engine.getPortfolioOpportunities(portfolio);
+    const usdg = res.data.find((g) => g.assetKey === `4663:${USDG.toLowerCase()}`)!;
+    expect(new Set(usdg.items.map((p) => p.opportunity.category))).toEqual(new Set(["LEND"]));
+  });
+
+  it("an adapter-provided eligibility is ignored: the engine always computes it", async () => {
+    const { s } = await setup();
+    const toy = new ToyFixedYieldAdapter();
+    const engine = new OpportunityEngine([toy], { reader: s.reader, getRegistry: async () => s.registry, prices: s.prices, now: s.now });
+    const r = await engine.getOpportunities(ALL);
+    expect(r.data[0]!.eligibility!.excludedBy).toContain("ENTRY_ROUTE_UNKNOWN");
+    expect(r.data[0]!.eligibility!.policy).toBe("default-v1");
+  });
+});

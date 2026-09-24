@@ -106,6 +106,11 @@ export const CACHE_TTL_MS = {
   PROTOCOL_MARKET_CONFIG: 60 * 60_000,
   /** Protocol API state (APY, rewards, vault figures): fast-changing. */
   PROTOCOL_MARKET_STATE: 60_000,
+  /**
+   * Onchain-discovered market list (factory creation logs). New markets are rare; the list is
+   * extended incrementally from the last scanned block, so a short TTL is cheap.
+   */
+  PROTOCOL_MARKET_LIST: 10 * 60_000,
   /** Longest we will serve a last-good protocol state after a failed refresh (marked degraded). */
   PROTOCOL_STATE_STALE_FALLBACK: 6 * 60 * 60_000,
 } as const;
@@ -122,6 +127,18 @@ export const PROTOCOL_TOTALS_CONFLICT_PCT = 2;
  * generous yet still separates a multiplier of 1.00019 (190 ppm) from 1.
  */
 export const ORACLE_MATCH_TOLERANCE_PPM = 1;
+/**
+ * Protocol API rate vs the same rate read onchain (e.g. Pendle impliedApy vs
+ * exp(lastLnImpliedRate) − 1). Both describe the rate at the last trade; they differ only if a
+ * trade landed between the API's index time and our block. Relative %, above which the gap is
+ * recorded as a DATA_CONFLICT (onchain kept). Observed agreement 2026-09-24: 1e-6 relative.
+ */
+export const PROTOCOL_RATE_CONFLICT_PCT = 1;
+/**
+ * Protocol API pool liquidity (USD) vs our onchain pool value priced by the Phase 1 Price
+ * Service. The API uses its own prices and an earlier index; observed gap 0.3 % (2026-09-24).
+ */
+export const PROTOCOL_LIQUIDITY_CONFLICT_PCT = 5;
 /** Beyond this, an oracle price is reported as deviating from our independent price. */
 export const ORACLE_DEVIATION_WARNING_PCT = 2;
 

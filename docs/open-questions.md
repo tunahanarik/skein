@@ -2,20 +2,40 @@
 
 Each item names what would resolve it.
 
-## Added in Phase 2 (decide before Phase 3)
-P2-1. **Default curation.** Morpho has 277 markets on 4663, but only 9 are `listed`, and 184 opportunities involve non-canonical tokens. Should the product default to `canonicalOnly` + `protocolListedOnly` (the CLI defaults to canonical-only today)?
+## Added in Phase 3 (decide before Phase 4)
+P3-1. **Stock Token YT / underlying APY.**
+- The Pendle API reports `underlyingApy` 0 and Long Yield APY −100 % for NVDA, PFE and SGOV.
+- Onchain, the SY rate equals the uiMultiplier, which grows with reinvested dividends.
+- The API values are shown as supplied, with `UNDERLYING_YIELD_SOURCE_UNCLEAR`.
+- To compute our own figure we need multiplier history: either an archive RPC (open question #1) or recording `UIMultiplierUpdated` events.
+- Should Stock Token YT opportunities stay in the default view meanwhile?
 
-P2-2. **Double-applied oracles.** 4 live markets (NVDA, AAPL, GOOGL, MSFT) are marked CONFLICT. Hide them entirely, or show them with the warning? Should Morpho/the curators be told?
+P3-2. **Dust / onchain-only markets.** A USDG market with about $1 of liquidity (404 in the Pendle API) passes every objective rule and appears in the default view with LOW_LIQUIDITY and PROTOCOL_UNLISTED advisories. Should LOW_LIQUIDITY (or "no protocol-supplied data") become an excluding reason?
+
+P3-3. **PROTOCOL_UNLISTED.** This is advisory by default. The live USDG market with $49.8k liquidity (the only substantial Pendle USDG market) is not whitelisted in the Pendle app. Keep it advisory?
+
+P3-4. **USDG external reward (3.3 %)** is reported by the Pendle API as `EXTERNAL_REWARD`. We cannot verify it onchain (`UNDERLYING_UNVERIFIED`). Who pays it, and is it paid to PT, YT or LP holders? Resolve with the Pendle/Paxos docs.
+
+P3-5. **Router route verification.** `singleTransactionAvailable` cites the deployment file and docs; nothing is simulated (read-only). Should a later phase add read-only `eth_call` quotes (RouterStatic or a Router simulation) so we can show expected output after fees?
+
+P3-6. **API N+1.** We send one Pendle API request per non-expired market (7 today, 4 in parallel). If the market count grows a lot, consider `/v2/markets/all` plus per-market detail only for markets missing `dataUpdatedAt`.
+
+P3-7. **vePENDLE boost.** `maxBoostedApy` is ignored and LP NET_APY is unboosted. Should boosted figures be shown separately?
+
+## Added in Phase 2 (decide before Phase 3)
+P2-1. **Default curation.** *Decided in Phase 3:* non-canonical/unverified opportunities are excluded by default. `protocolListedOnly` stays an opt-in filter; unlisted is an advisory.
+
+P2-2. **Double-applied oracles.** *Decided in Phase 3:* excluded from the default view (DATA_CONFLICT) and available with `includeReasons: ["DATA_CONFLICT"]` / `--include-conflicted`. Still open: should Morpho or the curators be told?
 
 P2-3. **Undetectable cases.** Oracles for tokens with multiplier exactly 1 (SPCX, COIN) cannot be tested for double application until their multiplier moves. Re-check on every `UIMultiplierUpdated`? One NVDA market (`0xbe3a5355…`) is INCONCLUSIVE: needs manual review of its oracle.
 
-P2-9. **USDG-pegged oracles.** 49 Stock Token markets value USDG at exactly $1 (`loanPegAssumed`). This is harmless while USDG is at peg, but it is a depeg risk. Show it as a risk fact only, or also warn?
+P2-9. **USDG-pegged oracles.** *Decided in Phase 3:* not an exclusion. They are shown with the risk fact and the `ORACLE_ASSUMES_LOAN_PEG` warning.
 
 P2-4. **Rewards completeness.** The Morpho API misses external (Merkl) campaigns. Is Merkl acceptable as a rewards source for the Morpho adapter, or does it need its own adapter and approval?
 
 P2-5. **Safety-buffer model.** Only the protocol maximum borrow (at LLTV) is computed. What buffer policy (if any) should the product present?
 
-P2-6. **Steakhouse USDG `deposit_disabled`** (the largest USDG vault, $498M): is it Robinhood-app-only? It is shown with the protocol's RED warning; decide whether to hide it.
+P2-6. **Steakhouse USDG `deposit_disabled`.** *Decided in Phase 3:* not actionable by default (lifecycle blocker DEPOSIT_DISABLED → excluded). Still open: whether it is Robinhood-app-only.
 
 P2-7. **API state lag.** Idle-market APY state can be tens of minutes old (freshness AGING/STALE). Acceptable, or should we compute APY onchain from the IRM (float needed for e^x, or a fixed-point exp)?
 
@@ -51,7 +71,7 @@ P1-8. **Registry refresh ownership.** Who reviews `pnpm registry:check` failures
 8. **Feed includes multiplier: stronger proof.** Wait for a Chainlink feed on a token with a large multiplier (e.g. CRWD at 4.0), or ask Chainlink/Robinhood. `pnpm validate:oracles` re-tests this every run.
 9. **Morpho double-multiplier oracles.** Who deployed the six oracles, and is there source code? Until then they are flagged `DOUBLE_APPLIED` (measured) and the markets carry a CONFLICT warning.
 10. **Steakhouse USDG `deposit_disabled`.** Is the vault restricted to Robinhood app users? Resolve with Morpho or Steakhouse docs, or onchain gate history.
-11. **Pendle Stock Token SY yield.** Does SY accounting include the uiMultiplier (exchangeRate 1.000775 = NVDA multiplier) while the API says `underlyingApy` is 0?
+11. **Pendle Stock Token SY yield.** *Partly resolved in Phase 3:* yes. `SY.exchangeRate() == uiMultiplier` exactly at the same block for NVDA and SGOV, and the API says `pyUnit: "NVDA Shares"`. The remaining question is P3-1.
 12. **v4 TVL for hooked pools.** How do we value pools whose hooks move balances outside PoolManager (Fables, Doppler)? For now they are shown without TVL.
 13. **GeckoTerminal v4 reserves.** Why are they 12–15 % above the principal replay?
 14. **Arcadia pool addresses** from official docs (the factory is verified; the pools come from the DefiLlama adapter).

@@ -9,8 +9,8 @@
 | 0 | research, live validation, data model | done (commit `d49ff0c`) |
 | 1 | **Portfolio Engine + Asset Registry + Price Service** (no opportunities, no UI) | done; see [portfolio-engine.md](portfolio-engine.md), [asset-registry.md](asset-registry.md), [pricing.md](pricing.md), [rpc.md](rpc.md) |
 | 2 | **Opportunity Engine + Morpho adapter** (read-only; no UI) | done; see [opportunity-engine.md](opportunity-engine.md), [protocol-adapters.md](protocol-adapters.md), [protocols/morpho-adapter.md](protocols/morpho-adapter.md), [opportunity-provenance.md](opportunity-provenance.md) |
-| 2b | further adapters (Pendle → Spark → Uniswap …) | not started; needs approval |
-| 3 | minimal comparison UI | not started |
+| 3 | **Pendle adapter + maturity-based opportunities + default eligibility** (read-only; no UI) | done; see [protocols/pendle-adapter.md](protocols/pendle-adapter.md), [pendle-semantics.md](pendle-semantics.md), [asset-relationships.md](asset-relationships.md), [opportunity-comparison.md](opportunity-comparison.md) |
+| 4+ | further adapters (Uniswap, Spark …), minimal comparison UI | not started; needs approval |
 
 The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–9 belong to later phases.
 
@@ -35,8 +35,12 @@ The items below are the original product flow. Steps 1–3 (wallet, asset detect
 | COLLATERAL | Morpho NVDA/AAPL/TSLA/GOOGL/SPY… markets: **unlisted, tiny; shown with warnings; double-multiplier oracles flagged** | USDe/syrupUSDG/mGLO/spUSDG → n/a (USDG is the loan side) | Morpho WETH collateral markets |
 | LP | Uniswap pools; Steer/Beefy vaults where the pair includes the token | Uniswap, Beefy CLM, Steer | Uniswap, Beefy CLM |
 | VAULT | – (Morpho Stock Token vaults are $0) | Morpho Vault V2 (Steakhouse etc.), Spark spUSDG | Morpho WETH vaults (empty) |
-| FIXED_YIELD | **Pendle PT-NVDA / PT-PFE / PT-SGOV** (fixed in token units) | Pendle USDG market (unlisted, hidden) | – |
-| YIELD | Pendle YT | Spark Savings 3.50 % | – |
+| FIXED_YIELD | **Pendle PT-NVDA / PT-PFE / PT-SGOV**. The implied rate is in **share units**, not tokens. | Pendle PT-USDG (not listed in the Pendle app; discovered onchain; shown with a PROTOCOL_UNLISTED advisory) | – |
+| YIELD | Pendle YT (Pendle API reports −100 % for Stock Token YT; flagged UNDERLYING_YIELD_SOURCE_UNCLEAR) | Pendle YT-USDG; Spark Savings 3.50 % (no adapter yet) | – |
+
+Phase 3 corrected two claims in this table:
+- **Token units → share units.** Phase 0 said PT-NVDA is "fixed in token units". Phase 3 measured `SY.exchangeRate() == uiMultiplier` and the API's `pyUnit: "NVDA Shares"`, so the fixed rate is in share units.
+- **"hidden" → shown.** The USDG market was marked "hidden" because it was unlisted. The default policy now hides only objective exclusions (see opportunity-comparison.md), and "unlisted" is an advisory.
 
 ## Phase 1 build list
 1. `packages`: keep a single package for now: `src/` (model, lib, sources, protocols, engines) and `app/` (Next.js).

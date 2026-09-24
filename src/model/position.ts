@@ -14,7 +14,11 @@ export interface Position {
   id: string; // `${chainId}:${protocolId}:position:${venueId}:${walletHash-free venue id}`
   chainId: number;
   protocol: { id: string; name: string };
-  kind: "LENDING_MARKET" | "VAULT";
+  /**
+   * PRINCIPAL_TOKEN / YIELD_TOKEN / LIQUIDITY_POOL (Phase 3, maturity markets): `shares` is the
+   * token balance and `supplied` its current value in the underlying token (protocol rate).
+   */
+  kind: "LENDING_MARKET" | "VAULT" | "PRINCIPAL_TOKEN" | "YIELD_TOKEN" | "LIQUIDITY_POOL";
   venue: { kind: string; id: string; address: Address | null };
   /** The opportunity this position sits in, if the adapter knows it. */
   relatedOpportunityIds: string[];
@@ -42,4 +46,6 @@ export interface Position {
   warnings: Warning[];
   freshness: FreshnessInfo;
   verificationStatus: VerificationStatus;
+  /** Maturity-based positions only: maturity (ISO) and whether it has passed at the block. */
+  maturity?: { at: string; expired: boolean } | null;
 }

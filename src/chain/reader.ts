@@ -7,6 +7,7 @@ import {
   createPublicClient,
   http,
   type Abi,
+  type AbiEvent,
   type Address,
   type Hex,
   type PublicClient,
@@ -36,6 +37,29 @@ export interface BlockRef {
   timestamp: bigint;
 }
 
+export interface LogQuery {
+  address: Address;
+  event: AbiEvent;
+  fromBlock: bigint;
+  toBlock: bigint;
+}
+
+export interface DecodedLog {
+  address: Address;
+  blockNumber: bigint;
+  transactionHash: Hex;
+  logIndex: number;
+  args: Record<string, unknown>;
+}
+
+/** Deepest range bisection for eth_getLogs (2^16 sub-ranges) before giving up. */
+export const MAX_LOG_SPLIT_DEPTH = 16;
+
+/** Provider errors that mean "range/result set too large", which bisection can fix. */
+export function isLogRangeError(e: unknown): boolean {
+  return /more than \d+ results|query returned more than|block range|range (is )?too (large|wide)|limit exceeded|too many (logs|results)|10000/i.test((e as Error)?.message ?? "");
+}
+
 export interface ChainReader {
   readonly chainId: number;
   /** Throws unless the endpoint really is Robinhood Chain (eth_chainId). */
@@ -45,6 +69,11 @@ export interface ChainReader {
   /** Order-preserving; never throws for individual call failures. */
   multicall(calls: readonly ContractCall[], opts: { blockNumber: bigint }): Promise<CallResult[]>;
   readContract(call: ContractCall, opts: { blockNumber: bigint }): Promise<unknown>;
+  /**
+   * Decoded event logs of ONE event from ONE contract, ordered by (block, logIndex). Ranges the
+   * provider rejects as too large are bisected; any other failure throws (no partial list).
+   */
+  getLogs(q: LogQuery): Promise<DecodedLog[]>;
   health(): RpcHealthSnapshot;
 }
 
@@ -132,6 +161,33 @@ export class ViemChainReader implements ChainReader {
       () => this.client.readContract({ ...call, args: call.args ?? [], blockNumber: opts.blockNumber } as never),
       (e) => classifyRpcError(e) !== "ERROR" || !/revert/i.test((e as Error).message ?? ""),
     );
+  }
+
+  async getLogs(q: LogQuery): Promise<DecodedLog[]> {
+    const run = async (from: bigint, to: bigint, depth: number): Promise<DecodedLog[]> => {
+      try {
+        const logs = await this.withRetry(
+          `eth_getLogs ${q.event.name} [${from}..${to}]`,
+          () => this.client.getLogs({ address: q.address, event: q.event, fromBlock: from, toBlock: to, strict: true } as never),
+          (e) => !isLogRangeError(e) && classifyRpcError(e) !== "ERROR",
+        );
+        return (logs as unknown as { address: Address; blockNumber: bigint; transactionHash: Hex; logIndex: number; args: Record<string, unknown> }[]).map((l) => ({
+          address: l.address,
+          blockNumber: l.blockNumber,
+          transactionHash: l.transactionHash,
+          logIndex: l.logIndex,
+          args: l.args,
+        }));
+      } catch (e) {
+        if (to > from && depth < MAX_LOG_SPLIT_DEPTH && isLogRangeError(e)) {
+          const mid = from + (to - from) / 2n;
+          return [...(await run(from, mid, depth + 1)), ...(await run(mid + 1n, to, depth + 1))];
+        }
+        throw e;
+      }
+    };
+    const out = await run(q.fromBlock, q.toBlock, 0);
+    return out.sort((a, b) => (a.blockNumber === b.blockNumber ? a.logIndex - b.logIndex : a.blockNumber < b.blockNumber ? -1 : 1));
   }
 
   async multicall(calls: readonly ContractCall[], opts: { blockNumber: bigint }): Promise<CallResult[]> {
