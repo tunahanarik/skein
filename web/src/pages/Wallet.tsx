@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { api, type Intelligence } from "../api";
+import { api, type Intelligence, type Portfolio } from "../api";
 import { CardView } from "../components/CardView";
-import { Avatar, ErrorBox, LoadingCards, useAsync } from "../components/common";
-import { amount, shortAddr, usd } from "../format";
+import { Avatar, ErrorBox, ExplorerLink, LoadingCards, useAsync } from "../components/common";
+import { amount, date, pctE18, shortAddr, usd } from "../format";
 import { useI18n } from "../i18n";
 import { linkProps } from "../router";
 import { code } from "../text";
@@ -91,6 +91,8 @@ function WalletView({ address }: { address: string }) {
             </p>
           )}
 
+          <Positions positions={p.positions} />
+
           <section className="section">
             <div className="section-head">
               <h2>{t("wallet.holdings")}</h2>
@@ -119,6 +121,90 @@ function WalletView({ address }: { address: string }) {
         </>
       )}
     </>
+  );
+}
+
+type PositionV = Portfolio["positions"][number];
+
+function Positions({ positions }: { positions: PositionV[] }) {
+  const { t } = useI18n();
+  const amt = (x: PositionV["supplied"]) => (x ? `${amount(x.amount?.display ?? null)} ${x.asset.symbol}${x.usd ? ` · ${usd(x.usd.display)}` : ""}` : null);
+  return (
+    <section className="section">
+      <div className="section-head">
+        <h2>{t("pos.title")}</h2>
+        <span className="muted">{t("pos.hint")}</span>
+      </div>
+      {positions.length === 0 ? (
+        <div className="panel pad muted small">{t("pos.none")}</div>
+      ) : (
+        <div className="grid two">
+          {positions.map((p) => {
+            const hf = p.healthFactor !== null ? Number(p.healthFactor) / 1e18 : null;
+            const hfColor = hf === null ? undefined : hf < 1.05 ? "var(--bad)" : hf < 1.25 ? "var(--warn)" : "var(--ok)";
+            return (
+              <article key={p.id} className="panel card">
+                <div className="top">
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="label">{t(`pos.kind.${p.kind}`)}</div>
+                    <div className="ctx">
+                      {p.protocol.name}
+                      {p.label ? ` · ${p.label}` : ""}
+                    </div>
+                  </div>
+                  {p.liquidatable === true && <span className="badge HIDDEN_BY_DEFAULT">{t("pos.liquidatable")}</span>}
+                </div>
+                <dl className="kv">
+                  {p.supplied && (
+                    <>
+                      <dt>{t("pos.supplied")}</dt>
+                      <dd className="num">{amt(p.supplied)}</dd>
+                    </>
+                  )}
+                  {p.collateral && (
+                    <>
+                      <dt>{t("pos.collateral")}</dt>
+                      <dd className="num">{amt(p.collateral)}</dd>
+                    </>
+                  )}
+                  {p.borrowed && (
+                    <>
+                      <dt>{t("pos.borrowed")}</dt>
+                      <dd className="num">{amt(p.borrowed)}</dd>
+                    </>
+                  )}
+                  {hf !== null && (
+                    <>
+                      <dt>{t("pos.health")}</dt>
+                      <dd className="num" style={{ color: hfColor, fontWeight: 600 }}>
+                        {amount(String(hf), 3)}
+                      </dd>
+                    </>
+                  )}
+                  {p.ltv !== null && (
+                    <>
+                      <dt>{t("pos.ltv")}</dt>
+                      <dd className="num">
+                        {pctE18(p.ltv, 1)}
+                        {p.liquidationLtv ? ` / ${t("pos.lltv")} ${pctE18(p.liquidationLtv, 1)}` : ""}
+                      </dd>
+                    </>
+                  )}
+                  {p.maturity && (
+                    <>
+                      <dt>{p.maturity.expired ? t("pos.matured", { d: "" }) : t("pos.maturity", { d: "" })}</dt>
+                      <dd>{date(p.maturity.at)}</dd>
+                    </>
+                  )}
+                </dl>
+                {p.liquidatable === false && p.borrowed && <div className="small" style={{ color: "var(--ok)" }}>{t("pos.healthy")}</div>}
+                {p.venueAddress && <ExplorerLink address={p.venueAddress} />}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 

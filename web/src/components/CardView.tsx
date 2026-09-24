@@ -3,7 +3,8 @@ import type { Card } from "../api";
 import { amount, date, feePpm, pctE18, pctText, usd } from "../format";
 import { useI18n, type StringKey } from "../i18n";
 import { actionLabel, ago, code, contextLine } from "../text";
-import { UsabilityBadge } from "./common";
+import { ProtocolLink, UsabilityBadge } from "./common";
+import { Estimate } from "./Estimate";
 
 const HEADLINE_LABEL: Record<string, StringKey> = {
   SUPPLY_APY: "card.supplyApy",
@@ -134,6 +135,8 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
         </div>
       )}
 
+      <Estimate card={card} />
+      {card.protocolApp && <ProtocolLink name={card.protocol.name} url={card.protocolApp.url} />}
       <details className="more">
         <summary>{t("card.details")}</summary>
         <div className="body">

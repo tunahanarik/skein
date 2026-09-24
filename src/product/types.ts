@@ -192,6 +192,8 @@ export interface ProductCard {
   trade?: { route: TradeRouteView; quote: TradeQuoteView | null; quoteUnavailableReason?: string };
   /** Raw opportunities behind this card (RAW mode ids). */
   sourceOpportunityIds: string[];
+  /** The protocol's own app (home page), only when its host passed the verified allowlist. */
+  protocolApp: { url: string; host: string } | null;
 }
 
 export interface CategoryView {
@@ -290,6 +292,31 @@ export interface AssetIntelligence {
   generatedAt: string;
 }
 
+/** A position the wallet already holds (read onchain; the wallet never reaches a protocol API). */
+export interface PositionView {
+  id: string;
+  protocol: { id: string; name: string };
+  kind: "LENDING_MARKET" | "VAULT" | "PRINCIPAL_TOKEN" | "YIELD_TOKEN" | "LIQUIDITY_POOL";
+  /** Title of the related opportunity (protocol-supplied), if known. */
+  label: string | null;
+  assets: AssetRef[];
+  supplied: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  borrowed: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  collateral: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  /** Morpho definition; null without debt. 1e18-scaled. */
+  healthFactor: Fixed18 | null;
+  ltv: Fixed18 | null;
+  liquidationLtv: Fixed18 | null;
+  liquidatable: boolean | null;
+  maturity: { at: string; expired: boolean } | null;
+  venueAddress: string | null;
+  observedAt: string | null;
+  freshness: FreshnessStatus;
+  warnings: string[];
+  /** Cards for the same venue in this response (for "view market"). */
+  relatedCardIds: string[];
+}
+
 export interface PortfolioIntelligence {
   chainId: number;
   /** Address is only echoed back to the caller; it is never logged, persisted or sent to protocol APIs. */
@@ -300,6 +327,8 @@ export interface PortfolioIntelligence {
   unsupportedAssetValueUsd: string;
   unpricedAssetCount: number;
   assets: AssetIntelligence[];
+  /** Open positions across protocols (lending, vault shares, PT/YT/LP). */
+  positions: PositionView[];
   unsupportedAssets: { asset: AssetRef | { symbol: string; key: string }; reason: string; valueUsd: string | null }[];
   opportunityCounts: OpportunityCounts;
   dataQuality: DataQuality;

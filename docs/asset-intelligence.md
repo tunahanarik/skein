@@ -105,6 +105,34 @@ Implied APYs are compared only within the same unit.
   - `pricedValueUsd` and `unpricedAssetCount`: from Phase 1
 - No balance is ever quoted automatically.
 
+## Open positions (`PortfolioIntelligence.positions`)
+Positions come from the engine's `getUserPositions`, which reads onchain at the snapshot block (Morpho `position(id, user)` and vault `balanceOf`; Pendle PT/YT/LP balances). The wallet reaches only the chain reader, never a protocol API.
+
+Each `PositionView` carries:
+- the supplied, borrowed and collateral amounts, in tokens and USD
+- Morpho's health factor, LTV and the market's liquidation LTV
+- `liquidatable`, evaluated with integer math at the block
+- the maturity (PT/YT/LP)
+- the venue address
+- warning codes
+
+Positions with debt are listed first.
+
+## Trade targets and borrowable-now
+- `tradeTargets`: every asset reachable from this one through verified routes (DIRECT or ONE_HOP), with its symbol. The web target picker offers only these. An asset with no route gets an explicit message and no picker.
+- `borrowCapacity.borrowableNow` = min(protocol limit at LLTV, the market's available liquidity), compared exactly in integers, with `cappedBy` set to PROTOCOL_LIMIT or MARKET_LIQUIDITY. It is still at the liquidation threshold and is not a recommendation.
+
+## Protocol app links (`protocolApp`)
+A card links to the protocol's own app only when the app's host is in the protocol's verified `linkHosts` (`src/config/protocols.ts`) and passes `toTrustedLink`.
+
+| Host | Source (2026-09-24) |
+|---|---|
+| app.morpho.org | linked from morpho.org, the verified domain of github.com/morpho-org |
+| app.pendle.finance | linked from pendle.finance, the verified domain of github.com/pendle-finance |
+| app.uniswap.org | named in the github.com/Uniswap/interface README |
+
+Links go to the app's home page, because chain-specific deep-link formats are not verified. A route through markets of different protocols gets no link.
+
 ## Caching
 - The snapshot is the engine output at one block. It has a 15 s TTL (`CACHE_TTL_MS.PRODUCT_SNAPSHOT`), which is shorter than the adapter and price TTLs below it, so the product layer never extends their freshness.
 - View cache keys are `chainId | asset | mode | tradeTarget | tradeAmount | holding | snapshot time`. Views with a holding are not cached.

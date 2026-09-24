@@ -12,6 +12,8 @@ import { buildPortfolioOpportunity } from "../opportunities/userContext.js";
 import type { PortfolioAsset } from "../portfolio/types.js";
 import type { UsdPrice } from "../pricing/types.js";
 import { classifyPriceImpact } from "../config/tradeQuality.js";
+import { PROTOCOLS } from "../config/protocols.js";
+import { toTrustedLink } from "../lib/links.js";
 import { productCategoryOf } from "./categories.js";
 import { opportunitySources, summarizeSources } from "./quality.js";
 import type { BorrowCapacity, FixedYieldView, MetricView, ProductCard, TradeQuoteView, TradeRouteView, UsabilityResult } from "./types.js";
@@ -116,6 +118,12 @@ function borrowableNow(o: Opportunity, max: { amount: TokenAmount | null; usd: U
   return liq.amount.raw < limit.raw ? { amount: liq.amount, usd: liq.usd, cappedBy: "MARKET_LIQUIDITY" } : { amount: limit, usd: max!.usd, cappedBy: "PROTOCOL_LIMIT" };
 }
 
+/** Verified app link for a protocol (config allowlist), or null. */
+export function protocolApp(protocolId: string): ProductCard["protocolApp"] {
+  const p = PROTOCOLS.find((x) => x.id === protocolId);
+  return p?.appUrl ? toTrustedLink(p.appUrl, p.linkHosts) : null;
+}
+
 export interface CardContext {
   nowS: number;
   holding: PortfolioAsset | null;
@@ -152,6 +160,7 @@ export function opportunityCard(o: Opportunity, ctx: CardContext, usability: Usa
     sources: summarizeSources(opportunitySources(o)),
     ranking: null,
     sourceOpportunityIds: [o.id],
+    protocolApp: protocolApp(o.protocol.id),
   };
   const bc = borrowCapacity(o, ctx.holding, o.borrowAssets[0] ? ctx.borrowPriceOf(o.borrowAssets[0].key) : null);
   if (bc) card.borrowCapacity = bc;
@@ -223,6 +232,7 @@ export function routeCard(route: TradeRoute, lookup: { markets: ReadonlyMap<stri
     trade: { route: routeView(route, lookup.markets), quote: quote ? quoteView(quote.q, quote.nowS) : null, ...(quoteUnavailableReason ? { quoteUnavailableReason } : {}) },
     // The raw TRADE opportunity of every hop (market + direction); RAW mode ids.
     sourceOpportunityIds: route.hops.map((h) => lookup.hopOpportunities.get(`${h.marketId}|${h.from.key}`) ?? h.marketId),
+    protocolApp: ms.length && ms.every((m) => m.protocol.id === ms[0]!.protocol.id) ? protocolApp(ms[0]!.protocol.id) : null,
   };
   return card;
 }

@@ -22,9 +22,13 @@ export interface ProtocolConfig {
   contracts: Record<string, Address>;
   /**
    * Hosts a deep link may point at; anything else from an API is dropped. Empty until the
-   * app domain is confirmed from the protocol's own docs (open question, docs/open-questions.md).
+   * app domain is confirmed from an official source (see appSource).
    */
   linkHosts: string[];
+  /** The protocol's own web app (home page only: chain-specific deep-link formats are not verified). */
+  appUrl: string | null;
+  /** Where appUrl was confirmed (2026-09-24). */
+  appSource: string | null;
   checkedAt: string;
 }
 
@@ -48,7 +52,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       publicAllocator: "0xCe5c1aFa115fF8b1D6913509bfc79D9AE08CC857",
       bundler3: "0x6478e9393d4C5bB4d53ee881d1DE78786A0344a6",
     },
-    linkHosts: [],
+    linkHosts: ["app.morpho.org"],
+    appUrl: "https://app.morpho.org/",
+    appSource: "morpho.org (the verified domain on github.com/morpho-org) links its Vaults/Markets app at app.morpho.org",
     checkedAt: "2026-09-24",
   },
   {
@@ -61,6 +67,8 @@ export const PROTOCOLS: ProtocolConfig[] = [
     dataSources: [{ kind: "ONCHAIN", url: "spUSDG.vsr() / totalAssets()", covers4663: true, note: "no official rates API found" }],
     contracts: { spUSDG: "0xde770c84FE66E063336b31737cFE9790f18c4087" },
     linkHosts: [],
+    appUrl: null,
+    appSource: null,
     checkedAt: "2026-09-24",
   },
   {
@@ -81,7 +89,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       marketFactoryV6: "0x544BF81c855AE84c1e8b65d5E38770898D01EeE2",
       yieldContractFactoryV6: "0xa543BF1ac6441822E95eD408076bB53090a0a9d7",
     },
-    linkHosts: [],
+    linkHosts: ["app.pendle.finance"],
+    appUrl: "https://app.pendle.finance/",
+    appSource: "pendle.finance (the verified domain on github.com/pendle-finance) links “V2 App” at app.pendle.finance",
     checkedAt: "2026-09-24",
   },
   {
@@ -106,7 +116,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       v4Quoter: "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
       v4PositionManager: "0x58daec3116aae6d93017baaea7749052e8a04fa7",
     },
-    linkHosts: [],
+    linkHosts: ["app.uniswap.org"],
+    appUrl: "https://app.uniswap.org/",
+    appSource: "github.com/Uniswap/interface README: “Web: app.uniswap.org”",
     checkedAt: "2026-09-24",
   },
   {
@@ -122,6 +134,8 @@ export const PROTOCOLS: ProtocolConfig[] = [
     ],
     contracts: {}, // per-vault addresses come from the API and are checked onchain before display
     linkHosts: [],
+    appUrl: null,
+    appSource: null,
     checkedAt: "2026-09-24",
   },
   {
@@ -142,6 +156,8 @@ export const PROTOCOLS: ProtocolConfig[] = [
     ],
     contracts: { vaultRegistry: "0x5c7d564fA5CE0e874367121E33c1ff10dB2115dC" },
     linkHosts: [],
+    appUrl: null,
+    appSource: null,
     checkedAt: "2026-09-24",
   },
 ];

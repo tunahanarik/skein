@@ -14,7 +14,7 @@ import { CACHE_TTL_MS } from "../config/freshness.js";
 import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
-import type { AssetRef, Opportunity } from "../model/opportunity.js";
+import type { AssetRef, Opportunity, TokenAmount, UsdAmount } from "../model/opportunity.js";
 import type { TradeMarket, TradeRoute } from "../model/trade.js";
 import { isAuthoritative } from "../model/verification.js";
 import type { AdapterContext } from "../opportunities/adapter.js";
@@ -38,6 +38,7 @@ import type {
   EmptyState,
   OpportunityCounts,
   PortfolioIntelligence,
+  PositionView,
   PriceView,
   ProductCard,
   ProductCategory,
@@ -430,7 +431,40 @@ export class AssetIntelligenceService {
         else unsupportedValue += row.valueUsdE18;
       }
     }
+    // Positions: onchain reads at the snapshot block; the wallet goes only to the chain reader.
+    const pos = await this.deps.engine.getUserPositions(wallet, s.ctx).catch(() => null);
+    const oppById = new Map(s.all.data.map((o) => [o.id, o]));
+    const cardIdsByOpp = new Map<string, string[]>();
+    for (const a of assets) for (const c of a.categories.flatMap((x) => x.subcategories.flatMap((y) => y.cards))) for (const id of c.sourceOpportunityIds) cardIdsByOpp.set(id, [...(cardIdsByOpp.get(id) ?? []), c.cardId]);
+    const amt = (m: { value: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } } | null) => (m ? { amount: m.value.amount, usd: m.value.usd, asset: m.value.asset } : null);
+    const positions: PositionView[] = (pos?.data ?? [])
+      .map((p) => {
+        const related = p.relatedOpportunityIds.map((id) => oppById.get(id)).filter((o): o is Opportunity => !!o);
+        return {
+          id: p.id,
+          protocol: { ...p.protocol },
+          kind: p.kind,
+          label: related[0]?.title ?? null,
+          assets: p.assets,
+          supplied: amt(p.supplied),
+          borrowed: amt(p.borrowed),
+          collateral: amt(p.collateral),
+          healthFactor: p.healthFactor?.value ?? null,
+          ltv: p.ltv?.value ?? null,
+          liquidationLtv: related.find((o) => o.liquidation)?.liquidation?.lltv.value ?? null,
+          liquidatable: p.liquidatable,
+          maturity: p.maturity ?? null,
+          venueAddress: p.venue.address,
+          observedAt: p.supplied?.observedAt ?? p.collateral?.observedAt ?? p.borrowed?.observedAt ?? null,
+          freshness: p.freshness.status,
+          warnings: p.warnings.map((w) => w.code),
+          relatedCardIds: [...new Set(p.relatedOpportunityIds.flatMap((id) => cardIdsByOpp.get(id) ?? []))],
+        };
+      })
+      .sort((a, b) => Number(b.borrowed !== null) - Number(a.borrowed !== null) || Number(b.supplied?.usd?.display ?? b.collateral?.usd?.display ?? 0) - Number(a.supplied?.usd?.display ?? a.collateral?.usd?.display ?? 0));
     const statuses = this.adapterStatuses(s);
+    if (pos && pos.status !== "COMPLETE") for (const a of pos.adapters.filter((x) => x.status !== "COMPLETE")) statuses.push({ protocol: `${a.protocol}_positions`, status: a.status, issues: a.issues });
+    if (!pos) statuses.push({ protocol: "positions", status: "UNKNOWN", issues: [] });
     const freshness = summarizeFreshness([], nowS);
     freshness.oldestCriticalDataAt = assets.map((a) => a.freshness.oldestCriticalDataAt).filter((x): x is string => !!x).sort()[0] ?? null;
     freshness.newestDataAt = assets.map((a) => a.freshness.newestDataAt).filter((x): x is string => !!x).sort().at(-1) ?? null;
@@ -446,6 +480,7 @@ export class AssetIntelligenceService {
       unsupportedAssetValueUsd: formatFixed(unsupportedValue, USD_DECIMALS),
       unpricedAssetCount: portfolio.totals.unpricedAssetCount,
       assets,
+      positions,
       unsupportedAssets: unsupported,
       opportunityCounts: counts,
       dataQuality: summarizeDataQuality(statuses, freshness, extra),

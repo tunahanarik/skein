@@ -3,7 +3,7 @@ import type { Card } from "../api";
 import { amount, feePpm, pctE18, usd } from "../format";
 import { useI18n } from "../i18n";
 import { code } from "../text";
-import { ExplorerLink, UsabilityBadge } from "./common";
+import { ExplorerLink, ProtocolLink, UsabilityBadge } from "./common";
 import { rowKeys } from "./keyboard";
 
 /** Compact, ranked list of trade routes (with quotes when an amount was given). Rows expand to pool detail. */
@@ -89,6 +89,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                             {t("route.quotedFor", { b: q.blockNumber, f: code(t, "fresh", q.freshness), x: `${amount(q.input.display)} ${q.input.asset.symbol}` })}
                           </div>
                         )}
+                        {c.protocolApp && <ProtocolLink name={c.protocol.name} url={c.protocolApp.url} />}
                         <div className="faint">
                           {[
                             ...c.usability.notes.map((n) => code(t, "note", n)),

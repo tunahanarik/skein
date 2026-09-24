@@ -408,3 +408,28 @@ describe("improvements: trade targets and borrowable now", () => {
     expect(liq).toBeTruthy();
   });
 });
+
+describe("portfolio: open positions", () => {
+  it("lists Morpho lending and Pendle PT positions with health factor and LLTV; the wallet reaches no protocol API", async () => {
+    const { marketIdOf } = await import("../../src/protocols/morpho/onchain.js");
+    const { fixtureMarkets } = await import("../fixtures/morpho.js");
+    const id = marketIdOf(fixtureMarkets().nvdaOk.params).toLowerCase();
+    const st = await intelligenceStack({
+      pendleBalances: { nvda: { pt: 5n * ONE } },
+      mutateWorld: (w) => w.morpho!.positions.set(`${id}:${WALLET.toLowerCase()}`, { supplyShares: 0n, borrowShares: 100_000_000_000_000n, collateral: 2n * ONE }),
+    });
+    const p = await st.service.getPortfolioIntelligence(WALLET);
+    const lend = p.positions.find((x) => x.kind === "LENDING_MARKET")!;
+    expect(lend.protocol.name).toBe("Morpho");
+    expect(lend.borrowed?.asset.symbol).toBe("USDG");
+    expect(lend.collateral?.amount?.raw).toBe(2n * ONE);
+    expect(typeof lend.healthFactor).toBe("bigint");
+    expect(lend.liquidationLtv).toBe(625n * 10n ** 15n);
+    expect(lend.liquidatable).toBe(false);
+    expect(p.positions[0]!.kind).toBe("LENDING_MARKET"); // debt first
+    const pt = p.positions.find((x) => x.kind === "PRINCIPAL_TOKEN")!;
+    expect(pt.protocol.name).toBe("Pendle");
+    expect(pt.maturity?.expired).toBe(false);
+    expect(j(st.service.metrics.snapshot())).not.toContain(WALLET.slice(2, 12));
+  });
+});

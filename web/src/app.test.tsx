@@ -89,6 +89,28 @@ describe("asset page", () => {
   });
 });
 
+describe("estimate and links", () => {
+  it("estimates PT earnings to maturity and validates input", async () => {
+    await mountAt("/asset/NVDA");
+    const summary = (await screen.findAllByText("Estimate earnings"))[0]!;
+    fireEvent.click(summary);
+    const input = within(summary.closest("details")!).getByLabelText(/Amount of NVDA/) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "100" } });
+    expect(await screen.findByText(/at maturity/)).toBeTruthy();
+    fireEvent.change(input, { target: { value: "" } });
+    expect(await screen.findByText("Enter a positive number.")).toBeTruthy();
+  });
+
+  it("links only to verified protocol app hosts", async () => {
+    await mountAt("/asset/NVDA");
+    await screen.findByText(/Buy PT-NVDA/);
+    const hosts = [...document.querySelectorAll("a[target=_blank]")].map((a) => new URL((a as HTMLAnchorElement).href).host);
+    expect(hosts.length).toBeGreaterThan(0);
+    for (const h of hosts) expect(["app.pendle.finance", "app.morpho.org", "app.uniswap.org", "robinhoodchain.blockscout.com"]).toContain(h);
+    for (const a of document.querySelectorAll("a[target=_blank]")) expect(a.getAttribute("rel")).toContain("noopener");
+  });
+});
+
 describe("shell", () => {
   it("theme toggle sets and remembers the theme", async () => {
     await mountAt("/about");

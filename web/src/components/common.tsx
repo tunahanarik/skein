@@ -57,6 +57,19 @@ export function ExplorerLink({ address, children }: { address: string; children?
   );
 }
 
+/** Link to a protocol's own app (URL already passed the server allowlist; re-checked here). */
+export function ProtocolLink({ name, url }: { name: string; url: string }) {
+  const { t } = useI18n();
+  if (!/^https:\/\/[a-z0-9.-]+\//i.test(url)) return null;
+  return (
+    <div className="small">
+      <a href={url} target="_blank" rel="noopener noreferrer" title={t("link.note")}>
+        {t("link.open", { p: name })} ↗
+      </a>
+    </div>
+  );
+}
+
 export function Avatar({ symbol, size }: { symbol: string; size?: "lg" }) {
   return (
     <span className={`avatar${size === "lg" ? " lg" : ""}`} aria-hidden="true">
