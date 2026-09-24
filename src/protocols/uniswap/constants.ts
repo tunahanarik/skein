@@ -75,6 +75,12 @@ export interface V3Dialect {
   dynamicFee: boolean;
   mutability: string;
   mutabilitySource: string;
+  /** Identity checks (prefixes) that establish origin. Default: pool.factory() + factory.getPool. */
+  originChecks?: [string, string];
+  /** How reserves are measured, for provenance labels. Default: token.balanceOf(pool). */
+  reservesMethod?: string;
+  /** Warning attached to reserves (code + text). Default: v3 balances include uncollected fees. */
+  reservesWarning?: { code: "RESERVES_INCLUDE_UNCOLLECTED_FEES" | "RESERVES_LOWER_BOUND"; text: string };
 }
 
 export const quoterV2Abi = parseAbi([

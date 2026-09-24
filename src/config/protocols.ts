@@ -122,6 +122,27 @@ export const PROTOCOLS: ProtocolConfig[] = [
     checkedAt: "2026-09-24",
   },
   {
+    id: "uniswap-v4",
+    name: "Uniswap",
+    categories: ["TRADE"],
+    verification: "VERIFIED_ONCHAIN",
+    deploymentSource: "https://github.com/Uniswap/contracts/blob/main/deployments/json/4663.json",
+    docs: "https://developers.uniswap.org/",
+    dataSources: [
+      { kind: "ONCHAIN", url: "hookless pools only: computed PoolKey ids checked with StateView.getSlot0; reserves by StateView tick walk (±4× price window, a lower bound)", covers4663: true },
+      { kind: "ONCHAIN", url: "V4Quoter.quoteExactInputSingle via eth_call (INDICATIVE quotes)", covers4663: true },
+    ],
+    contracts: {
+      v4PoolManager: "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+      v4StateView: "0xf3334192d15450cdd385c8b70e03f9a6bd9e673b",
+      v4Quoter: "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
+    },
+    linkHosts: ["app.uniswap.org"],
+    appUrl: "https://app.uniswap.org/",
+    appSource: "github.com/Uniswap/interface README: “Web: app.uniswap.org”",
+    checkedAt: "2026-09-24",
+  },
+  {
     id: "ramses",
     name: "Ramses",
     categories: ["TRADE"],

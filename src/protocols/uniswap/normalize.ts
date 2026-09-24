@@ -71,7 +71,8 @@ export function normalizePool(input: PoolInput, ctx: UniswapNormalizeContext): {
   const identitySrc = (method: string) => chainSrc(method, pool, id.readAtBlock);
   // State values carry the block they were read at (secondary pools may reuse an older read).
   const stBlock = st?.atBlock ?? { number: ctx.blockNumber, timestamp: ctx.blockTimestamp };
-  const stateSrc = chainSrc("slot0() / liquidity() / token.balanceOf(pool)", pool, stBlock.number);
+  const reservesMethod = d.reservesMethod ?? "token.balanceOf(pool)";
+  const stateSrc = chainSrc(`slot0() / liquidity() / ${reservesMethod}`, pool, stBlock.number);
   const blockFresh: FreshnessInfo = classifyFreshness("ONCHAIN_STATE", Number(stBlock.timestamp), ctx.nowS);
   const configFresh = classifyFreshness("PROTOCOL_MARKET_CONFIG", Number(input.identityBlock.timestamp), ctx.nowS);
   const measured = <T>(value: T, origin: Measured<T>["origin"], source: DataSource, freshness: FreshnessInfo, verification: VerificationStatus, formula?: string): Measured<T> => ({
@@ -91,7 +92,8 @@ export function normalizePool(input: PoolInput, ctx: UniswapNormalizeContext): {
   const a1 = ctx.resolveAsset(id.token1, m1?.symbol ?? null, m1?.decimals ?? null);
   const identityOk = id.checks.every((c) => c.ok === true);
   const origin = (name: string) => id.checks.find((c) => c.check.startsWith(name))?.ok === true;
-  const originVerified = origin("pool.factory()") && origin("factory.getPool");
+  const [oA, oB] = d.originChecks ?? ["pool.factory()", "factory.getPool"];
+  const originVerified = origin(oA) && origin(oB);
   if (!identityOk) warnings.push(warn("POOL_UNVERIFIED", `${d.label} pool ${short}: checks not passed: ${id.checks.filter((c) => c.ok !== true).map((c) => `${c.check} (${c.ok === null ? "unreadable" : "false"})`).join("; ")}`));
   for (const ref of [a0, a1]) {
     if (!ref.canonical) warnings.push(warn(ctx.isLookalike(ref) ? "LOOKALIKE_TOKEN" : "NON_CANONICAL_ASSET", `${d.label} pool ${short}: ${ref.symbol} ${ref.address} is not in the canonical registry${ctx.isLookalike(ref) ? " but uses a canonical symbol" : ""}`, { assetKey: ref.key }));
@@ -115,14 +117,17 @@ export function normalizePool(input: PoolInput, ctx: UniswapNormalizeContext): {
   const reserve = (ref: AssetRef, raw: bigint | null | undefined, px: AssetPrice["price"], token: Address): Measured<AmountWithUsd> | null => {
     if (raw === null || raw === undefined) return null;
     const usd = px ? usdValueE18(raw, ref.decimals, px.raw, px.decimals) : null;
-    return measured({ asset: ref, amount: { raw, decimals: ref.decimals, display: formatFixed(raw, ref.decimals) }, usd: usd === null ? null : { e18: usd, display: formatFixed(usd, USD_DECIMALS) } }, "SUPPLIED", chainSrc("balanceOf(pool)", token, stBlock.number), blockFresh, "VERIFIED_ONCHAIN");
+    return measured({ asset: ref, amount: { raw, decimals: ref.decimals, display: formatFixed(raw, ref.decimals) }, usd: usd === null ? null : { e18: usd, display: formatFixed(usd, USD_DECIMALS) } }, d.reservesMethod ? "COMPUTED" : "SUPPLIED", chainSrc(d.reservesMethod ?? "balanceOf(pool)", d.reservesMethod ? pool : token, stBlock.number), blockFresh, "VERIFIED_ONCHAIN");
   };
   const r0 = reserve(a0, st?.balance0, px0, id.token0);
   const r1 = reserve(a1, st?.balance1, px1, id.token1);
   const tvlE18 = r0?.value.usd && r1?.value.usd ? r0.value.usd.e18 + r1.value.usd.e18 : null;
-  const tvl = tvlE18 === null ? null : measured({ e18: tvlE18, display: formatFixed(tvlE18, USD_DECIMALS) }, "COMPUTED", stateSrc, blockFresh, "VERIFIED_ONCHAIN", "Σ token.balanceOf(pool) × Phase 1 USD price");
+  const tvl = tvlE18 === null ? null : measured({ e18: tvlE18, display: formatFixed(tvlE18, USD_DECIMALS) }, "COMPUTED", stateSrc, blockFresh, "VERIFIED_ONCHAIN", `Σ ${reservesMethod} × Phase 1 USD price`);
   if ((r0 || r1) && tvl === null) warnings.push(warn("UNPRICED_METRIC", `${d.label} pool ${short}: ${[a0, a1].filter((a) => !ctx.priceOf(a.key).price).map((a) => a.symbol).join(", ")} not priced by the Price Service; TVL unknown`));
-  if (r0 || r1) warnings.push(warn("RESERVES_INCLUDE_UNCOLLECTED_FEES", `${d.label} pool ${short}: pool balances include LP fees not yet collected and out-of-range liquidity; TVL is not executable depth`));
+  if (r0 || r1) {
+    const rw = d.reservesWarning ?? { code: "RESERVES_INCLUDE_UNCOLLECTED_FEES" as const, text: "pool balances include LP fees not yet collected and out-of-range liquidity; TVL is not executable depth" };
+    warnings.push(warn(rw.code, `${d.label} pool ${short}: ${rw.text}`));
+  }
 
   // ---- DEX vs portfolio price divergence (recorded, not resolved) ----
   if (p01 !== null && px0 && px1 && a0.canonical && a1.canonical) {
