@@ -142,7 +142,14 @@ export interface TradeRouteView {
   routeId: string;
   kind: RouteKind;
   path: AssetRef[];
-  markets: { marketId: string; protocol: string; feePpm: number | null; tvlUsd: UsdAmount | null }[];
+  markets: {
+    marketId: string;
+    protocol: string;
+    feePpm: number | null;
+    tvlUsd: UsdAmount | null;
+    /** 24h volume from a THIRD-PARTY indexer (GeckoTerminal), when available. Never used for ranking. */
+    volume24h?: { usd: number | null; txs: number | null; observedAt: string; source: "GeckoTerminal"; url: string } | null;
+  }[];
   combinedFeePpm: number | null;
   routeLiquidityUsd: UsdAmount | null;
   allVerified: boolean;

@@ -15,6 +15,7 @@ import { createApi } from "./api.js";
 import { sendJson } from "./json.js";
 import { LogoStore } from "./logos.js";
 import { RateHistory } from "./rateHistory.js";
+import { GeckoTerminalVolumes } from "../sources/geckoterminal.js";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { createStatic, CSP, shellWithMeta } from "./static.js";
@@ -27,6 +28,7 @@ const intelligence = new AssetIntelligenceService({
   engine: rt.opportunities,
   getPortfolio: (w) => rt.getPortfolio(w),
   prices: rt.prices,
+  ...(env.DISABLE_THIRD_PARTY_VOLUME === "1" ? {} : { volumes: new GeckoTerminalVolumes(rt.http) }),
   onSnapshot: (opps, takenAt) => rates.record(opps, takenAt),
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });

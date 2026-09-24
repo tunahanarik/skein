@@ -307,6 +307,10 @@ export const en = {
 
   // route table
   "route.route": "Route",
+  "route.volume": "24h volume",
+  "route.volumeTitle": "Third-party data (GeckoTerminal); for multi-hop routes, the smallest pool's volume. Not used for ordering.",
+  "route.vol24": "24h volume {x}",
+  "route.volumeSource": "24h volume from GeckoTerminal (third party, not verified onchain); not used for ordering.",
   "route.youGet": "You get (indicative)",
   "route.impact": "Price impact",
   "route.fees": "Pool fees",
@@ -704,6 +708,10 @@ export const tr: Record<StringKey, string> = {
   "quote.noTargets": "Bu varlıktan henüz hiçbir yere doğrulanmış rota yok.",
 
   "route.route": "Rota",
+  "route.volume": "24s hacim",
+  "route.volumeTitle": "Üçüncü taraf verisi (GeckoTerminal); çok adımlı rotalarda en küçük havuzun hacmi. Sıralamada kullanılmaz.",
+  "route.vol24": "24s hacim {x}",
+  "route.volumeSource": "24 saatlik hacim GeckoTerminal'den (üçüncü taraf, zincirde doğrulanmadı); sıralamada kullanılmaz.",
   "route.youGet": "Alacağınız (gösterge)",
   "route.impact": "Fiyat etkisi",
   "route.fees": "Havuz ücretleri",

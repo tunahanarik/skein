@@ -13,6 +13,8 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 | `PORT`, `HOST` | 8787, 127.0.0.1 | listen address |
 | `ROBINHOOD_RPC_URL` | public RPC (dev only) | required in production ([rpc.md](rpc.md)) |
 | `SNAPSHOT_MAX_STALE_MS` | 300000 | serve an expired engine snapshot this long while it refreshes in the background |
+| `RATE_HISTORY_FILE` | `.cache/history/rates.jsonl` | local rate history (headline rate of eligible opportunities, every 10 min, 30-day retention) |
+| `DISABLE_THIRD_PARTY_VOLUME` | unset | `1` = do not ask GeckoTerminal for 24h volume |
 | `TRUST_PROXY` | unset | `1` = rate-limit by `X-Forwarded-For` (only behind a known proxy) |
 | `WEB_DIST` | `web/dist` | built web app |
 
@@ -25,6 +27,7 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 | `/api/portfolio/:address?mode=` | `PortfolioIntelligence` | no-store |
 | `/api/coverage` | `{ rows: CoverageRow[] }` | 15 s |
 | `/api/assets/:ref/history` | the Chainlink feed's last 49 rounds (`getRoundData`, one multicall), oldest first, with an exact change. Stock Token feeds include the multiplier | 60 s |
+| `/api/rates/history?id=` | locally recorded headline-rate history of one opportunity, with `recordingSince` (history exists only while this server runs) | 60 s |
 | `/api/logo/:address` | token logo for a canonical asset, proxied from the registry's `logoUrl` | 1 day |
 
 Logo proxy rules (`src/server/logos.ts`):
@@ -94,3 +97,24 @@ The working name "Waypoint" is a placeholder. The product name is still open, an
 | NVDA → USDG quote for an explicit amount (14 routes, 3 in flight: `QUOTE_CONCURRENCY`) | ≈ 2.2 s (was ≈ 5.4 s sequential) |
 
 Server start warms the snapshot (≈ 8 s). After that, stale-while-revalidate keeps requests off the cold path.
+
+## Third-party 24h volume
+Swap-log indexing is too heavy for the public RPC (P4-5). Route markets therefore carry an optional `volume24h` from GeckoTerminal's keyless API (`src/sources/geckoterminal.ts`), labelled as third party.
+
+Rules:
+- Only the pools of the routes actually shown are asked for.
+- At most 30 pools go in one request, with a 2.5 s gap between requests.
+- After a 429, requests stop for 60 s.
+- Results are cached for 5 min.
+- A page waits at most 2 s for the source. If it is slow, the page shows no volume.
+- Volume is never used for ordering or usability.
+- When every hop of a route has a figure, the VOLUME_UNKNOWN note is dropped.
+
+Live check (2026-09-24): GeckoTerminal's TVL for NVDA/USDG 0.05 % was $5.666M. Our onchain TVL for the same pool was $5.647M.
+
+## Alerts
+Alerts live in the browser only (localStorage, at most 20):
+- conditions: price above/below, or a card's headline rate above/below
+- checked every 2 min while the app is open, against our own API
+- when one fires: an in-app banner and, if the user allowed it, a browser notification
+- no account, no server-side storage

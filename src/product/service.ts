@@ -23,6 +23,7 @@ import type { EngineResult, OpportunityEngine, OpportunityQuery } from "../oppor
 import type { Portfolio, PortfolioAsset } from "../portfolio/types.js";
 import type { AssetRegistry } from "../registry/registry.js";
 import type { PriceService } from "../pricing/priceService.js";
+import type { VolumeSource } from "../sources/geckoterminal.js";
 import { buildTradeGraph, destinations, findRoutes, type TradeGraph } from "../trade/graph.js";
 import { opportunityCard, routeCard } from "./cards.js";
 import { PRODUCT_CATEGORY_ORDER, SUBCATEGORY_ORDER, productCategoryOf } from "./categories.js";
@@ -61,6 +62,8 @@ export interface IntelligenceDeps {
   maxStaleMs?: number;
   /** Phase 1 Price Service, for price history (optional; history is unavailable without it). */
   prices?: PriceService;
+  /** Third-party 24h pool volume (display only). */
+  volumes?: VolumeSource;
   /** Called with every new engine snapshot (e.g. to record rate history). Errors are ignored. */
   onSnapshot?: (opps: readonly Opportunity[], takenAt: number) => void;
 }
@@ -381,6 +384,20 @@ export class AssetIntelligenceService {
       if (subs.length) categories.push({ category: cat, subcategories: subs });
     }
     const productCards = categories.flatMap((c) => c.subcategories.flatMap((x) => x.cards));
+    // Third-party 24h volume for the pools of the routes actually shown (display only, bounded wait).
+    if (this.deps.volumes) {
+      const shown = productCards.filter((c) => c.trade);
+      const poolOf = (marketId: string) => marketId.split(":").at(-1)!.toLowerCase();
+      const pools = [...new Set(shown.flatMap((c) => c.trade!.route.markets.map((m) => poolOf(m.marketId))))];
+      const vols = pools.length ? await this.deps.volumes.get(pools, { timeoutMs: 2_000 }).catch(() => new Map()) : new Map();
+      for (const c of shown) {
+        for (const m of c.trade!.route.markets) {
+          const v = vols.get(poolOf(m.marketId));
+          if (v) m.volume24h = { usd: v.usd24h, txs: v.txs24h, observedAt: v.observedAt, source: v.source, url: v.url };
+        }
+        if (c.trade!.route.markets.every((m) => m.volume24h)) c.usability.notes = c.usability.notes.filter((n) => n !== "VOLUME_UNKNOWN");
+      }
+    }
     const everyCard = [...allCards, ...tradeCards];
     const usable = everyCard.filter((c) => c.usability.status === "ACTIONABLE" || c.usability.status === "LIMITED");
     if (opps.length === 0 && tradeCards.length === 0) emptyStates.push("NO_OPPORTUNITIES");

@@ -433,3 +433,16 @@ describe("portfolio: open positions", () => {
     expect(j(st.service.metrics.snapshot())).not.toContain(WALLET.slice(2, 12));
   });
 });
+
+describe("third-party volume on routes", () => {
+  it("adds GeckoTerminal volume to shown route markets and drops VOLUME_UNKNOWN when every hop has one; ranking unchanged", async () => {
+    const plain = sub(await (await intelligenceStack()).service.getAssetIntelligence(NVDA), "TRADE")!;
+    const volumes = { get: async (pools: readonly string[]) => new Map(pools.map((p) => [p, { usd24h: 1234, txs24h: 9, observedAt: NOW.toISOString(), source: "GeckoTerminal" as const, url: `https://www.geckoterminal.com/robinhood/pools/${p}` }])) };
+    const t = sub(await (await intelligenceStack({ volumes })).service.getAssetIntelligence(NVDA), "TRADE")!;
+    expect(t.cards.map((c) => c.cardId)).toEqual(plain.cards.map((c) => c.cardId));
+    for (const c of t.cards) {
+      expect(c.trade!.route.markets.every((m) => m.volume24h?.usd === 1234)).toBe(true);
+      expect(c.usability.notes).not.toContain("VOLUME_UNKNOWN");
+    }
+  });
+});
