@@ -6,6 +6,7 @@ import { validateNetwork } from "./validate-network.js";
 import { validateOracles } from "./validate-oracles.js";
 import { validatePendle } from "./validate-pendle.js";
 import { validatePortfolio } from "./validate-portfolio.js";
+import { validateOpportunities } from "./validate-opportunities.js";
 
 const steps: [string, (r: Report) => Promise<Report>][] = [
   ["network", validateNetwork],
@@ -14,6 +15,7 @@ const steps: [string, (r: Report) => Promise<Report>][] = [
   ["morpho", validateMorpho],
   ["pendle", validatePendle],
   ["portfolio-validation", validatePortfolio], // Phase 1
+  ["opportunities-validation", validateOpportunities], // Phase 2
 ];
 
 let failed = 0;

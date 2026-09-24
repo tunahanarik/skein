@@ -1,144 +1,241 @@
-import type { Address } from "viem";
-import type { Rate } from "../lib/rates.js";
-import type { DataSource, Metric } from "./provenance.js";
-import type { RiskMetadata } from "./risk.js";
+/**
+ * Canonical, protocol-independent opportunity model (Phase 2).
+ *
+ * Design rules:
+ *  - Identity of an asset is `chainId:address` (AssetRef.key), never a symbol.
+ *  - A missing value is `null` (with a reason where useful), never a fabricated 0.
+ *  - Every measured value is a `Measured<T>`: value + origin + source + freshness + verification.
+ *  - Yields are a LIST of explicitly typed metrics. Two metrics are comparable only if their
+ *    type (and side) match — see YieldMetricType.
+ *  - Protocol-specific data lives in `details` (discriminated union). The Opportunity Engine
+ *    never reads `details`; only adapters and presentation code do.
+ */
+import type { Address, Hex } from "viem";
+import type { FreshnessInfo } from "../config/freshness.js";
+import type { Fixed18 } from "../lib/fixed.js";
+import type { DataSource } from "./provenance.js";
 import type { VerificationStatus } from "./verification.js";
+import type { Warning } from "./warnings.js";
 
-export const OPPORTUNITY_CATEGORIES = [
-  "TRADE", // swap the asset for another
-  "LEND", // supply the asset to earn interest
-  "BORROW", // borrow the asset
-  "COLLATERAL", // post the asset to borrow something else
-  "LP", // provide liquidity to a pool
-  "VAULT", // deposit into a managed / curated vault
-  "FIXED_YIELD", // lock a fixed or implied rate to a maturity (e.g. Pendle PT)
-  "YIELD", // other yield: savings rates, staking, yield tokens
-] as const;
+export const OPPORTUNITY_CATEGORIES = ["TRADE", "LEND", "BORROW", "COLLATERAL", "LP", "VAULT", "FIXED_YIELD", "YIELD"] as const;
 export type OpportunityCategory = (typeof OPPORTUNITY_CATEGORIES)[number];
 
+/** Kept for Phase 0 config typing. */
 export type AssetKind = "NATIVE" | "WRAPPED_NATIVE" | "STABLECOIN" | "STOCK_TOKEN" | "VAULT_SHARE" | "LP_TOKEN" | "OTHER";
-
-/**
- * Identity is (chainId, address). `symbol` is display-only and never used to match: this
- * chain has many look-alike USDG / WETH / Stock Token contracts.
- */
-export interface AssetRef {
-  chainId: number;
-  address: Address;
-  symbol: string;
-  decimals: number;
-  kind: AssetKind;
-}
-
-export interface YieldBreakdown {
-  /** Headline yield the user would see. Null when the protocol gives none and we can't compute it. */
-  total: Metric<Rate>;
-  /** Organic part (interest / fees / savings rate). */
-  base: Metric<Rate>;
-  /** Incentive parts, each with its token and source (e.g. Merkl campaign). */
-  rewards: RewardComponent[];
-}
-
-export interface RewardComponent {
-  token: AssetRef | null;
-  rate: Metric<Rate>;
-  /** Eligibility text from the source, e.g. "Robinhood Users Only" whitelist campaigns. */
-  eligibility: string | null;
-  campaignId: string | null;
-}
-
-export interface FeeInfo {
-  kind: "SWAP" | "PERFORMANCE" | "MANAGEMENT" | "PROTOCOL" | "DEPOSIT" | "WITHDRAWAL";
-  /** Fraction (0.003 = 0.3%). */
-  value: Metric<number>;
-}
-
-export interface ContractRef {
-  role: string; // "market", "vault", "pool", "oracle", "irm", "router" ...
-  address: Address;
-}
-
-/** Type-specific details. A discriminated union keeps category-only fields off other kinds. */
-export type OpportunityDetails =
-  | {
-      type: "LENDING_MARKET"; // Morpho-style isolated market
-      marketId: string;
-      loanAsset: AssetRef;
-      collateralAsset: AssetRef | null;
-      lltv: Metric<number>;
-      borrowApy: Metric<Rate>;
-      totalSupplyUsd: Metric<number>;
-      totalBorrowUsd: Metric<number>;
-    }
-  | {
-      type: "VAULT";
-      vaultAddress: Address;
-      standard: "ERC4626" | "MORPHO_VAULT_V2" | "OTHER";
-      curator: string | null;
-      /** Where the vault's funds are allocated, if the source exposes it. */
-      allocations: { target: string; usd: Metric<number> }[];
-    }
-  | {
-      type: "POOL";
-      dex: string;
-      poolRef: string; // pool address (v2/v3) or poolId (v4 singleton)
-      pairAsset: AssetRef;
-      feeTier: Metric<number>; // fraction; per-swap dynamic fees reported as null + note
-      hooks: Address | null;
-    }
-  | {
-      type: "FIXED_TERM";
-      market: Address;
-      principalToken: AssetRef | null;
-      yieldToken: AssetRef | null;
-      maturity: string; // ISO
-    }
-  | { type: "SAVINGS"; vaultAddress: Address };
 
 export interface TrustedLink {
   url: string;
-  /** Host that matched the protocol's allowlist in src/config/protocols.ts. */
   host: string;
 }
 
+/** Reference to an asset as seen by an adapter, joined to the Phase 1 registry by address. */
+export interface AssetRef {
+  key: string; // `${chainId}:${lowercase address}`
+  chainId: number;
+  address: Address;
+  /** Symbol as reported by the SOURCE (API/contract). Display only; may be a look-alike. */
+  symbol: string;
+  decimals: number;
+  /** True only when the address is canonical in the Phase 1 Asset Registry. */
+  canonical: boolean;
+  /** Registry type when canonical ("STOCK_TOKEN", "STABLECOIN", …); null otherwise. */
+  registryType: string | null;
+}
+
+/** A value with its full provenance and age. */
+export interface Measured<T> {
+  value: T;
+  origin: "SUPPLIED" | "COMPUTED";
+  source: DataSource;
+  /** Source timestamp of the value (ISO), e.g. API state timestamp or block timestamp. */
+  observedAt: string;
+  freshness: FreshnessInfo;
+  verification: VerificationStatus;
+  /** For COMPUTED values: human-readable formula over named inputs. */
+  formula?: string;
+}
+
+export interface TokenAmount {
+  raw: bigint;
+  decimals: number;
+  display: string;
+}
+
+export interface UsdAmount {
+  e18: bigint;
+  display: string;
+}
+
+export interface AmountWithUsd {
+  asset: AssetRef;
+  amount: TokenAmount;
+  /** null when the asset could not be priced by the Phase 1 Price Service. */
+  usd: UsdAmount | null;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Yield semantics
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * SUPPLY_APY   what a lender earns on supplied assets (variable, compounded)
+ * BORROW_APY   what a borrower pays (variable, compounded) — a COST, not a return
+ * BASE_APY     organic yield before incentives (e.g. vault APY excluding rewards)
+ * REWARD_APY   incentive yield from reward tokens (APR or APY as the source defines — see compounding)
+ * NET_APY      protocol-defined net figure (e.g. after fees and including rewards)
+ * IMPLIED_APY  market-implied fixed rate (e.g. Pendle PT), valid only to maturity
+ * FIXED_APY    contractually fixed rate
+ * LP_APR       fee/incentive APR for liquidity provision (simple, not compounded)
+ */
+export const YIELD_METRIC_TYPES = ["SUPPLY_APY", "BORROW_APY", "BASE_APY", "REWARD_APY", "NET_APY", "IMPLIED_APY", "FIXED_APY", "LP_APR"] as const;
+export type YieldMetricType = (typeof YIELD_METRIC_TYPES)[number];
+
+export interface YieldMetric extends Measured<Fixed18> {
+  type: YieldMetricType;
+  /** EARN = user receives it; PAY = user pays it. Never rank EARN against PAY. */
+  side: "EARN" | "PAY";
+  basis: "VARIABLE" | "FIXED" | "IMPLIED";
+  compounding: "COMPOUNDED" | "SIMPLE" | "UNKNOWN";
+  /** Averaging window of the source ("instant", "1d", "7d"…). */
+  window: string;
+  /** Asset in which the yield accrues (matters for Pendle PT on Stock Tokens). */
+  denominatedIn: AssetRef | null;
+  /** REWARD_APY only: the reward token. */
+  rewardAsset?: AssetRef | null;
+  /** Human-readable label, e.g. "Morpho supply APY". */
+  label: string;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Risk metadata (objective facts only; unknown is explicit)
+// ---------------------------------------------------------------------------------------------
+
+export type Known<T> = { known: true; value: T; source: DataSource } | { known: false; reason: string };
+
+export interface OracleRisk {
+  address: Address;
+  /** Protocol-reported type (e.g. Morpho "ChainlinkOracleV2") or null. */
+  reportedType: string | null;
+  /**
+   * Stock Token collateral only: our check of the oracle price against the Phase 1 Price
+   * Service. DOUBLE_APPLIED = oracle/expected ratio equals uiMultiplier (Phase 0 finding).
+   */
+  multiplierCheck: "CONSISTENT" | "DOUBLE_APPLIED" | "DEVIATES" | "INCONCLUSIVE" | "NOT_DETECTABLE" | "NOT_APPLICABLE" | "UNCHECKED";
+  multiplierCheckDetail: string | null;
+  /** The oracle values the loan asset at exactly $1 instead of reading its price (ratio = loan USD price). */
+  loanPegAssumed: boolean | null;
+}
+
+export interface OpportunityRisk {
+  oracle: OracleRisk | null;
+  lltv: Known<Fixed18>;
+  utilization: Known<Fixed18>;
+  availableLiquidityUsd: Known<UsdAmount>;
+  marketSizeUsd: Known<UsdAmount>;
+  /** Share of the headline EARN yield that comes from rewards (0–1e18). */
+  rewardDependence: Known<Fixed18>;
+  /** e.g. "LLTV, oracle, IRM and assets are immutable per Morpho market" */
+  parameterMutability: Known<string>;
+  /** Protocol's own curation signal (Morpho `listed`). */
+  protocolListed: Known<boolean>;
+  protocolWarnings: { type: string; level: string }[];
+  allAssetsCanonical: boolean;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Opportunity
+// ---------------------------------------------------------------------------------------------
+
+export interface ContractRef {
+  role: string;
+  address: Address;
+}
+
+export interface LiquidationTerms {
+  /** Liquidation LTV (Fixed18). */
+  lltv: Measured<Fixed18>;
+  /** Liquidation incentive factor (Fixed18, ≥ 1e18) if the protocol defines one. */
+  liquidationIncentiveFactor: Measured<Fixed18> | null;
+  /** Price source that decides liquidation (not our Price Service). */
+  priceAuthority: string;
+  /**
+   * The protocol's own collateral→loan conversion at the pinned block, protocol-independent:
+   *   loanBaseUnits = collateralBaseUnits × raw / scale
+   * (Morpho: raw = oracle.price(), scale = 1e36). null when unreadable.
+   */
+  collateralPrice: Measured<{ raw: bigint; scale: bigint }> | null;
+  /** Plain-language rule, e.g. "liquidatable when borrowed > collateral × oraclePrice / 1e36 × LLTV". */
+  rule: string;
+}
+
+export interface DataConflict {
+  field: string;
+  values: { value: string; source: DataSource }[];
+  resolution: string;
+}
+
+/** Protocol-specific payloads. Add a member per venue type; the engine ignores these. */
+export type OpportunityDetails =
+  | {
+      kind: "MORPHO_MARKET";
+      marketId: Hex;
+      loanAsset: AssetRef;
+      collateralAsset: AssetRef;
+      oracle: Address;
+      irm: Address;
+      lltv: Fixed18;
+      /** null when market(id) was unreadable — never a placeholder 0. */
+      totalSupply: Measured<TokenAmount> | null;
+      totalBorrow: Measured<TokenAmount> | null;
+      oraclePrice: Measured<bigint> | null; // raw, scale 1e36 × 10^(loanDec − collDec)
+    }
+  | {
+      kind: "MORPHO_VAULT_V2";
+      vault: Address;
+      name: string;
+      curator: Address | null;
+      /** Onchain totalAssets(); API figure only if onchain is unreadable; null if neither. */
+      totalAssets: Measured<TokenAmount> | null;
+      performanceFee: Fixed18 | null;
+      managementFee: Fixed18 | null;
+    };
+
 export interface Opportunity {
-  /** Deterministic: `${chainId}:${protocolId}:${category}:${venueRef}` so re-fetches dedupe. */
+  /** Stable, deterministic: `${chainId}:${protocolId}:${category}:${venueKind}:${venueId}`. */
   id: string;
   chainId: number;
-  protocolId: string;
-  protocolName: string;
+  protocol: { id: string; name: string };
   category: OpportunityCategory;
   title: string;
+  venue: { kind: string; id: string; address: Address | null };
 
-  /** The user's asset this opportunity was found for. */
-  asset: AssetRef;
-  /** What the user puts in / gets back (a vault share, an LP token, a PT ...). */
+  /** The asset a holder uses to take this opportunity ("I own X"). */
+  primaryAsset: AssetRef;
   inputAssets: AssetRef[];
   outputAssets: AssetRef[];
   collateralAssets: AssetRef[];
   borrowAssets: AssetRef[];
 
-  yield: YieldBreakdown | null;
-  tvlUsd: Metric<number>;
-  availableLiquidityUsd: Metric<number>;
-  utilization: Metric<number>;
-  fees: FeeInfo[];
-
-  details: OpportunityDetails;
+  yields: YieldMetric[];
+  tvl: Measured<AmountWithUsd> | null;
+  availableLiquidity: Measured<AmountWithUsd> | null;
+  utilization: Measured<Fixed18> | null;
+  liquidation: LiquidationTerms | null;
+  term: { maturity: string | null; lockSeconds: number | null; withdrawal: "INSTANT_SUBJECT_TO_LIQUIDITY" | "AT_MATURITY" | "LOCKED" | "UNKNOWN" } | null;
   contracts: ContractRef[];
-  risk: RiskMetadata;
+  risk: OpportunityRisk;
+  details: OpportunityDetails;
 
-  /** Only links that passed the protocol host allowlist; otherwise null. */
-  deepLink: TrustedLink | null;
-
-  /** Every source that fed any field above (deduplicated). */
-  dataSources: DataSource[];
-  /** Newest observation time among the fields (ISO). */
-  lastUpdated: string;
-  /** Weakest status among the fields the UI treats as critical (yield, TVL, contracts). */
-  verification: VerificationStatus;
+  provenance: DataSource[];
+  conflicts: DataConflict[];
+  warnings: Warning[];
+  /** Worst freshness among the opportunity's measured values. */
+  freshness: FreshnessInfo;
+  verificationStatus: VerificationStatus;
+  observedAt: string;
+  generatedAt: string;
 }
 
-export function opportunityId(chainId: number, protocolId: string, category: OpportunityCategory, venueRef: string): string {
-  return `${chainId}:${protocolId}:${category}:${venueRef.toLowerCase()}`;
+export function opportunityId(chainId: number, protocolId: string, category: OpportunityCategory, venueKind: string, venueId: string): string {
+  return `${chainId}:${protocolId}:${category}:${venueKind}:${venueId.toLowerCase()}`;
 }

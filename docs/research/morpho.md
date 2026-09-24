@@ -112,3 +112,10 @@ Checked 2026-09-24. Reproduce with `pnpm validate:morpho`. Full tables: `researc
 Schema notes:
 - `uniqueKey` is gone; use `marketId`. `marketByUniqueKey` is gone; use `marketById(marketId, chainId)`.
 - Large `vaultV2s` queries hit the complexity limit, so split them.
+
+## Phase 2 re-verification (2026-09-24, live)
+- Deployment, periphery addresses and API support are unchanged (see [../protocols/morpho-adapter.md](../protocols/morpho-adapter.md)). The docs addresses page lives at `docs.morpho.org/developers/contracts/addresses.md`.
+- **Double-applied multiplier oracles:** the adapter's independent structural check (oracle ÷ Price-Service-implied price, matched at 1 ppm) flags exactly NVDA `0xED29…`, AAPL `0xD625…`, GOOGL `0x12Ec…` and MSFT `0xcb9a…`, i.e. 4 of the 6 found in Phase 0. SPCX and COIN have multiplier 1.0, so they are `NOT_DETECTABLE`, not declared clean.
+- **USDG assumed $1:** 49 Stock Token market oracles value USDG at exactly $1 (ratio = USDG/USD 1.00009); 7 have liquidity.
+- The API serializes BigInt scalars as JSON numbers up to 2^53 and as strings above that.
+- Representative markets (SPY/WETH, SPCX/USDG, USDe/USDG) matched the chain exactly: identity, totals, and IRM-derived borrow/supply APY vs the API to 4 decimals.

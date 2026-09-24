@@ -1,0 +1,676 @@
+{
+  "opportunity": {
+    "chainId": 4663,
+    "protocol": {
+      "id": "morpho",
+      "name": "Morpho"
+    },
+    "venue": {
+      "kind": "MORPHO_MARKET",
+      "id": "0xa47b6df237c2688aa869e705c366403e5a8a989332e3b81a9c69284337df7d4c",
+      "address": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010"
+    },
+    "contracts": [
+      {
+        "role": "morpho",
+        "address": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010"
+      },
+      {
+        "role": "oracle",
+        "address": "0x00000000000000000000000000000000000000C1"
+      },
+      {
+        "role": "irm",
+        "address": "0x00000000000000000000000000000000000001a1"
+      }
+    ],
+    "details": {
+      "kind": "MORPHO_MARKET",
+      "marketId": "0xa47b6df237c2688aa869e705c366403e5a8a989332e3b81a9c69284337df7d4c",
+      "loanAsset": {
+        "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+        "chainId": 4663,
+        "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "symbol": "USDG",
+        "decimals": 6,
+        "canonical": true,
+        "registryType": "STABLECOIN"
+      },
+      "collateralAsset": {
+        "key": "4663:0x000000000000000000000000000000000000a001",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "decimals": 18,
+        "canonical": true,
+        "registryType": "STOCK_TOKEN"
+      },
+      "oracle": "0x00000000000000000000000000000000000000C1",
+      "irm": "0x00000000000000000000000000000000000001a1",
+      "lltv": "625000000000000000",
+      "totalSupply": {
+        "value": {
+          "raw": "100000000000",
+          "decimals": 6,
+          "display": "100000"
+        },
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "market(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "ONCHAIN_STATE"
+        },
+        "verification": "VERIFIED_ONCHAIN"
+      },
+      "totalBorrow": {
+        "value": {
+          "raw": "60000000000",
+          "decimals": 6,
+          "display": "60000"
+        },
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "market(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "ONCHAIN_STATE"
+        },
+        "verification": "VERIFIED_ONCHAIN"
+      },
+      "oraclePrice": {
+        "value": "224393626263636272735453809",
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x00000000000000000000000000000000000000C1",
+          "method": "price()",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "ONCHAIN_STATE"
+        },
+        "verification": "VERIFIED_ONCHAIN"
+      }
+    },
+    "conflicts": [],
+    "generatedAt": "2026-09-24T12:00:00.000Z",
+    "observedAt": "2026-09-24T12:00:00.000Z",
+    "id": "4663:morpho:COLLATERAL:market:0xa47b6df237c2688aa869e705c366403e5a8a989332e3b81a9c69284337df7d4c",
+    "category": "COLLATERAL",
+    "title": "Use NVDA as collateral on Morpho, borrow USDG (LLTV 62.5%)",
+    "primaryAsset": {
+      "key": "4663:0x000000000000000000000000000000000000a001",
+      "chainId": 4663,
+      "address": "0x000000000000000000000000000000000000a001",
+      "symbol": "NVDA",
+      "decimals": 18,
+      "canonical": true,
+      "registryType": "STOCK_TOKEN"
+    },
+    "inputAssets": [
+      {
+        "key": "4663:0x000000000000000000000000000000000000a001",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "decimals": 18,
+        "canonical": true,
+        "registryType": "STOCK_TOKEN"
+      }
+    ],
+    "outputAssets": [
+      {
+        "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+        "chainId": 4663,
+        "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "symbol": "USDG",
+        "decimals": 6,
+        "canonical": true,
+        "registryType": "STABLECOIN"
+      }
+    ],
+    "collateralAssets": [
+      {
+        "key": "4663:0x000000000000000000000000000000000000a001",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "decimals": 18,
+        "canonical": true,
+        "registryType": "STOCK_TOKEN"
+      }
+    ],
+    "borrowAssets": [
+      {
+        "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+        "chainId": 4663,
+        "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "symbol": "USDG",
+        "decimals": 6,
+        "canonical": true,
+        "registryType": "STABLECOIN"
+      }
+    ],
+    "yields": [
+      {
+        "type": "BORROW_APY",
+        "side": "PAY",
+        "basis": "VARIABLE",
+        "compounding": "COMPOUNDED",
+        "window": "instant",
+        "denominatedIn": {
+          "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "chainId": 4663,
+          "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "symbol": "USDG",
+          "decimals": 6,
+          "canonical": true,
+          "registryType": "STABLECOIN"
+        },
+        "label": "Morpho borrow APY",
+        "value": "45389470000000000",
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "OFFICIAL_API",
+          "provider": "morpho-api",
+          "url": "https://api.morpho.org/graphql",
+          "chainId": 4663,
+          "method": "state.borrowApy",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+        },
+        "observedAt": "2026-09-24T11:50:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 600,
+          "rule": "PROTOCOL_API_MARKET_STATE"
+        },
+        "verification": "VERIFIED_OFFICIAL_API"
+      },
+      {
+        "type": "REWARD_APY",
+        "side": "EARN",
+        "basis": "VARIABLE",
+        "compounding": "SIMPLE",
+        "window": "instant",
+        "denominatedIn": null,
+        "label": "Morpho borrow reward APR (USDG)",
+        "value": "5000000000000000",
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "OFFICIAL_API",
+          "provider": "morpho-api",
+          "url": "https://api.morpho.org/graphql",
+          "chainId": 4663,
+          "method": "state.rewards[USDG].borrowApr",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+        },
+        "observedAt": "2026-09-24T11:50:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 600,
+          "rule": "PROTOCOL_API_MARKET_STATE"
+        },
+        "verification": "VERIFIED_OFFICIAL_API",
+        "rewardAsset": {
+          "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "chainId": 4663,
+          "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "symbol": "USDG",
+          "decimals": 6,
+          "canonical": true,
+          "registryType": "STABLECOIN"
+        }
+      },
+      {
+        "type": "NET_APY",
+        "side": "PAY",
+        "basis": "VARIABLE",
+        "compounding": "COMPOUNDED",
+        "window": "instant",
+        "denominatedIn": {
+          "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "chainId": 4663,
+          "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "symbol": "USDG",
+          "decimals": 6,
+          "canonical": true,
+          "registryType": "STABLECOIN"
+        },
+        "label": "Morpho net borrow APY (after rewards)",
+        "value": "40000000000000000",
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "OFFICIAL_API",
+          "provider": "morpho-api",
+          "url": "https://api.morpho.org/graphql",
+          "chainId": 4663,
+          "method": "state.netBorrowApy",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+        },
+        "observedAt": "2026-09-24T11:50:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 600,
+          "rule": "PROTOCOL_API_MARKET_STATE"
+        },
+        "verification": "VERIFIED_OFFICIAL_API"
+      }
+    ],
+    "tvl": {
+      "value": {
+        "asset": {
+          "key": "4663:0x000000000000000000000000000000000000a001",
+          "chainId": 4663,
+          "address": "0x000000000000000000000000000000000000a001",
+          "symbol": "NVDA",
+          "decimals": 18,
+          "canonical": true,
+          "registryType": "STOCK_TOKEN"
+        },
+        "amount": {
+          "raw": "5000000000000000000",
+          "decimals": 18,
+          "display": "5"
+        },
+        "usd": {
+          "e18": "1122069108450000000000",
+          "display": "1122.06910845"
+        }
+      },
+      "origin": "SUPPLIED",
+      "source": {
+        "type": "OFFICIAL_API",
+        "provider": "morpho-api",
+        "url": "https://api.morpho.org/graphql",
+        "chainId": 4663,
+        "method": "state.collateralAssets",
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+      },
+      "observedAt": "2026-09-24T11:50:00.000Z",
+      "freshness": {
+        "status": "FRESH",
+        "ageSeconds": 600,
+        "rule": "PROTOCOL_API_MARKET_STATE"
+      },
+      "verification": "VERIFIED_OFFICIAL_API"
+    },
+    "availableLiquidity": {
+      "value": {
+        "asset": {
+          "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+          "chainId": 4663,
+          "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+          "symbol": "USDG",
+          "decimals": 6,
+          "canonical": true,
+          "registryType": "STABLECOIN"
+        },
+        "amount": {
+          "raw": "40000000000",
+          "decimals": 6,
+          "display": "40000"
+        },
+        "usd": {
+          "e18": "40003600000000000000000",
+          "display": "40003.6"
+        }
+      },
+      "origin": "COMPUTED",
+      "source": {
+        "type": "ONCHAIN",
+        "provider": "robinhood-chain-rpc",
+        "chainId": 4663,
+        "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+        "method": "market(id)",
+        "blockNumber": "71000000",
+        "observedAt": "2026-09-24T12:00:00.000Z"
+      },
+      "observedAt": "2026-09-24T12:00:00.000Z",
+      "freshness": {
+        "status": "FRESH",
+        "ageSeconds": 0,
+        "rule": "ONCHAIN_STATE"
+      },
+      "verification": "VERIFIED_ONCHAIN",
+      "formula": "totalSupplyAssets − totalBorrowAssets; USD via Price Service"
+    },
+    "utilization": {
+      "value": "600000000000000000",
+      "origin": "COMPUTED",
+      "source": {
+        "type": "ONCHAIN",
+        "provider": "robinhood-chain-rpc",
+        "chainId": 4663,
+        "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+        "method": "market(id)",
+        "blockNumber": "71000000",
+        "observedAt": "2026-09-24T12:00:00.000Z"
+      },
+      "observedAt": "2026-09-24T12:00:00.000Z",
+      "freshness": {
+        "status": "FRESH",
+        "ageSeconds": 0,
+        "rule": "ONCHAIN_STATE"
+      },
+      "verification": "VERIFIED_ONCHAIN",
+      "formula": "totalBorrowAssets / totalSupplyAssets"
+    },
+    "liquidation": {
+      "lltv": {
+        "value": "625000000000000000",
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "idToMarketParams(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "PROTOCOL_MARKET_CONFIG"
+        },
+        "verification": "VERIFIED_ONCHAIN"
+      },
+      "liquidationIncentiveFactor": {
+        "value": "1126760563380281690",
+        "origin": "COMPUTED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "idToMarketParams(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "PROTOCOL_MARKET_CONFIG"
+        },
+        "verification": "VERIFIED_ONCHAIN",
+        "formula": "min(1.15, 1 / (1 − 0.3 × (1 − LLTV)))"
+      },
+      "priceAuthority": "Morpho market oracle 0x00000000000000000000000000000000000000C1",
+      "rule": "liquidatable when borrowed > floor(floor(collateral × oraclePrice / 1e36) × LLTV / 1e18) (Morpho._isHealthy)",
+      "collateralPrice": {
+        "value": {
+          "raw": "224393626263636272735453809",
+          "scale": "1000000000000000000000000000000000000"
+        },
+        "origin": "SUPPLIED",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x00000000000000000000000000000000000000C1",
+          "method": "price()",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        },
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "freshness": {
+          "status": "FRESH",
+          "ageSeconds": 0,
+          "rule": "ONCHAIN_STATE"
+        },
+        "verification": "VERIFIED_ONCHAIN"
+      }
+    },
+    "term": {
+      "maturity": null,
+      "lockSeconds": null,
+      "withdrawal": "INSTANT_SUBJECT_TO_LIQUIDITY"
+    },
+    "risk": {
+      "oracle": {
+        "address": "0x00000000000000000000000000000000000000C1",
+        "reportedType": "ChainlinkOracleV2",
+        "multiplierCheck": "CONSISTENT",
+        "multiplierCheckDetail": "oracle/expected = 1, uiMultiplier = 1.000775159164630595"
+      },
+      "lltv": {
+        "known": true,
+        "value": "625000000000000000",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "idToMarketParams(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      },
+      "utilization": {
+        "known": true,
+        "value": "600000000000000000",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "market(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      },
+      "availableLiquidityUsd": {
+        "known": true,
+        "value": {
+          "e18": "40003600000000000000000",
+          "display": "40003.6"
+        },
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "market(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      },
+      "marketSizeUsd": {
+        "known": true,
+        "value": {
+          "e18": "100009000000000000000000",
+          "display": "100009"
+        },
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "market(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      },
+      "rewardDependence": {
+        "known": false,
+        "reason": "no positive headline yield"
+      },
+      "parameterMutability": {
+        "known": true,
+        "value": "loan token, collateral token, oracle, IRM and LLTV are immutable for a Morpho market; the oracle contract itself may have its own admin",
+        "source": {
+          "type": "ONCHAIN",
+          "provider": "robinhood-chain-rpc",
+          "chainId": 4663,
+          "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+          "method": "idToMarketParams(id)",
+          "blockNumber": "71000000",
+          "observedAt": "2026-09-24T12:00:00.000Z"
+        }
+      },
+      "protocolListed": {
+        "known": true,
+        "value": true,
+        "source": {
+          "type": "OFFICIAL_API",
+          "provider": "morpho-api",
+          "url": "https://api.morpho.org/graphql",
+          "chainId": 4663,
+          "method": "markets.items[0xa47b6df2…]",
+          "observedAt": "2026-09-24T12:00:00.000Z",
+          "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+        }
+      },
+      "protocolWarnings": [],
+      "allAssetsCanonical": true
+    },
+    "provenance": [
+      {
+        "type": "ONCHAIN",
+        "provider": "robinhood-chain-rpc",
+        "chainId": 4663,
+        "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+        "method": "idToMarketParams(id)",
+        "blockNumber": "71000000",
+        "observedAt": "2026-09-24T12:00:00.000Z"
+      },
+      {
+        "type": "ONCHAIN",
+        "provider": "robinhood-chain-rpc",
+        "chainId": 4663,
+        "contract": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+        "method": "market(id)",
+        "blockNumber": "71000000",
+        "observedAt": "2026-09-24T12:00:00.000Z"
+      },
+      {
+        "type": "OFFICIAL_API",
+        "provider": "morpho-api",
+        "url": "https://api.morpho.org/graphql",
+        "chainId": 4663,
+        "method": "markets.items[0xa47b6df2…]",
+        "observedAt": "2026-09-24T12:00:00.000Z",
+        "sourceTimestamp": "2026-09-24T11:50:00.000Z"
+      },
+      {
+        "type": "ONCHAIN",
+        "provider": "robinhood-chain-rpc",
+        "chainId": 4663,
+        "contract": "0x00000000000000000000000000000000000000C1",
+        "method": "price()",
+        "blockNumber": "71000000",
+        "observedAt": "2026-09-24T12:00:00.000Z"
+      }
+    ],
+    "warnings": [],
+    "freshness": {
+      "status": "FRESH",
+      "ageSeconds": 0,
+      "rule": "PROTOCOL_MARKET_CONFIG"
+    },
+    "verificationStatus": "VERIFIED_OFFICIAL_API"
+  },
+  "holding": {
+    "assetKey": "4663:0x000000000000000000000000000000000000a001",
+    "rawBalance": "2000000000000000000",
+    "displayBalance": "2",
+    "valueUsd": "448.82764338"
+  },
+  "context": {
+    "kind": "COLLATERAL",
+    "collateralHeld": {
+      "asset": {
+        "key": "4663:0x000000000000000000000000000000000000a001",
+        "chainId": 4663,
+        "address": "0x000000000000000000000000000000000000a001",
+        "symbol": "NVDA",
+        "decimals": 18,
+        "canonical": true,
+        "registryType": "STOCK_TOKEN"
+      },
+      "amount": {
+        "raw": "2000000000000000000",
+        "decimals": 18,
+        "display": "2"
+      },
+      "usd": {
+        "e18": "448827643380000000000",
+        "display": "448.82764338"
+      }
+    },
+    "formula": "floor(floor(collateralRaw × collateralPrice.raw / collateralPrice.scale) × LLTV / 1e18)",
+    "caveat": "Protocol maximum at the liquidation threshold (LLTV). Borrowing this much makes the position liquidatable on the next adverse price move or interest accrual. Not a recommended or safe amount.",
+    "protocolMaximumBorrow": {
+      "asset": {
+        "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+        "chainId": 4663,
+        "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "symbol": "USDG",
+        "decimals": 6,
+        "canonical": true,
+        "registryType": "STABLECOIN"
+      },
+      "amount": {
+        "raw": "280492032",
+        "decimals": 6,
+        "display": "280.492032"
+      },
+      "usd": {
+        "e18": "280517276282880000000",
+        "display": "280.51727628288"
+      }
+    },
+    "protocolMaximumBorrowLiquidityCapped": {
+      "asset": {
+        "key": "4663:0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+        "chainId": 4663,
+        "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "symbol": "USDG",
+        "decimals": 6,
+        "canonical": true,
+        "registryType": "STABLECOIN"
+      },
+      "amount": {
+        "raw": "280492032",
+        "decimals": 6,
+        "display": "280.492032"
+      },
+      "usd": {
+        "e18": "280517276282880000000",
+        "display": "280.51727628288"
+      }
+    },
+    "unavailableReason": null
+  }
+}

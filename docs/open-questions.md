@@ -2,6 +2,25 @@
 
 Each item names what would resolve it.
 
+## Added in Phase 2 (decide before Phase 3)
+P2-1. **Default curation.** Morpho has 277 markets on 4663, but only 9 are `listed`, and 184 opportunities involve non-canonical tokens. Should the product default to `canonicalOnly` + `protocolListedOnly` (the CLI defaults to canonical-only today)?
+
+P2-2. **Double-applied oracles.** 4 live markets (NVDA, AAPL, GOOGL, MSFT) are marked CONFLICT. Hide them entirely, or show them with the warning? Should Morpho/the curators be told?
+
+P2-3. **Undetectable cases.** Oracles for tokens with multiplier exactly 1 (SPCX, COIN) cannot be tested for double application until their multiplier moves. Re-check on every `UIMultiplierUpdated`? One NVDA market (`0xbe3a5355…`) is INCONCLUSIVE: needs manual review of its oracle.
+
+P2-9. **USDG-pegged oracles.** 49 Stock Token markets value USDG at exactly $1 (`loanPegAssumed`). This is harmless while USDG is at peg, but it is a depeg risk. Show it as a risk fact only, or also warn?
+
+P2-4. **Rewards completeness.** The Morpho API misses external (Merkl) campaigns. Is Merkl acceptable as a rewards source for the Morpho adapter, or does it need its own adapter and approval?
+
+P2-5. **Safety-buffer model.** Only the protocol maximum borrow (at LLTV) is computed. What buffer policy (if any) should the product present?
+
+P2-6. **Steakhouse USDG `deposit_disabled`** (the largest USDG vault, $498M): is it Robinhood-app-only? It is shown with the protocol's RED warning; decide whether to hide it.
+
+P2-7. **API state lag.** Idle-market APY state can be tens of minutes old (freshness AGING/STALE). Acceptable, or should we compute APY onchain from the IRM (float needed for e^x, or a fixed-point exp)?
+
+P2-8. **BORROW category.** Not emitted separately (it is COLLATERAL seen from the collateral side). Does the UI need a "borrow X" entry point for users who don't hold collateral yet?
+
 ## Added in Phase 1 (decide before Phase 2)
 P1-1. **Unknown-token discovery.** Phase 1 scans only the canonical registry (195 Stock Tokens + ETH/WETH/USDG); other tokens appear only if named explicitly (`--token`). Full discovery needs an indexer: Alchemy Token API (`alchemy_getTokenBalances`, documented for 4663, key needed), Goldsky, Envio, or our own Transfer indexer. Which one, and do unknown tokens matter for the product?
 

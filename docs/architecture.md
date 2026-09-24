@@ -48,8 +48,8 @@ API (read-only) ──► Comparison UI (Next.js)
 | Portfolio Engine | server | balances + multipliers at a pinned block; display balance + share-equivalent | keyed RPC, Multicall3 |
 | Price Service | server | token prices with provenance + staleness + cross-check | Chainlink, `/rhj/prices`, DEX |
 | Opportunity Engine | server | fan out to adapters, merge, filter, rank by *user-chosen* metric | adapters |
-| Protocol Adapters | server | one per protocol, capability-flagged (`src/protocols/types.ts`) | protocol APIs + onchain |
-| Risk Metadata | server | objective attributes (`src/model/risk.ts`) | onchain, protocol APIs |
+| Protocol Adapters | server | one per protocol, capability-flagged (`src/opportunities/adapter.ts`) | protocol APIs + onchain |
+| Risk Metadata | server | objective attributes (`OpportunityRisk` in `src/model/opportunity.ts`; Phase 2: produced inside adapters, shared service later) | onchain, protocol APIs |
 | Cache | Redis | short TTL: prices ≈15–60 s, protocol API ≈60 s, registry ≈5 min; request coalescing to respect rate limits | – |
 | Store | PostgreSQL | snapshots of served values, v4 pool registry, registry history | – |
 | Jobs | cron/worker | registry refresh, v4 `Initialize` log follower, snapshotting | keyed RPC |
@@ -59,12 +59,15 @@ API (read-only) ──► Comparison UI (Next.js)
 - The browser never receives provider keys. RPC and API keys live only on the server.
 - There is no write path to chain in Phase 1: no wallet client exists in the codebase.
 
+## Phase 2 status
+Implemented as proposed, with one refinement: user-aware context (`PortfolioOpportunity`) is built from the canonical opportunity fields only. `LiquidationTerms.collateralPrice` carries the protocol's own collateral→loan conversion, so the engine computes protocol maximum borrow without protocol code. See [opportunity-engine.md](opportunity-engine.md) and [protocol-adapters.md](protocol-adapters.md).
+
 ## Protocol adapter system
 
 ```
 src/protocols/
-  types.ts          ProtocolAdapter, AdapterContext, AdapterResult, UserPosition
-  morpho/           API (GraphQL) + onchain spot-check; markets → LEND/BORROW/COLLATERAL, vaultV2 → VAULT
+  morpho/           IMPLEMENTED (Phase 2): API + onchain identity/totals; markets → LEND/COLLATERAL, vaultV2 → VAULT
+                    (interface: src/opportunities/adapter.ts)
   pendle/           API /v2/markets/all + onchain readTokens/expiry → FIXED_YIELD, YIELD, LP
   spark/            onchain vsr/totalAssets → YIELD (savings)
   uniswap/          getPool (v3), curated v4 pool registry + StateView → TRADE, LP
@@ -75,6 +78,6 @@ src/protocols/
 
 Rules:
 - An adapter implements only the methods its protocol supports, and says so in `capabilities`. For example, Spark has no user-position API; the engine then reads `balanceOf(spUSDG)`.
-- Adapters return `AdapterResult` with `errors[]` and never throw for missing data. A partial answer is still shown, marked DEGRADED.
-- Every metric is `Sourced<T> | null`. A metric the protocol doesn't provide is `null`, never 0.
-- `Opportunity.verification` = the weakest status among yield, TVL and contracts (`weakestStatus`).
+- Adapters return `AdapterResult` with `issues[]` and never throw for missing data. A partial answer is still shown, status PARTIAL.
+- Every metric is `Measured<T> | null`. A metric the protocol doesn't provide is `null`, never 0.
+- `Opportunity.verificationStatus` = the weakest status among asset identities, onchain totals and yields; CONFLICT on identity conflicts or double-applied oracles.

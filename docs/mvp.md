@@ -8,7 +8,8 @@
 |---|---|---|
 | 0 | research, live validation, data model | done (commit `d49ff0c`) |
 | 1 | **Portfolio Engine + Asset Registry + Price Service** (no opportunities, no UI) | done; see [portfolio-engine.md](portfolio-engine.md), [asset-registry.md](asset-registry.md), [pricing.md](pricing.md), [rpc.md](rpc.md) |
-| 2 | protocol opportunity adapters (Morpho → Spark → Pendle → Uniswap …) | not started; needs approval |
+| 2 | **Opportunity Engine + Morpho adapter** (read-only; no UI) | done; see [opportunity-engine.md](opportunity-engine.md), [protocol-adapters.md](protocol-adapters.md), [protocols/morpho-adapter.md](protocols/morpho-adapter.md), [opportunity-provenance.md](opportunity-provenance.md) |
+| 2b | further adapters (Pendle → Spark → Uniswap …) | not started; needs approval |
 | 3 | minimal comparison UI | not started |
 
 The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–9 belong to later phases.

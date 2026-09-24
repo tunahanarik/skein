@@ -22,7 +22,9 @@
     "validate:portfolio": "tsx scripts/validate-portfolio.ts",
     "registry:snapshot": "tsx scripts/registry-snapshot.ts",
     "registry:check": "tsx scripts/registry-snapshot.ts --check",
-    "portfolio": "tsx scripts/portfolio.ts"
+    "portfolio": "tsx scripts/portfolio.ts",
+    "validate:opportunities": "tsx scripts/validate-opportunities.ts",
+    "opportunities": "tsx scripts/opportunities.ts"
   },
   "dependencies": {
     "viem": "2.56.8",

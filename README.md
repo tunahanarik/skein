@@ -2,7 +2,7 @@
 
 Read-only DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?"
 
-**Status: Phase 1 done: Portfolio Engine, Asset Registry and Price Service.** There is no UI (only a developer CLI), no opportunities yet, and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
+**Status: Phase 2 done: Opportunity Engine + Morpho adapter**, on top of the Phase 1 Portfolio Engine, Asset Registry and Price Service. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
 
 ## Layout
 ```
@@ -12,11 +12,12 @@ src/chain/                ChainReader (read-only RPC abstraction), retries, heal
 src/registry/             Asset model, Robinhood registry ingestion, snapshot, change detection, unknown tokens
 src/pricing/              Price Service (Chainlink → Robinhood quote fallback), freshness, conflicts
 src/portfolio/            balance reader + Portfolio Engine
+src/opportunities/        Opportunity Engine, adapter interface, filters/sorting, user-aware context
+src/protocols/morpho/     Morpho adapter (API client, onchain reads, normalization, oracle check, vaults, positions)
 src/model/                Opportunity, RiskMetadata, provenance (DataSource / Sourced<T>), verification states, warning codes
 src/lib/                  exact decimal math, Stock Token balance + valuation, rates, freshness, validation, trusted links
 src/sources/              zod schemas for the Robinhood Stock Token API and the Chainlink directory
 src/config/               verified-only registries: chains, assets, protocols, ABIs
-src/protocols/types.ts    protocol adapter interface
 scripts/                  read-only live validation scripts
 research/unverified.json  candidates that are NOT in production config
 research/evidence/        curated raw evidence from the 2026-09-24 research
@@ -34,6 +35,8 @@ pnpm validate                   # all live checks: Phase 0 + Phase 1 (read-only)
 pnpm validate:portfolio         # Phase 1 live checks only
 pnpm portfolio --address 0x…    # portfolio CLI (--json, --include-zero, --token 0x…)
 pnpm registry:check             # diff live Stock Token registry vs committed snapshot
+pnpm opportunities [--asset NVDA|0x…] [--address 0x…] [--json]   # opportunity CLI
+pnpm validate:opportunities     # Phase 2 live checks only
 ```
 
 Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider. The public RPC is rate-limited and officially not for production. No private key is ever needed.

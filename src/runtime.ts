@@ -9,6 +9,8 @@ import { resolveRpcConfig, runtimeMode, type RpcConfig } from "./chain/rpcConfig
 import { TtlCache } from "./lib/cache.js";
 import { HttpClient } from "./lib/http.js";
 import { getPortfolio, type PortfolioOptions } from "./portfolio/engine.js";
+import { OpportunityEngine } from "./opportunities/engine.js";
+import { MorphoAdapter } from "./protocols/morpho/adapter.js";
 import { PriceService } from "./pricing/priceService.js";
 import { loadAssetRegistry, type AssetRegistry } from "./registry/registry.js";
 import { DEFAULT_SNAPSHOT_PATH, readSnapshotFile, type RegistrySnapshot } from "./registry/snapshot.js";
@@ -21,6 +23,8 @@ export interface Runtime {
   baseline: RegistrySnapshot | null;
   getRegistry: () => Promise<AssetRegistry>;
   getPortfolio: (wallet: unknown, opts?: PortfolioOptions) => ReturnType<typeof getPortfolio>;
+  /** Registered protocol adapters. Adding a protocol = adding an adapter here. */
+  opportunities: OpportunityEngine;
 }
 
 export function createRuntime(env: Record<string, string | undefined> = process.env, opts: { snapshotPath?: string; verifyOnchain?: boolean } = {}): Runtime {
@@ -49,5 +53,6 @@ export function createRuntime(env: Record<string, string | undefined> = process.
     baseline,
     getRegistry,
     getPortfolio: (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o),
+    opportunities: new OpportunityEngine([new MorphoAdapter(http)], { reader, getRegistry, prices }),
   };
 }

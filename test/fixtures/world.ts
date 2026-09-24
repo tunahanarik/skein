@@ -133,6 +133,17 @@ export interface WorldState {
   revertBalanceOf: Set<string>;
   rpcDown: boolean;
   nativeFails: boolean;
+  /** Phase 2: Morpho state (installed by test/fixtures/morpho.ts). */
+  morpho?: {
+    markets: Map<string, { params: { loanToken: Address; collateralToken: Address; oracle: Address; irm: Address; lltv: bigint }; totals: { supply: bigint; supplyShares: bigint; borrow: bigint; borrowShares: bigint } }>;
+    oracles: Map<string, bigint | "revert">;
+    officialVaults: Set<string>;
+    vaultTotals: Map<string, bigint>;
+    /** `${marketId}:${user}` → position */
+    positions: Map<string, { supplyShares: bigint; borrowShares: bigint; collateral: bigint }>;
+  };
+  /** Count of calls per function name (Phase 2 cache tests). */
+  callCounts?: Map<string, number>;
 }
 
 export function defaultWorld(): WorldState {
@@ -222,6 +233,38 @@ export class FakeChainReader implements ChainReader {
     const ok = (result: unknown): CallResult => ({ status: "success", result });
     const revert: CallResult = { status: "failure", kind: "REVERT", error: "execution reverted" };
     const m = this.world.meta.get(t);
+    const counts = (this.world.callCounts ??= new Map());
+    counts.set(c.functionName, (counts.get(c.functionName) ?? 0) + 1);
+    const mo = this.world.morpho;
+    const Z = "0x0000000000000000000000000000000000000000";
+    if (mo) {
+      switch (c.functionName) {
+        case "idToMarketParams": {
+          const f = mo.markets.get(String(c.args?.[0]).toLowerCase());
+          return ok(f ? [f.params.loanToken, f.params.collateralToken, f.params.oracle, f.params.irm, f.params.lltv] : [Z, Z, Z, Z, 0n]);
+        }
+        case "market": {
+          const f = mo.markets.get(String(c.args?.[0]).toLowerCase());
+          return f ? ok([f.totals.supply, f.totals.supplyShares, f.totals.borrow, f.totals.borrowShares, BigInt(NOW_S - 30), 0n]) : ok([0n, 0n, 0n, 0n, 0n, 0n]);
+        }
+        case "price": {
+          const v = mo.oracles.get(t);
+          return v === undefined || v === "revert" ? revert : ok(v);
+        }
+        case "isVaultV2":
+          return ok(mo.officialVaults.has(String(c.args?.[0]).toLowerCase()));
+        case "totalAssets": {
+          const v = mo.vaultTotals.get(t);
+          return v === undefined ? revert : ok(v);
+        }
+        case "position": {
+          const pos = mo.positions.get(`${String(c.args?.[0]).toLowerCase()}:${String(c.args?.[1]).toLowerCase()}`);
+          return ok(pos ? [pos.supplyShares, pos.borrowShares, pos.collateral] : [0n, 0n, 0n]);
+        }
+        case "convertToAssets":
+          return ok(((c.args?.[0] as bigint) * 105n) / 100n); // 1 share = 1.05 assets in the fixture
+      }
+    }
     switch (c.functionName) {
       case "balanceOf": {
         if (this.world.revertBalanceOf.has(t)) return revert;

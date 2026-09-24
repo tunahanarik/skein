@@ -7,3 +7,5 @@ coverage/
 research/snapshots/*.tmp.json
 research/snapshots/portfolio.json
 research/snapshots/portfolio-validation.json
+research/snapshots/opportunities-validation.json
+.tmp/
