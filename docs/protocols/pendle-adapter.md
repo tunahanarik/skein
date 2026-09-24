@@ -142,4 +142,4 @@ The wallet address is **never** sent to the Pendle API.
 - USDG underlying yield (external reward) is not verifiable onchain.
 - LP components from the API do not add up to the headline in general. They are shown as components, never summed by us.
 - `singleTransactionAvailable` cites documentation and deployment; nothing is simulated (read-only phase).
-- The engine reports `LOW_LIQUIDITY` as an advisory only. A $1 dust market (onchain-only, 404 in the API) remains in the default view with that advisory; see open questions.
+- (Phase 4) The $1 onchain-only USDG market is excluded by default as `DUST_LIQUIDITY`. Stock Token YTs are excluded as `UNRESOLVED_YIELD_SEMANTICS`; their `YIELD_EXPOSURE_APY` and `UNDERLYING_APY` carry `semantics.status = UNRESOLVED` with the reason, and the values are unchanged.

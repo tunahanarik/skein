@@ -4,6 +4,7 @@
  */
 import { DEFAULT_ELIGIBILITY_POLICY, type EligibilityPolicy } from "../config/eligibility.js";
 import type { Eligibility, EligibilityReason, Opportunity } from "../model/opportunity.js";
+import { headlineMetric } from "./headline.js";
 
 export function eligibilityReasons(o: Opportunity, policy: EligibilityPolicy = DEFAULT_ELIGIBILITY_POLICY): EligibilityReason[] {
   const r = new Set<EligibilityReason>();
@@ -21,6 +22,10 @@ export function eligibilityReasons(o: Opportunity, policy: EligibilityPolicy = D
   const liq = o.availableLiquidity?.value;
   if (liq?.amount && liq.amount.raw === 0n) r.add("ZERO_LIQUIDITY");
   else if (liq?.usd && liq.usd.e18 < policy.lowLiquidityUsdE18) r.add("LOW_LIQUIDITY");
+  // Venue size: the larger of TVL and available liquidity, when at least one is priced.
+  const sizes = [o.tvl?.value.usd?.e18, liq?.usd?.e18].filter((v): v is bigint => v !== undefined && v !== null);
+  if (sizes.length && sizes.reduce((a, b) => (a > b ? a : b)) < policy.dustLiquidityUsdE18) r.add("DUST_LIQUIDITY");
+  if (headlineMetric(o)?.semantics?.status === "UNRESOLVED") r.add("UNRESOLVED_YIELD_SEMANTICS");
   return [...r];
 }
 

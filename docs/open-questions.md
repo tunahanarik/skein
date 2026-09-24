@@ -3,16 +3,18 @@
 Each item names what would resolve it.
 
 ## Added in Phase 3 (decide before Phase 4)
-P3-1. **Stock Token YT / underlying APY.**
+*P3-1, P3-2 and P3-3 were decided at the start of Phase 4; see opportunity-comparison.md "Phase 4 policy decisions".*
+
+P3-1. **Stock Token YT / underlying APY.** *Decided:* hidden by default (UNRESOLVED_YIELD_SEMANTICS), value untouched. Still open: computing a verified figure from multiplier history.
 - The Pendle API reports `underlyingApy` 0 and Long Yield APY −100 % for NVDA, PFE and SGOV.
 - Onchain, the SY rate equals the uiMultiplier, which grows with reinvested dividends.
 - The API values are shown as supplied, with `UNDERLYING_YIELD_SOURCE_UNCLEAR`.
 - To compute our own figure we need multiplier history: either an archive RPC (open question #1) or recording `UIMultiplierUpdated` events.
 - Should Stock Token YT opportunities stay in the default view meanwhile?
 
-P3-2. **Dust / onchain-only markets.** A USDG market with about $1 of liquidity (404 in the Pendle API) passes every objective rule and appears in the default view with LOW_LIQUIDITY and PROTOCOL_UNLISTED advisories. Should LOW_LIQUIDITY (or "no protocol-supplied data") become an excluding reason?
+P3-2. *Decided:* DUST_LIQUIDITY < $50 excludes; LOW_LIQUIDITY stays advisory. Original question: **Dust / onchain-only markets.** A USDG market with about $1 of liquidity (404 in the Pendle API) passes every objective rule and appears in the default view with LOW_LIQUIDITY and PROTOCOL_UNLISTED advisories. Should LOW_LIQUIDITY (or "no protocol-supplied data") become an excluding reason?
 
-P3-3. **PROTOCOL_UNLISTED.** This is advisory by default. The live USDG market with $49.8k liquidity (the only substantial Pendle USDG market) is not whitelisted in the Pendle app. Keep it advisory?
+P3-3. *Decided:* advisory only. Original question: **PROTOCOL_UNLISTED.** This is advisory by default. The live USDG market with $49.8k liquidity (the only substantial Pendle USDG market) is not whitelisted in the Pendle app. Keep it advisory?
 
 P3-4. **USDG external reward (3.3 %)** is reported by the Pendle API as `EXTERNAL_REWARD`. We cannot verify it onchain (`UNDERLYING_UNVERIFIED`). Who pays it, and is it paid to PT, YT or LP holders? Resolve with the Pendle/Paxos docs.
 

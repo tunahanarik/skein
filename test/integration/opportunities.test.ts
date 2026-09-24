@@ -94,7 +94,8 @@ describe("Morpho market normalization (through the adapter)", () => {
 
   it("skips idle markets and reports why; 100 % utilization and zero liquidity are warnings, not errors", async () => {
     const { engine, markets } = await setup();
-    const r = await engine.getOpportunities();
+    // Phase 4 (P3-2): the zero-liquidity market is DUST in the default view; this test inspects it.
+    const r = await engine.getOpportunities(ALL);
     expect(r.data.some((o) => o.venue.id === idOf(markets.idle))).toBe(false);
     expect(r.warnings.map((w) => w.code)).toContain("MARKET_SKIPPED");
     const full = find(r.data, "LEND", idOf(markets.full));
@@ -131,7 +132,7 @@ describe("Morpho market normalization (through the adapter)", () => {
     const noState = { ...m.nvdaOk.apiRaw, state: null };
     const old = { ...m.full.apiRaw, state: { ...(m.full.apiRaw.state as object), timestamp: Math.floor(NOW.getTime() / 1000) - 90_000 } };
     const { engine } = await setup({ markets: m, apiMarkets: [noState, old, m.nvdaDouble.apiRaw] });
-    const r = await engine.getOpportunities();
+    const r = await engine.getOpportunities(ALL);
     const lend = find(r.data, "LEND", idOf(m.nvdaOk));
     expect(lend.yields).toEqual([]);
     expect(lend.utilization?.value).toBe(6n * 10n ** 17n);

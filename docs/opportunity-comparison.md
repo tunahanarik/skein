@@ -47,7 +47,9 @@ Discovery keeps everything an adapter finds. The **default view** shows only opp
 | PROTOCOL_PAUSED | yes | blocker (e.g. Pendle SY `paused()`) |
 | ENTRY_STATE_UNKNOWN | yes | lifecycle UNKNOWN / canEnter null |
 | ENTRY_ROUTE_UNKNOWN | yes | `entry.kind = UNKNOWN` |
-| PROTOCOL_UNLISTED | no (advisory) | `risk.protocolListed = false` |
+| UNRESOLVED_YIELD_SEMANTICS | yes (Phase 4, P3-1) | the category's headline metric carries `semantics.status = UNRESOLVED` (e.g. Pendle Stock Token YT) |
+| DUST_LIQUIDITY | yes (Phase 4, P3-2) | venue size `max(TVL USD, available liquidity USD)` < $50; unknown USD is never dust |
+| PROTOCOL_UNLISTED | no (advisory; P3-3) | `risk.protocolListed = false` |
 | LOW_LIQUIDITY | no (advisory; also a warning) | liquidity USD < $10,000 (policy constant) |
 | ZERO_LIQUIDITY | no (advisory) | liquidity amount 0 |
 
@@ -55,3 +57,32 @@ Discovery keeps everything an adapter finds. The **default view** shows only opp
 - **`eligibility: "ALL"`** returns everything discovered (debug).
 - **`includeReasons: [...]`** re-admits opportunities whose *only* excluding reasons are listed. For example `["EXPIRED"]` gives `--include-expired`, and `["DATA_CONFLICT"]` gives `--include-conflicted`.
 - **A USDG = $1 oracle assumption is not a reason.** It stays a risk fact plus the `ORACLE_ASSUMES_LOAN_PEG` warning (Phase 3 policy decision).
+
+## Phase 4 policy decisions (from Phase 3 open questions)
+
+**P3-1: unresolved yield semantics.** Pendle reports −100 % Long Yield APY (and underlyingApy 0) for Stock Token YTs, while the SY rate is the uiMultiplier, which grows with reinvested dividends. The figure may leave out that growth, and without multiplier history we have no verified replacement.
+- The adapter keeps the value as supplied and marks the metric `semantics: { status: "UNRESOLVED", reason }`.
+- The engine excludes an opportunity when its *headline* metric (`src/opportunities/headline.ts`) is UNRESOLVED.
+- Only the YT is affected, because the headline of PT (onchain implied rate) and of LP is not the flagged metric.
+- `includeReasons: ["UNRESOLVED_YIELD_SEMANTICS"]` or `--debug` shows it again.
+
+**P3-2: dust vs low liquidity.** These are two separate reasons.
+- `LOW_LIQUIDITY` (< $10k) stays advisory.
+- `DUST_LIQUIDITY` (< $50) excludes.
+- **Venue size** is the larger of TVL and available liquidity. Both are priced by the Phase 1 Price Service, so an empty borrow side of a market with real collateral is not dust.
+- **Threshold research** (live, 2026-09-24, 408 default-view opportunities before this change):
+
+| Venue size | Opportunities |
+|---|---|
+| < $0.01 | 232 |
+| $0.01–1 | 6 |
+| $1–10 | 32 |
+| $10–100 | 23 |
+| $100–250 | 78 |
+| ≥ $250 | 37 |
+
+- **Why $50:** curator seed deposits sit at exactly $1, $10, $25 and $100.01, and $50 avoids all of them. It is ~50× the $0.995 Pendle dust market and ~1,000× below the $49.8k USDG market.
+- **Effect:** the default view went from 408 to 115 opportunities. Most of the removed ones are empty Morpho markets; nothing is deleted, and `--debug` shows them.
+- **Configuration:** `DEFAULT_ELIGIBILITY_POLICY.dustLiquidityUsdE18`.
+
+**P3-3: unlisted markets.** `PROTOCOL_UNLISTED` stays advisory. A market that is discovered from official factory logs, contract-verified, structurally valid, not dust, not paused and not expired stays in the default view (tested).

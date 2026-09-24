@@ -170,7 +170,7 @@ describe("YT and LP semantics", () => {
 
   it("stock-token YT: API underlyingApy 0 while SY rate is the multiplier → UNDERLYING_YIELD_SOURCE_UNCLEAR", async () => {
     const { engine, markets } = await setup();
-    const yt = get((await engine.getOpportunities()).data, "YIELD", markets.nvda!);
+    const yt = get((await engine.getOpportunities(ALL)).data, "YIELD", markets.nvda!);
     expect(yt.warnings.find((w) => w.code === "UNDERLYING_YIELD_SOURCE_UNCLEAR")?.message).toMatch(/uiMultiplier/);
   });
 
@@ -315,10 +315,11 @@ describe("lifecycle", () => {
 describe("listing, API failure and caching", () => {
   it("a market the API does not index (404) is discovered onchain, listed=false, advisory only, status COMPLETE", async () => {
     const { engine, markets } = await setup();
-    const r = await engine.getOpportunities();
+    const r = await engine.getOpportunities(ALL);
     const pt = get(r.data, "FIXED_YIELD", markets.dust!);
     expect(pt.risk.protocolListed).toMatchObject({ known: true, value: false });
     expect(pt.eligibility!.advisories).toEqual(expect.arrayContaining(["PROTOCOL_UNLISTED", "LOW_LIQUIDITY"]));
+    expect(pt.eligibility!.excludedBy).toEqual(["DUST_LIQUIDITY"]); // Phase 4 P3-2: ~$1 pool
     expect(pt.warnings.map((w) => w.code)).toEqual(expect.arrayContaining(["UNLISTED_MARKET", "LOW_LIQUIDITY"]));
     expect(pt.yields.map((y) => y.type)).toEqual(["IMPLIED_APY"]); // onchain only
     expect(r.adapters[0]!.status).toBe("COMPLETE");
@@ -440,7 +441,12 @@ describe("positions and portfolio composition", () => {
     const res = await engine.getPortfolioOpportunities(portfolio);
     const nv = res.data.find((g) => g.assetKey === `4663:${NVDA.toLowerCase()}`)!;
     const cats = new Set(nv.items.map((p) => `${p.opportunity.protocol.id}:${p.opportunity.category}`));
-    expect(cats).toEqual(new Set(["morpho:COLLATERAL", "pendle:FIXED_YIELD", "pendle:YIELD", "pendle:LP"]));
+    // Phase 4 (P3-1): the Stock Token YT is UNRESOLVED_YIELD_SEMANTICS → not in the default view…
+    expect(cats).toEqual(new Set(["morpho:COLLATERAL", "pendle:FIXED_YIELD", "pendle:LP"]));
+    // …but still discoverable, with its context, in the full view.
+    const full = await engine.getPortfolioOpportunities(portfolio, { eligibility: "ALL" });
+    const nvFull = full.data.find((g) => g.assetKey === `4663:${NVDA.toLowerCase()}`)!;
+    expect(nvFull.items.some((p) => p.opportunity.protocol.id === "pendle" && p.opportunity.category === "YIELD" && p.context.kind === "ENTER_POSITION")).toBe(true);
     const fixed = nv.items.find((p) => p.opportunity.category === "FIXED_YIELD")!;
     expect(fixed.context).toMatchObject({ kind: "ENTER_POSITION", enterWith: { amount: { raw: 2n * ONE } }, referenceYield: { type: "IMPLIED_APY" } });
     expect(fixed.context.kind === "ENTER_POSITION" && fixed.context.caveat).toMatch(/fees and slippage/);

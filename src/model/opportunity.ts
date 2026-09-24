@@ -126,6 +126,13 @@ export interface YieldMetric extends Measured<Fixed18> {
   /** COMPONENT_APY only: the headline metric this is part of, and which part. */
   componentOf?: YieldMetricType | null;
   component?: string | null;
+  /**
+   * Phase 4: whether the METRIC'S MEANING is resolved. UNRESOLVED = the value is what the source
+   * says, but we have measured evidence it may not describe what the user would earn (e.g. it may
+   * omit a yield component) and cannot replace it with a verified figure. The value is never
+   * rewritten; the flag drives the generic UNRESOLVED_YIELD_SEMANTICS eligibility reason.
+   */
+  semantics?: { status: "UNRESOLVED"; reason: string } | null;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -203,7 +210,10 @@ export type EligibilityReason =
   | "ENTRY_ROUTE_UNKNOWN"
   | "PROTOCOL_UNLISTED"
   | "LOW_LIQUIDITY"
-  | "ZERO_LIQUIDITY";
+  | "ZERO_LIQUIDITY"
+  // Phase 4 (policy P3-1 / P3-2)
+  | "UNRESOLVED_YIELD_SEMANTICS"
+  | "DUST_LIQUIDITY";
 
 export interface Eligibility {
   /** Passes every excluding rule of the active policy. */

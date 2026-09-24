@@ -112,7 +112,7 @@ export function fixturePendleMarkets(): Record<string, FixtureMarket> {
     paused: false,
     ptSymbol: "PT-USDG-25MAR2027",
   };
-  const expiredCore = { ...usdgCore, ...base(3), name: "USDG-EXPIRED", expiry: BigInt(NOW_S - DAY), ptRate: ONE, ytRate: 0n, totalPt: 1_000_000n, totalSy: 3_000_000n, ptSymbol: "PT-USDG-TEST-23SEP2026" };
+  const expiredCore = { ...usdgCore, ...base(3), name: "USDG-EXPIRED", expiry: BigInt(NOW_S - DAY), ptRate: ONE, ytRate: 0n, totalPt: 1_000_000_000n, totalSy: 3_000_000_000n, ptSymbol: "PT-USDG-TEST-23SEP2026" };
   const lookalikeCore = { ...usdgCore, ...base(4), name: "FAKE-USDG", yieldToken: UNKNOWN_FAKE_USDG, tokensIn: [UNKNOWN_FAKE_USDG], tokensOut: [UNKNOWN_FAKE_USDG], ptSymbol: "PT-USDG-FAKE" };
   const brokenCore = { ...usdgCore, ...base(5), name: "BROKEN", ptSyOverride: addr(0xdead), ptSymbol: "PT-USDG-BROKEN" };
   const dustCore = { ...usdgCore, ...base(6), name: "USDG-DUST", totalPt: 500_000n, totalSy: 495_000n, ptSymbol: "PT-USDG-DUST" };

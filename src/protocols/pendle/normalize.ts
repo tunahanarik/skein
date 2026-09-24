@@ -297,10 +297,16 @@ export function normalizePendleMarket(input: PendleMarketInput, ctx: PendleNorma
           },
         ]
       : apiYield("IMPLIED_APY", apiImpliedV, "impliedApy", `Pendle market-implied APY (API; onchain rate unreadable), in ${unitLabel}`, { basis: "IMPLIED", compounding: "COMPOUNDED", denominatedIn: denom });
-  const underlying = apiYield("UNDERLYING_APY", api?.underlyingApy ?? null, "underlyingApy", "Pendle API underlying APY (reference; not earned by entering)", { denominatedIn: denom });
+  // P3-1: Stock Token SY accrues uiMultiplier growth while the API reports underlyingApy 0 → the
+  // API's underlying/YT figures may omit that growth. Values kept as supplied; meaning UNRESOLVED.
+  const stockUnitUnresolved = !expired && !!api && yieldToken.canonical && yieldToken.registryType === "STOCK_TOKEN" && syRateEqualsMultiplier === true && (api.underlyingApy ?? 0) === 0;
+  const unresolved = stockUnitUnresolved
+    ? { semantics: { status: "UNRESOLVED" as const, reason: "Pendle API reports underlyingApy 0 while SY.exchangeRate() equals the Stock Token uiMultiplier (grows with reinvested dividends); the figure may omit multiplier growth and no verified replacement exists" } }
+    : {};
+  const underlying = apiYield("UNDERLYING_APY", api?.underlyingApy ?? null, "underlyingApy", "Pendle API underlying APY (reference; not earned by entering)", { denominatedIn: denom, ...unresolved });
   const ptYields = [...impliedYield, ...underlying];
   const ytYields = [
-    ...apiYield("YIELD_EXPOSURE_APY", api?.ytFloatingApy ?? null, "ytFloatingApy", "Pendle Long Yield APY: annualised YT return if the underlying APY stays at the API value (can be negative)", { basis: "VARIABLE" }),
+    ...apiYield("YIELD_EXPOSURE_APY", api?.ytFloatingApy ?? null, "ytFloatingApy", "Pendle Long Yield APY: annualised YT return if the underlying APY stays at the API value (can be negative)", { basis: "VARIABLE", ...unresolved }),
     ...underlying,
   ];
   const pendleReward = api?.pendleApy ?? null;
@@ -316,8 +322,7 @@ export function normalizePendleMarket(input: PendleMarketInput, ctx: PendleNorma
 
   // ---- yield-source clarity (measured facts only) ----
   if (!expired && api) {
-    const stockUnit = yieldToken.canonical && yieldToken.registryType === "STOCK_TOKEN" && syRateEqualsMultiplier === true;
-    if (stockUnit && (api.underlyingApy ?? 0) === 0) {
+    if (stockUnitUnresolved) {
       warnings.push(
         warn("UNDERLYING_YIELD_SOURCE_UNCLEAR", `Pendle market ${short}: SY.exchangeRate() equals ${yieldToken.symbol} uiMultiplier (grows with reinvested dividends) while the Pendle API reports underlyingApy 0 and Long Yield APY ${api.ytFloatingApy ?? "?"}; realised YT yield follows multiplier growth, which the API figure does not appear to include`, { assetKey: yieldToken.key }),
       );

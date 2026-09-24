@@ -133,7 +133,7 @@ describe("eligibility (generic, from canonical fields only)", () => {
   });
   it("unlisted and low liquidity are advisories, not exclusions; zero liquidity is flagged as such", () => {
     const liq = (e18: bigint, raw: bigint) => ({ value: { asset: opp().primaryAsset, amount: { raw, decimals: 18, display: "" }, usd: { e18, display: "" } } }) as Opportunity["availableLiquidity"];
-    const e = computeEligibility(opp({ availableLiquidity: liq(5n * 10n ** 18n, 5n), risk: { ...opp().risk, protocolListed: { known: true, value: false, source: src } } }));
+    const e = computeEligibility(opp({ availableLiquidity: liq(5_000n * 10n ** 18n, 5n), risk: { ...opp().risk, protocolListed: { known: true, value: false, source: src } } }));
     expect(e).toMatchObject({ eligibleForDefaultDisplay: true, advisories: ["PROTOCOL_UNLISTED", "LOW_LIQUIDITY"] });
     expect(computeEligibility(opp({ availableLiquidity: liq(0n, 0n) })).advisories).toEqual(["ZERO_LIQUIDITY"]);
   });

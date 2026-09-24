@@ -6,7 +6,8 @@
  * liquidation threshold — by definition a position at that size is liquidatable after any
  * adverse move. It is labelled as such and is not a suggested or safe amount.
  */
-import type { AmountWithUsd, EntryRequirement, Lifecycle, Opportunity, YieldMetric, YieldMetricType } from "../model/opportunity.js";
+import type { AmountWithUsd, EntryRequirement, Lifecycle, Opportunity, YieldMetric } from "../model/opportunity.js";
+import { headlineMetric } from "./headline.js";
 import type { PortfolioAsset } from "../portfolio/types.js";
 import { mulDivDown, wMulDown } from "../lib/fixed.js";
 import { formatFixed, usdValueE18, USD_DECIMALS } from "../lib/units.js";
@@ -55,12 +56,6 @@ export type PortfolioOpportunityContext =
     }
   | { kind: "NONE"; reason: string };
 
-/** Headline metric per category for user context. Category semantics, not protocol logic. */
-const REFERENCE_METRIC: Partial<Record<Opportunity["category"], YieldMetricType[]>> = {
-  FIXED_YIELD: ["IMPLIED_APY", "FIXED_APY"],
-  YIELD: ["YIELD_EXPOSURE_APY", "NET_APY"],
-  LP: ["NET_APY", "LP_APR"],
-};
 
 const ENTER_CAVEAT: Partial<Record<Opportunity["category"], string>> = {
   FIXED_YIELD:
@@ -124,8 +119,7 @@ export function buildPortfolioOpportunity(o: Opportunity, row: PortfolioAsset, b
     if (o.entry.requiredAsset.key !== row.asset.key) {
       return { opportunity: o, holding, context: { kind: "NONE", reason: `entry requires ${o.entry.requiredAsset.symbol}, not the held asset` } };
     }
-    const wanted = REFERENCE_METRIC[o.category] ?? [];
-    const reference = wanted.map((t) => o.yields.find((y) => y.type === t)).find((y) => !!y) ?? null;
+    const reference = headlineMetric(o);
     return {
       opportunity: o,
       holding,
