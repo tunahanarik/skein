@@ -28,9 +28,9 @@ export function pctE18(v: string | null | undefined, digits = 2): string {
   return pct(Number(v) / 1e16, digits);
 }
 
+/** `n` is in percent units (7.28 → "7.28%"); placement and spacing follow the locale. */
 export function pct(n: number, digits = 2, minDigits = digits): string {
-  const s = n.toLocaleString(locale, { minimumFractionDigits: minDigits, maximumFractionDigits: digits });
-  return locale.startsWith("tr") ? `%${s}` : `${s}%`;
+  return new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: minDigits, maximumFractionDigits: digits }).format(n / 100);
 }
 
 /** Server-formatted percent ("7.28%") → localized. */

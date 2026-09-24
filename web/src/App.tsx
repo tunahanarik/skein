@@ -21,7 +21,7 @@ function LanguagePicker() {
       <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t("shell.language")}>
         {LANGS.map((l) => (
           <option key={l.code} value={l.code}>
-            {l.code.toUpperCase()} · {l.label}
+            {l.label}
           </option>
         ))}
       </select>
