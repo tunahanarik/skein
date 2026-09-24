@@ -106,7 +106,7 @@ describe("estimate and links", () => {
     await screen.findByText(/Buy PT-NVDA/);
     const hosts = [...document.querySelectorAll("a[target=_blank]")].map((a) => new URL((a as HTMLAnchorElement).href).host);
     expect(hosts.length).toBeGreaterThan(0);
-    for (const h of hosts) expect(["app.pendle.finance", "app.morpho.org", "app.uniswap.org", "robinhoodchain.blockscout.com"]).toContain(h);
+    for (const h of hosts) expect(["app.pendle.finance", "app.morpho.org", "app.uniswap.org", "app.spark.finance", "robinhoodchain.blockscout.com"]).toContain(h);
     for (const a of document.querySelectorAll("a[target=_blank]")) expect(a.getAttribute("rel")).toContain("noopener");
   });
 });

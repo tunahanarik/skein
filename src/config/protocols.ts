@@ -66,9 +66,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
     docs: "https://docs.spark.finance/products/spark-savings",
     dataSources: [{ kind: "ONCHAIN", url: "spUSDG.vsr() / totalAssets()", covers4663: true, note: "no official rates API found" }],
     contracts: { spUSDG: "0xde770c84FE66E063336b31737cFE9790f18c4087" },
-    linkHosts: [],
-    appUrl: null,
-    appSource: null,
+    linkHosts: ["app.spark.finance"],
+    appUrl: "https://app.spark.finance/",
+    appSource: "spark.finance (same domain as the official docs.spark.finance; listed on github.com/sparkdotfi) links “Launch app” at app.spark.finance",
     checkedAt: "2026-09-24",
   },
   {

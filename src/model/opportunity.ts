@@ -378,6 +378,16 @@ export type OpportunityDetails =
       totalAssets: Measured<TokenAmount> | null;
       performanceFee: Fixed18 | null;
       managementFee: Fixed18 | null;
+    }
+  | {
+      /** ERC-4626 savings vault whose rate is a per-second compounding factor (e.g. Spark vsr). */
+      kind: "ERC4626_SAVINGS";
+      vault: Address;
+      share: AssetRef;
+      /** Per-second rate, ray (1e27): assets per share grow by this factor every second. */
+      rateRay: bigint;
+      totalAssets: Measured<TokenAmount> | null;
+      depositCap: TokenAmount | null;
     };
 
 export interface Opportunity {
