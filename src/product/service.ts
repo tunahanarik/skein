@@ -228,7 +228,7 @@ export class AssetIntelligenceService {
     const generatedAt = this.now().toISOString();
     const { ref, empty } = this.resolveAsset(s.ctx.registry, assetInput);
     const emptyStates: EmptyState[] = empty ? [empty] : [];
-    const base: Omit<AssetIntelligence, "categories" | "summary" | "dataQuality" | "freshness" | "otherTradeDestinations"> = {
+    const base: Omit<AssetIntelligence, "categories" | "summary" | "dataQuality" | "freshness" | "otherTradeDestinations" | "tradeTargets"> = {
       mode,
       chainId: s.ctx.chainId,
       asset: ref,
@@ -242,7 +242,7 @@ export class AssetIntelligenceService {
     const statuses = this.adapterStatuses(s);
     if (!ref) {
       const freshness = summarizeFreshness([], nowS);
-      return { ...base, categories: [], otherTradeDestinations: { direct: 0, oneHop: 0 }, summary: { capabilities: capabilitiesOf([]), counts: emptyCounts(), productCards: 0, protocols: [], allDiscoveredProtocols: [] }, dataQuality: summarizeDataQuality(statuses, freshness), freshness };
+      return { ...base, categories: [], otherTradeDestinations: { direct: 0, oneHop: 0 }, tradeTargets: [], summary: { capabilities: capabilitiesOf([]), counts: emptyCounts(), productCards: 0, protocols: [], allDiscoveredProtocols: [] }, dataQuality: summarizeDataQuality(statuses, freshness), freshness };
     }
 
     // ---- price (PORTFOLIO_PRICE) and borrow-asset prices, via the Phase 1 Price Service ----
@@ -321,6 +321,16 @@ export class AssetIntelligenceService {
     const tradeCards = tradeGroups.flatMap((g) => g.cards);
     const dest = ref.canonical ? destinations(s.graph, ref.key) : { direct: [], oneHop: [] };
     const otherTradeDestinations = { direct: dest.direct.filter((d) => !targets.includes(d)).length, oneHop: dest.oneHop.filter((d) => !targets.includes(d)).length };
+    const symbolOf = (key: string) => {
+      const addr = key.split(":")[1];
+      return addr ? (s.ctx.registry.get(s.ctx.chainId, addr as Address)?.symbol ?? null) : null;
+    };
+    const tradeTargets: AssetIntelligence["tradeTargets"] = [
+      ...dest.direct.map((key) => ({ key, kind: "DIRECT" as const })),
+      ...dest.oneHop.map((key) => ({ key, kind: "ONE_HOP" as const })),
+    ]
+      .map((x) => ({ ...x, symbol: symbolOf(x.key) }))
+      .filter((x): x is AssetIntelligence["tradeTargets"][number] => x.symbol !== null);
 
     // ---- categories: rank within each subcategory (and within each trade target) ----
     const visible = (c: ProductCard) => DEFAULT_VISIBLE.has(c.usability.status);
@@ -375,6 +385,7 @@ export class AssetIntelligenceService {
       price: priceView,
       categories,
       otherTradeDestinations,
+      tradeTargets,
       summary: {
         capabilities: capabilitiesOf(everyCard),
         counts,

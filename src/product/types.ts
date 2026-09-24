@@ -121,6 +121,11 @@ export interface BorrowCapacity {
   formula: string;
   caveat: string;
   unavailableReason: string | null;
+  /**
+   * What could be borrowed right now: min(protocol limit, the market's available liquidity), exact
+   * integer math. Still at the liquidation threshold — not a recommendation.
+   */
+  borrowableNow: { amount: TokenAmount; usd: UsdAmount | null; cappedBy: "PROTOCOL_LIMIT" | "MARKET_LIQUIDITY" } | null;
 }
 
 export interface FixedYieldView {
@@ -267,6 +272,8 @@ export interface AssetIntelligence {
   categories: CategoryView[];
   /** Other trade destinations beyond the default targets (counts only; RAW has them all). */
   otherTradeDestinations: { direct: number; oneHop: number };
+  /** Every asset reachable from this one through verified routes (DIRECT or ONE_HOP), for a target picker. Empty = no route at all. */
+  tradeTargets: { key: string; symbol: string; kind: "DIRECT" | "ONE_HOP" }[];
   summary: {
     capabilities: Capabilities;
     counts: OpportunityCounts;

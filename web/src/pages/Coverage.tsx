@@ -84,7 +84,7 @@ export function CoveragePage() {
                 </tr>
               ))}
             {rows.map((r) => (
-              <tr key={r.asset.key} style={{ cursor: "pointer" }} onClick={() => navigate(`/asset/${r.asset.address}`)}>
+              <tr key={r.asset.key} className="clickable" onClick={() => navigate(`/asset/${r.asset.address}`)}>
                 <td>
                   <div className="row" style={{ gap: 10, flexWrap: "nowrap" }}>
                     <Avatar symbol={r.asset.symbol} />

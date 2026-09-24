@@ -95,15 +95,22 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
         )}
       </div>
 
+      {card.subcategory === "YIELD" && <div className="notice warn small"><span>{t("card.ytWarn")}</span></div>}
+      {card.borrowCapacity?.borrowableNow && (
+        <div className="small">
+          <span className="muted">{t("card.borrowNow")} </span>
+          <strong className="num">
+            {amount(card.borrowCapacity.borrowableNow.amount.display)} {card.borrowCapacity.maxBorrow?.asset.symbol}
+          </strong>{" "}
+          <span className="faint">({card.borrowCapacity.borrowableNow.cappedBy === "MARKET_LIQUIDITY" ? t("card.cappedByMarket") : t("card.cappedByLimit")})</span>
+        </div>
+      )}
       {card.borrowCapacity?.maxBorrow && (
         <div className="small">
           <span className="muted">{t("card.limit")} </span>
           <strong className="num">
             {amount(card.borrowCapacity.maxBorrow.amount.display)} {card.borrowCapacity.maxBorrow.asset.symbol}
           </strong>
-          {card.borrowCapacity.maxBorrow.usd && card.liquidity?.usd && Number(card.borrowCapacity.maxBorrow.usd.display) > Number(card.liquidity.usd.display) && (
-            <div style={{ color: "var(--warn)" }}>{t("card.limitCapped", { x: usd(card.liquidity.usd.display) })}</div>
-          )}
           <div className="faint">{t("card.limitWarn")}</div>
         </div>
       )}

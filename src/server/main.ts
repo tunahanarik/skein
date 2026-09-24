@@ -3,7 +3,7 @@
  *
  *   pnpm serve            # PORT (default 8787), HOST (default 127.0.0.1)
  *
- * Server mode serves an expired engine snapshot for up to SNAPSHOT_MAX_STALE_MS (default 60 s)
+ * Server mode serves an expired engine snapshot for up to SNAPSHOT_MAX_STALE_MS (default 5 min)
  * while it refreshes in the background, and warms the snapshot at start. While people are using
  * the app (an API request in the last ACTIVE_WINDOW_MS), the snapshot is also refreshed every
  * REFRESH_EVERY_MS so nobody hits the ≈ 8 s cold path; an idle server makes no RPC calls.
@@ -20,13 +20,13 @@ const rt = createRuntime(env);
 const intelligence = new AssetIntelligenceService({
   engine: rt.opportunities,
   getPortfolio: (w) => rt.getPortfolio(w),
-  maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 60_000),
+  maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
 const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1" });
 const serveStatic = createStatic(env.WEB_DIST ?? "web/dist");
 
 const REFRESH_EVERY_MS = 45_000;
-const ACTIVE_WINDOW_MS = 10 * 60_000;
+const ACTIVE_WINDOW_MS = 30 * 60_000;
 let lastApiRequest = 0;
 setInterval(() => {
   if (Date.now() - lastApiRequest < ACTIVE_WINDOW_MS) intelligence.warm().catch(() => undefined);

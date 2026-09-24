@@ -12,7 +12,7 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 |---|---|---|
 | `PORT`, `HOST` | 8787, 127.0.0.1 | listen address |
 | `ROBINHOOD_RPC_URL` | public RPC (dev only) | required in production ([rpc.md](rpc.md)) |
-| `SNAPSHOT_MAX_STALE_MS` | 60000 | serve an expired engine snapshot this long while it refreshes in the background |
+| `SNAPSHOT_MAX_STALE_MS` | 300000 | serve an expired engine snapshot this long while it refreshes in the background |
 | `TRUST_PROXY` | unset | `1` = rate-limit by `X-Forwarded-For` (only behind a known proxy) |
 | `WEB_DIST` | `web/dist` | built web app |
 

@@ -4,6 +4,7 @@ import { amount, feePpm, pctE18, usd } from "../format";
 import { useI18n } from "../i18n";
 import { code } from "../text";
 import { ExplorerLink, UsabilityBadge } from "./common";
+import { rowKeys } from "./keyboard";
 
 /** Compact, ranked list of trade routes (with quotes when an amount was given). Rows expand to pool detail. */
 export function RouteTable({ cards }: { cards: Card[] }) {
@@ -30,10 +31,11 @@ export function RouteTable({ cards }: { cards: Card[] }) {
             const tr = c.trade!;
             const q = tr.quote;
             const isOpen = open === c.cardId;
+            const toggle = () => setOpen(isOpen ? null : c.cardId);
             const cols = 6 + (quoted ? 2 : 0);
             return (
               <Fragment key={c.cardId}>
-                <tr style={{ cursor: "pointer" }} onClick={() => setOpen(isOpen ? null : c.cardId)} aria-expanded={isOpen}>
+                <tr className="clickable" onClick={toggle} {...rowKeys(toggle)} aria-expanded={isOpen}>
                   <td className="faint num">{c.ranking?.position}</td>
                   <td>
                     <span className="path" style={{ fontWeight: 600 }}>

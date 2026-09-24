@@ -134,7 +134,7 @@ export function HomePage() {
             <table className="data">
               <tbody>
                 {top.map(({ r }) => (
-                  <tr key={r.asset.key} style={{ cursor: "pointer" }} onClick={() => navigate(`/asset/${r.asset.symbol}`)}>
+                  <tr key={r.asset.key} className="clickable" onClick={() => navigate(`/asset/${r.asset.symbol}`)}>
                     <td style={{ width: 44 }}>
                       <Avatar symbol={r.asset.symbol} />
                     </td>

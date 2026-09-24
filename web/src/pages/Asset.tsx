@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { api, ApiFailure, type Card, type Intelligence, type Sub } from "../api";
 import { CardView } from "../components/CardView";
+import { OpportunityTable } from "../components/OpportunityTable";
 import { RouteTable } from "../components/RouteTable";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
 import { amount, usd } from "../format";
@@ -205,11 +206,15 @@ function SubSection({ sub }: { sub: Sub }) {
         <h3>{code(t, "sub", sub.subcategory)}</h3>
         <span className="faint small">{code(t, "cmp", sub.comparator)}</span>
       </div>
-      <div className="grid two">
-        {sub.cards.map((c) => (
-          <CardView key={c.cardId} card={c} />
-        ))}
-      </div>
+      {sub.cards.length > 6 ? (
+        <OpportunityTable cards={sub.cards} />
+      ) : (
+        <div className="grid two">
+          {sub.cards.map((c) => (
+            <CardView key={c.cardId} card={c} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -261,16 +266,21 @@ function TradeRoutes({ sub, v }: { sub: Sub; v: Intelligence }) {
 
 function QuotePanel({ v, assetRef }: { v: Intelligence; assetRef: string }) {
   const { t } = useI18n();
-  const list = useAssetList();
   const sym = v.asset!.symbol;
-  const [to, setTo] = useState(sym === "USDG" ? "WETH" : "USDG");
+  // Only assets actually reachable through verified routes; hubs first, then alphabetical.
+  const targets = useMemo(() => {
+    const hubs = ["USDG", "WETH"];
+    const rank = (s: string) => (hubs.includes(s) ? hubs.indexOf(s) : hubs.length);
+    const seen = new Set<string>();
+    const dup = new Set(v.tradeTargets.map((x) => x.symbol).filter((s, i, a) => a.indexOf(s) !== i));
+    return v.tradeTargets
+      .filter((x) => !dup.has(x.symbol) && !seen.has(x.symbol) && seen.add(x.symbol))
+      .sort((a, b) => rank(a.symbol) - rank(b.symbol) || a.symbol.localeCompare(b.symbol))
+      .map((x) => x.symbol);
+  }, [v.tradeTargets]);
+  const [to, setTo] = useState(targets.includes("USDG") ? "USDG" : (targets[0] ?? ""));
   const [amt, setAmt] = useState("1");
   const [state, setState] = useState<{ loading: boolean; error: ApiFailure | null; data: Intelligence | null; asked: string | null }>({ loading: false, error: null, data: null, asked: null });
-  const targets = useMemo(() => {
-    const base = ["USDG", "WETH"].filter((s) => s !== sym);
-    const rest = (list ?? []).filter((a) => a.symbol !== sym && !base.includes(a.symbol) && list!.filter((x) => x.symbol === a.symbol).length === 1).map((a) => a.symbol);
-    return [...base, ...rest];
-  }, [list, sym]);
   const validAmt = /^\d+(\.\d+)?$/.test(amt) && Number(amt) > 0 && amt.length <= 40;
 
   const run = async () => {
@@ -287,6 +297,7 @@ function QuotePanel({ v, assetRef }: { v: Intelligence; assetRef: string }) {
 
   const tradeSub = state.data?.categories.find((c) => c.category === "TRADE")?.subcategories[0];
   const top = tradeSub?.cards[0]?.trade?.quote;
+  if (targets.length === 0) return <div className="panel pad muted small" style={{ marginBottom: 6 }}>{t("quote.noTargets")}</div>;
   return (
     <div className="panel pad" style={{ marginBottom: 6 }}>
       <form

@@ -383,3 +383,28 @@ describe("server mode: stale-while-revalidate snapshot", () => {
     expect(service.metrics.snapshot().counters["cache_miss{cache=snapshot}"]).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe("improvements: trade targets and borrowable now", () => {
+  it("tradeTargets lists exactly the graph destinations (direct + one hop); none for an asset without routes", async () => {
+    const { service } = await intelligenceStack();
+    const v = await service.getAssetIntelligence(NVDA);
+    const syms = v.tradeTargets.map((x) => `${x.symbol}:${x.kind}`).sort();
+    expect(syms).toEqual(expect.arrayContaining(["USDG:DIRECT", "WETH:DIRECT"]));
+    expect(v.tradeTargets.every((x) => x.key !== v.asset!.key)).toBe(true);
+    const aapl = await service.getAssetIntelligence(AAPL); // only a dust pool: no route
+    expect(aapl.tradeTargets).toEqual([]);
+  });
+
+  it("borrowableNow = min(protocol limit, market liquidity), exact integers", async () => {
+    const { service } = await intelligenceStack();
+    const p = await service.getPortfolioIntelligence(WALLET);
+    const card = sub(p.assets.find((a) => a.asset?.symbol === "NVDA")!, "COLLATERAL")!.cards[0]!;
+    const bc = card.borrowCapacity!;
+    const liq = card.liquidity!;
+    expect(bc.borrowableNow).not.toBeNull();
+    const now = bc.borrowableNow!;
+    expect(now.amount.raw <= bc.maxBorrow!.amount.raw).toBe(true);
+    expect(now.cappedBy).toBe(now.amount.raw === bc.maxBorrow!.amount.raw ? "PROTOCOL_LIMIT" : "MARKET_LIQUIDITY");
+    expect(liq).toBeTruthy();
+  });
+});

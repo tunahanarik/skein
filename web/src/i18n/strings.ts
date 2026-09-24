@@ -188,6 +188,10 @@ export const en = {
   "card.maturity": "Maturity · {n} days",
   "card.lltv": "Liquidation LTV",
   "card.limit": "Theoretical limit for your balance:",
+  "card.borrowNow": "Could be borrowed right now:",
+  "card.cappedByMarket": "limited by what the market can lend",
+  "card.cappedByLimit": "limited by the protocol's LLTV",
+  "card.ytWarn": "The YT figure is a leveraged estimate of the yield token's return, not a yield you earn. A YT can lose most or all of its value by maturity.",
   "card.limitCapped": "The market can lend only {x} right now, far less than this limit.",
   "card.limitWarn": "Borrowing this much is liquidatable on the next adverse move. Not a recommended amount.",
   "card.details": "Details and sources",
@@ -208,6 +212,15 @@ export const en = {
   "card.direct": "direct",
   "card.oneHop": "1 hop",
   "card.context": "Protocol note",
+
+  // opportunity table
+  "table.minLiq": "Min. liquidity",
+  "table.protocol": "Protocol",
+  "table.any": "Any",
+  "table.opportunity": "Opportunity",
+  "table.rate": "Rate",
+  "table.noneMatch": "Nothing matches these filters.",
+  "quote.noTargets": "No verified route leads anywhere from this asset yet.",
 
   // route table
   "route.route": "Route",
@@ -495,6 +508,10 @@ export const tr: Record<StringKey, string> = {
   "card.maturity": "Vade · {n} gün",
   "card.lltv": "Likidasyon LTV",
   "card.limit": "Bakiyeniz için teorik limit:",
+  "card.borrowNow": "Şu anda borç alınabilecek:",
+  "card.cappedByMarket": "piyasanın borç verebileceği miktarla sınırlı",
+  "card.cappedByLimit": "protokolün LLTV'si ile sınırlı",
+  "card.ytWarn": "YT rakamı, getiri token'ının kaldıraçlı bir getiri tahminidir; kazandığınız bir faiz değildir. Bir YT vadeye kadar değerinin çoğunu veya tamamını kaybedebilir.",
   "card.limitCapped": "Piyasa şu anda yalnızca {x} borç verebilir; bu limitin çok altında.",
   "card.limitWarn": "Bu kadar borç almak, ilk olumsuz fiyat hareketinde likide edilebilir. Önerilen bir tutar değildir.",
   "card.details": "Ayrıntılar ve kaynaklar",
@@ -515,6 +532,14 @@ export const tr: Record<StringKey, string> = {
   "card.direct": "doğrudan",
   "card.oneHop": "1 ara adım",
   "card.context": "Protokol notu",
+
+  "table.minLiq": "Min. likidite",
+  "table.protocol": "Protokol",
+  "table.any": "Tümü",
+  "table.opportunity": "Fırsat",
+  "table.rate": "Oran",
+  "table.noneMatch": "Bu filtrelere uyan bir şey yok.",
+  "quote.noTargets": "Bu varlıktan henüz hiçbir yere doğrulanmış rota yok.",
 
   "route.route": "Rota",
   "route.youGet": "Alacağınız (gösterge)",

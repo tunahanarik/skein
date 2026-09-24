@@ -5,7 +5,7 @@
 import { classifyFreshness } from "../config/freshness.js";
 import { formatPercent } from "../lib/fixed.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
-import type { Opportunity, YieldMetric } from "../model/opportunity.js";
+import type { Opportunity, TokenAmount, UsdAmount, YieldMetric } from "../model/opportunity.js";
 import type { TradeMarket, TradeQuote, TradeRoute } from "../model/trade.js";
 import { headlineMetric } from "../opportunities/headline.js";
 import { buildPortfolioOpportunity } from "../opportunities/userContext.js";
@@ -103,7 +103,17 @@ function borrowCapacity(o: Opportunity, row: PortfolioAsset | null, borrowPrice:
     formula: c.formula,
     caveat: "THEORETICAL_LIMIT at the liquidation threshold: a position of this size is liquidatable on the next adverse move. Not a recommended amount; no safety buffer is modelled.",
     unavailableReason: c.unavailableReason,
+    borrowableNow: borrowableNow(o, c.protocolMaximumBorrow),
   };
+}
+
+/** min(protocol limit, available market liquidity) in the loan asset; exact integer comparison. */
+function borrowableNow(o: Opportunity, max: { amount: TokenAmount | null; usd: UsdAmount | null } | null): BorrowCapacity["borrowableNow"] {
+  const limit = max?.amount ?? null;
+  const liq = o.availableLiquidity?.value ?? null;
+  if (!limit) return null;
+  if (!liq?.amount || liq.amount.decimals !== limit.decimals) return { amount: limit, usd: max!.usd, cappedBy: "PROTOCOL_LIMIT" };
+  return liq.amount.raw < limit.raw ? { amount: liq.amount, usd: liq.usd, cappedBy: "MARKET_LIQUIDITY" } : { amount: limit, usd: max!.usd, cappedBy: "PROTOCOL_LIMIT" };
 }
 
 export interface CardContext {
