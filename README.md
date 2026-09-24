@@ -2,7 +2,7 @@
 
 Read-only DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?"
 
-**Status: Phase 4 done: DEX discovery + Uniswap v3 TRADE adapter** (verified pools, DIRECT and ONE_HOP routes, read-only INDICATIVE quotes), on top of Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
+**Status: Phase 5 done: product read API** ("I own this asset. What can I actually do with it?"): AssetIntelligence / PortfolioIntelligence / coverage as a projection of the raw engine, with usability, per-category ranking, data quality and freshness. It sits on top of Phase 4 (Uniswap v3 TRADE), Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
 
 ## Layout
 ```
@@ -17,6 +17,7 @@ src/protocols/morpho/     Morpho adapter (API client, onchain reads, normalizati
 src/protocols/pendle/     Pendle adapter (onchain discovery via factory logs, identity checks, API client, PT/YT/LP normalization, positions)
 src/protocols/uniswap/    Uniswap v3 adapter (resumable pool-event index + factory sweep, pool verification, state/TVL, QuoterV2 quotes)
 src/trade/                generic trade graph, DIRECT/ONE_HOP routing, quote comparison (venue-independent)
+src/product/              Phase 5 product read API: AssetIntelligenceService, usability, cards, ranking, quality, metrics
 src/model/                Opportunity, RiskMetadata, provenance (DataSource / Sourced<T>), verification states, warning codes
 src/lib/                  exact decimal math, Stock Token balance + valuation, rates, freshness, validation, trusted links
 src/sources/              zod schemas for the Robinhood Stock Token API and the Chainlink directory
@@ -34,7 +35,7 @@ test/unit, test/integration  offline tests (fixture world in test/fixtures)
 pnpm install
 pnpm test                       # unit + integration tests (offline)
 pnpm typecheck
-pnpm validate                   # all live checks: Phase 0–4 (read-only)
+pnpm validate                   # all live checks: Phase 0–5 (read-only)
 pnpm validate:portfolio         # Phase 1 live checks only
 pnpm portfolio --address 0x…    # portfolio CLI (--json, --include-zero, --token 0x…)
 pnpm registry:check             # diff live Stock Token registry vs committed snapshot
@@ -49,9 +50,14 @@ pnpm opportunities --asset NVDA --to USDG [--amount 1]  # routes (+ INDICATIVE q
 pnpm trade:inspect --from NVDA --to USDG [--amount 1]   # developer view of candidate markets and routes
 pnpm uniswap:index              # finish the one-time Uniswap pool-event index (.cache/, not committed)
 pnpm validate:uniswap           # Phase 4 live checks (Uniswap + combined three-protocol view)
+pnpm asset NVDA [--json] [--debug]              # Phase 5: what can be done with NVDA (product view)
+pnpm asset NVDA --to USDG --amount 1            # … with indicative quotes for exactly 1 NVDA
+pnpm portfolio:view --address 0x… [--json]      # per held asset (address never persisted)
+pnpm coverage [--json]                          # coverage matrix for all canonical assets
+pnpm validate:intelligence      # Phase 5 live checks
 ```
 
-Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider. The public RPC is rate-limited and officially not for production. No private key is ever needed.
+Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider; production refuses to start without one. `ROBINHOOD_INDEX_RPC_URL` optionally sends log indexing to a separate endpoint. The public RPC is rate-limited and officially not for production. No private key is ever needed.
 
 ## Terms
 Robinhood Chain brand rules apply: use "Robinhood Chain" in full and "Stock Tokens" (never "tokenized stocks"). This project is not affiliated with Robinhood.

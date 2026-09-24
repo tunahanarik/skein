@@ -28,7 +28,11 @@
     "opportunities": "tsx scripts/opportunities.ts",
     "trade:inspect": "tsx scripts/trade-inspect.ts",
     "uniswap:index": "tsx scripts/uniswap-index.ts",
-    "validate:uniswap": "tsx scripts/validate-uniswap.ts"
+    "validate:uniswap": "tsx scripts/validate-uniswap.ts",
+    "asset": "tsx scripts/asset.ts",
+    "portfolio:view": "tsx scripts/portfolio-view.ts",
+    "coverage": "tsx scripts/coverage.ts",
+    "validate:intelligence": "tsx scripts/validate-intelligence.ts"
   },
   "dependencies": {
     "viem": "2.56.8",

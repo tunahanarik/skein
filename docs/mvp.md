@@ -11,9 +11,10 @@
 | 2 | **Opportunity Engine + Morpho adapter** (read-only; no UI) | done; see [opportunity-engine.md](opportunity-engine.md), [protocol-adapters.md](protocol-adapters.md), [protocols/morpho-adapter.md](protocols/morpho-adapter.md), [opportunity-provenance.md](opportunity-provenance.md) |
 | 3 | **Pendle adapter + maturity-based opportunities + default eligibility** (read-only; no UI) | done; see [protocols/pendle-adapter.md](protocols/pendle-adapter.md), [pendle-semantics.md](pendle-semantics.md), [asset-relationships.md](asset-relationships.md), [opportunity-comparison.md](opportunity-comparison.md) |
 | 4 | **DEX discovery + Uniswap v3 TRADE adapter** (markets, DIRECT/ONE_HOP routes, indicative quotes; read-only) | done; see [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md), [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md), [research/dex-ecosystem.md](research/dex-ecosystem.md) |
-| 5+ | execution, other DEXes (v4, Ramses …), UI | not started; needs approval |
+| 5 | **Product read API**: AssetIntelligence / PortfolioIntelligence / coverage as a projection of raw opportunities; usability, per-category ranking, data quality (read-only; no UI, no HTTP) | done; see [asset-intelligence.md](asset-intelligence.md), [product-usability.md](product-usability.md), [product-ranking.md](product-ranking.md), [coverage.md](coverage.md) |
+| 6+ | frontend, execution, other DEXes (v4, Ramses …) | not started; needs approval |
 
-The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–9 belong to later phases.
+The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–8 are served by the Phase 5 read API (`AssetIntelligenceService`, CLIs `pnpm asset` / `pnpm portfolio:view`). Step 7 is now per-category deterministic ordering (product-ranking.md), still with no blended "best". Step 9 and the UI belong to later phases.
 
 ## User flow
 1. Connect wallet: read the address only, validate it, require chain 4663 (or accept a pasted address).

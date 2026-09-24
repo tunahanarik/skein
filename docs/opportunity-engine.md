@@ -36,6 +36,8 @@ Phase 4 trade methods. All are generic and read only `Opportunity.trade`, never 
 
 `getPortfolioOpportunities` adds a TRADE context per market and `tradeDestinations { direct, oneHop }` per held asset. It never quotes.
 
+The Phase 5 product layer (`src/product/`, [asset-intelligence.md](asset-intelligence.md)) reads `getOpportunities({ eligibility: "ALL" })` once per 15 s snapshot and projects it. The engine is unchanged by Phase 5 apart from the reader hardening (multicall transport retries).
+
 `query` = `{ filter?, sort?, eligibility?: "ELIGIBLE_ONLY" (default) | "ALL", includeReasons? }`. See [opportunity-comparison.md](opportunity-comparison.md) for the eligibility policy.
 
 ## Opportunity model (`src/model/opportunity.ts`)
@@ -118,6 +120,10 @@ Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denomi
 | only one adapter healthy | PARTIAL; that adapter's opportunities returned (tested) |
 | one unreadable pool | only that market is UNREADABLE / excluded; the adapter is PARTIAL |
 | every adapter failed | UNKNOWN |
+
+## Performance, Phase 5 (live, public RPC, 2026-09-24)
+- Full three-adapter run: 5,449 raw opportunities in ≈ 8.3 s (warm pool index).
+- The product projection on top of it: p50 ≈ 0.37 s per asset, including one Price Service call. See [asset-intelligence.md](asset-intelligence.md).
 
 ## Performance, Phase 3 (live, public RPC, 2026-09-24)
 Morpho and Pendle run in parallel.

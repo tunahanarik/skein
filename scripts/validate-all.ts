@@ -8,6 +8,7 @@ import { validatePendle } from "./validate-pendle.js";
 import { validatePortfolio } from "./validate-portfolio.js";
 import { validateOpportunities } from "./validate-opportunities.js";
 import { validateCombined, validatePendleAdapter } from "./validate-pendle-adapter.js";
+import { validateIntelligence } from "./validate-intelligence.js";
 import { validateCombinedTrade, validateUniswap } from "./validate-uniswap.js";
 
 const steps: [string, (r: Report) => Promise<Report>][] = [
@@ -22,6 +23,7 @@ const steps: [string, (r: Report) => Promise<Report>][] = [
   ["combined-validation", validateCombined], // Phase 3
   ["uniswap-validation", validateUniswap], // Phase 4
   ["combined-trade-validation", validateCombinedTrade], // Phase 4
+  ["intelligence-validation", validateIntelligence], // Phase 5
 ];
 
 let failed = 0;

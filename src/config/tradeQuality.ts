@@ -20,9 +20,10 @@
  *   UNKNOWN   impact not computable    LIMITED (PRICE_IMPACT_UNKNOWN)
  *
  * ROUTE LIQUIDITY without an amount: a route whose bottleneck TVL is below
- * `minActionableRouteTvlUsdE18` is LIMITED (LOW_ROUTE_LIQUIDITY). $10,000 = the existing
+ * `minActionableRouteTvlUsdE18` is LIMITED (LOW_ROUTE_LIQUIDITY), with or without an amount (a
+ * small amount's low impact does not make a thin route look normal). $10,000 = the existing
  * LOW_LIQUIDITY advisory line, so no new number is introduced. The observed ~$83 NVDA/USDG pool
- * (≈ 60 % impact for 1 NVDA) is LIMITED without an amount and EXTREME (hidden) with one.
+ * (≈ 60 % impact for 1 NVDA) is LIMITED without an amount and EXTREME (hidden) with 1 NVDA.
  */
 import { DEFAULT_ELIGIBILITY_POLICY } from "./eligibility.js";
 

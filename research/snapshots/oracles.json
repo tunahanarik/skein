@@ -1,31 +1,31 @@
 {
   "script": "oracles",
-  "startedAt": "2026-09-24T10:27:48.238Z",
-  "finishedAt": "2026-09-24T10:27:49.798Z",
+  "startedAt": "2026-09-24T11:16:05.107Z",
+  "finishedAt": "2026-09-24T11:16:06.559Z",
   "checks": [
     {
       "name": "pinned block",
       "status": "INFO",
-      "detail": "71297967 (ts 1790245669)"
+      "detail": "71326576 (ts 1790248566)"
     },
     {
       "name": "chainlink directory",
       "status": "PASS",
       "detail": "58 feeds, 33 Stock Token feeds",
       "evidence": {
-        "fetchedAt": "2026-09-24T10:27:48.602Z"
+        "fetchedAt": "2026-09-24T11:16:05.479Z"
       }
     },
     {
       "name": "feed USDG / USD",
       "status": "PASS",
-      "detail": "0x61B7e5650328764B076A108EFF5fa7282a1B9aD2 = 1.00009 (age 67848s, heartbeat 86400s)",
+      "detail": "0x61B7e5650328764B076A108EFF5fa7282a1B9aD2 = 1.00009 (age 70745s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0x61B7e5650328764B076A108EFF5fa7282a1B9aD2",
         "answer": "100009000",
         "decimals": 8,
         "updatedAt": "1790177821",
-        "ageSeconds": 67848,
+        "ageSeconds": 70745,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -33,13 +33,13 @@
     {
       "name": "feed ETH / USD",
       "status": "PASS",
-      "detail": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9 = 2636.49905154 (age 3174s, heartbeat 86400s)",
+      "detail": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9 = 2649.9676108 (age 909s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9",
-        "answer": "263649905154",
+        "answer": "264996761080",
         "decimals": 8,
-        "updatedAt": "1790242495",
-        "ageSeconds": 3174,
+        "updatedAt": "1790247657",
+        "ageSeconds": 909,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -47,13 +47,13 @@
     {
       "name": "feed USDE / USD",
       "status": "PASS",
-      "detail": "0xb9fB4e65744E4178894f7C61CF80E8a48A5f224a = 0.99985428 (age 67647s, heartbeat 86400s)",
+      "detail": "0xb9fB4e65744E4178894f7C61CF80E8a48A5f224a = 0.99985428 (age 70544s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0xb9fB4e65744E4178894f7C61CF80E8a48A5f224a",
         "answer": "99985428",
         "decimals": 8,
         "updatedAt": "1790178022",
-        "ageSeconds": 67647,
+        "ageSeconds": 70544,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -61,13 +61,13 @@
     {
       "name": "feed Robinhood GOOGL / USD",
       "status": "PASS",
-      "detail": "0xF6f373a037c30F0e5010d854385cA89185AE638b = 336.66527495 (age 6390s, heartbeat 86400s)",
+      "detail": "0xF6f373a037c30F0e5010d854385cA89185AE638b = 336.66527495 (age 9287s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
         "answer": "33666527495",
         "decimals": 8,
         "updatedAt": "1790239279",
-        "ageSeconds": 6390,
+        "ageSeconds": 9287,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -75,13 +75,13 @@
     {
       "name": "feed Robinhood TSLA / USD",
       "status": "PASS",
-      "detail": "0x4A1166a659A55625345e9515b32adECea5547C38 = 375.8057 (age 6596s, heartbeat 86400s)",
+      "detail": "0x4A1166a659A55625345e9515b32adECea5547C38 = 375.8057 (age 9493s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0x4A1166a659A55625345e9515b32adECea5547C38",
         "answer": "37580570000",
         "decimals": 8,
         "updatedAt": "1790239073",
-        "ageSeconds": 6596,
+        "ageSeconds": 9493,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -89,13 +89,13 @@
     {
       "name": "feed Robinhood AAPL / USD",
       "status": "PASS",
-      "detail": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0 = 336.05912874 (age 52520s, heartbeat 86400s)",
+      "detail": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0 = 336.05912874 (age 55417s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
         "answer": "33605912874",
         "decimals": 8,
         "updatedAt": "1790193149",
-        "ageSeconds": 52520,
+        "ageSeconds": 55417,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -103,13 +103,13 @@
     {
       "name": "feed Robinhood NVDA / USD",
       "status": "PASS",
-      "detail": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15 = 223.19802998 (age 7608s, heartbeat 86400s)",
+      "detail": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15 = 223.19802998 (age 10505s, heartbeat 86400s)",
       "evidence": {
         "proxy": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
         "answer": "22319802998",
         "decimals": 8,
         "updatedAt": "1790238061",
-        "ageSeconds": 7608,
+        "ageSeconds": 10505,
         "heartbeat": 86400,
         "threshold": 0.5
       }
@@ -117,381 +117,393 @@
     {
       "name": "multiplier semantics",
       "status": "INFO",
-      "detail": "33 stock feeds compared; decisive (|mult−1| ≥ 5%): 0/0 fit \"includes\"; indicative (fresh feed, |mult−1| ≥ 0.05%): 0/0 fit \"includes\" → LIKELY at best; docs remain the authority",
+      "detail": "33 stock feeds compared; decisive (|mult−1| ≥ 5%): 0/0 fit \"includes\"; indicative (fresh feed, |mult−1| ≥ 0.05%): 0/1 fit \"includes\" → LIKELY at best; docs remain the authority",
       "evidence": {
         "rows": [
           {
             "ticker": "EWY",
             "multiplier": "1",
-            "feed": "183.6879",
-            "feedAgeS": 5957,
-            "rhMid": "183.83",
+            "feed": "185.05745",
+            "feedAgeS": 1561,
+            "rhMid": "185.27",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00077,
-            "devIfFeedExcludesMultiplier": 0.00077
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00115,
+            "devIfFeedExcludesMultiplier": 0.00115
           },
           {
             "ticker": "GOOGL",
             "multiplier": "1.000193924414112587",
             "feed": "336.66527495",
-            "feedAgeS": 6390,
-            "rhMid": "336.855",
+            "feedAgeS": 9287,
+            "rhMid": "336.63",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00076,
-            "devIfFeedExcludesMultiplier": 0.00056
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00009,
+            "devIfFeedExcludesMultiplier": 0.0001
           },
           {
             "ticker": "QQQ",
             "multiplier": "1.000700791241405425",
             "feed": "733.99886975",
-            "feedAgeS": 6742,
-            "rhMid": "733.06",
+            "feedAgeS": 9639,
+            "rhMid": "734.84",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00058,
-            "devIfFeedExcludesMultiplier": 0.00128
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00184,
+            "devIfFeedExcludesMultiplier": 0.00114
           },
           {
             "ticker": "TSM",
             "multiplier": "1.001463024159690554",
             "feed": "440.97766847",
-            "feedAgeS": 6571,
-            "rhMid": "440.05",
+            "feedAgeS": 9468,
+            "rhMid": "441.91",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00064,
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00357,
             "devIfFeedExcludesMultiplier": 0.00211
           },
           {
             "ticker": "COIN",
             "multiplier": "1",
             "feed": "194.81",
-            "feedAgeS": 1607,
-            "rhMid": "194.765",
+            "feedAgeS": 4504,
+            "rhMid": "195.515",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00023,
-            "devIfFeedExcludesMultiplier": 0.00023
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00361,
+            "devIfFeedExcludesMultiplier": 0.00361
           },
           {
             "ticker": "PLTR",
             "multiplier": "1",
             "feed": "189.18495",
-            "feedAgeS": 7262,
-            "rhMid": "189.445",
+            "feedAgeS": 10159,
+            "rhMid": "188.41",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00137,
-            "devIfFeedExcludesMultiplier": 0.00137
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00411,
+            "devIfFeedExcludesMultiplier": 0.00411
           },
           {
             "ticker": "RGTI",
             "multiplier": "1",
-            "feed": "15.67625",
-            "feedAgeS": 316,
-            "rhMid": "15.63",
+            "feed": "15.6809",
+            "feedAgeS": 782,
+            "rhMid": "15.73",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00296,
-            "devIfFeedExcludesMultiplier": 0.00296
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00312,
+            "devIfFeedExcludesMultiplier": 0.00312
           },
           {
             "ticker": "ORCL",
             "multiplier": "1.002210914971013375",
             "feed": "142.72425507",
-            "feedAgeS": 7247,
-            "rhMid": "142.565",
+            "feedAgeS": 10144,
+            "rhMid": "142.725",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00109,
-            "devIfFeedExcludesMultiplier": 0.00112
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00221,
+            "devIfFeedExcludesMultiplier": 0.00001
           },
           {
             "ticker": "MSTR",
             "multiplier": "1",
             "feed": "159.06055",
-            "feedAgeS": 1451,
-            "rhMid": "158.575",
+            "feedAgeS": 4348,
+            "rhMid": "159.64",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00306,
-            "devIfFeedExcludesMultiplier": 0.00306
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00363,
+            "devIfFeedExcludesMultiplier": 0.00363
           },
           {
             "ticker": "RKLB",
             "multiplier": "1",
-            "feed": "68.6847",
-            "feedAgeS": 5143,
-            "rhMid": "68.85",
+            "feed": "69.052",
+            "feedAgeS": 2188,
+            "rhMid": "69.335",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.0024,
-            "devIfFeedExcludesMultiplier": 0.0024
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00408,
+            "devIfFeedExcludesMultiplier": 0.00408
           },
           {
             "ticker": "SPCX",
             "multiplier": "1",
-            "feed": "147.18505",
-            "feedAgeS": 3166,
-            "rhMid": "147.575",
+            "feed": "147.9447",
+            "feedAgeS": 2462,
+            "rhMid": "147.905",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00264,
-            "devIfFeedExcludesMultiplier": 0.00264
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00027,
+            "devIfFeedExcludesMultiplier": 0.00027
           },
           {
             "ticker": "SPY",
             "multiplier": "1.001717991187472003",
             "feed": "766.69992468",
-            "feedAgeS": 23023,
-            "rhMid": "762.73",
+            "feedAgeS": 25920,
+            "rhMid": "764.12",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00348,
-            "devIfFeedExcludesMultiplier": 0.0052
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00166,
+            "devIfFeedExcludesMultiplier": 0.00338
           },
           {
             "ticker": "TSLA",
             "multiplier": "1",
             "feed": "375.8057",
-            "feedAgeS": 6596,
-            "rhMid": "375.775",
+            "feedAgeS": 9493,
+            "rhMid": "377.065",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00008,
-            "devIfFeedExcludesMultiplier": 0.00008
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00334,
+            "devIfFeedExcludesMultiplier": 0.00334
           },
           {
             "ticker": "SNDK",
             "multiplier": "1",
-            "feed": "1770.5422",
-            "feedAgeS": 614,
-            "rhMid": "1764.265",
+            "feed": "1779.49725",
+            "feedAgeS": 90,
+            "rhMid": "1783.45",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00356,
-            "devIfFeedExcludesMultiplier": 0.00356
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00222,
+            "devIfFeedExcludesMultiplier": 0.00222
           },
           {
             "ticker": "IONQ",
             "multiplier": "1",
             "feed": "41.2566",
-            "feedAgeS": 1566,
-            "rhMid": "41.29",
+            "feedAgeS": 4463,
+            "rhMid": "41.32",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00081,
-            "devIfFeedExcludesMultiplier": 0.00081
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00153,
+            "devIfFeedExcludesMultiplier": 0.00153
           },
           {
             "ticker": "CRCL",
             "multiplier": "1",
-            "feed": "90.5672",
-            "feedAgeS": 5992,
-            "rhMid": "90.81",
+            "feed": "91.51",
+            "feedAgeS": 1356,
+            "rhMid": "91.305",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00267,
-            "devIfFeedExcludesMultiplier": 0.00267
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00225,
+            "devIfFeedExcludesMultiplier": 0.00225
           },
           {
             "ticker": "AMZN",
             "multiplier": "1",
             "feed": "247.36645",
-            "feedAgeS": 7890,
-            "rhMid": "247.455",
+            "feedAgeS": 10787,
+            "rhMid": "247.605",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00036,
-            "devIfFeedExcludesMultiplier": 0.00036
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00096,
+            "devIfFeedExcludesMultiplier": 0.00096
           },
           {
             "ticker": "INTC",
             "multiplier": "1",
-            "feed": "118.47",
-            "feedAgeS": 1903,
-            "rhMid": "118.485",
+            "feed": "119.095",
+            "feedAgeS": 1739,
+            "rhMid": "119.65",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00013,
-            "devIfFeedExcludesMultiplier": 0.00013
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00464,
+            "devIfFeedExcludesMultiplier": 0.00464
           },
           {
             "ticker": "MU",
             "multiplier": "1.000074823219171086",
-            "feed": "1043.10804286",
-            "feedAgeS": 6312,
-            "rhMid": "1042.77",
+            "feed": "1054.41088851",
+            "feedAgeS": 86,
+            "rhMid": "1055.85",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00025,
-            "devIfFeedExcludesMultiplier": 0.00032
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00144,
+            "devIfFeedExcludesMultiplier": 0.00136
           },
           {
             "ticker": "AAPL",
             "multiplier": "1.000566080061092436",
             "feed": "336.05912874",
-            "feedAgeS": 52520,
-            "rhMid": "336.255",
+            "feedAgeS": 55417,
+            "rhMid": "336.94",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00115,
-            "devIfFeedExcludesMultiplier": 0.00058
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00318,
+            "devIfFeedExcludesMultiplier": 0.00261
           },
           {
             "ticker": "NVDA",
             "multiplier": "1.000775159164630595",
             "feed": "223.19802998",
-            "feedAgeS": 7608,
-            "rhMid": "222.8",
+            "feedAgeS": 10505,
+            "rhMid": "223.17",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00101,
-            "devIfFeedExcludesMultiplier": 0.00179
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00065,
+            "devIfFeedExcludesMultiplier": 0.00013
           },
           {
             "ticker": "DELL",
             "multiplier": "1.000063708620124549",
-            "feed": "535.98664479",
-            "feedAgeS": 6703,
-            "rhMid": "535.52",
+            "feed": "538.70901822",
+            "feedAgeS": 2008,
+            "rhMid": "539.605",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00081,
-            "devIfFeedExcludesMultiplier": 0.00087
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00172,
+            "devIfFeedExcludesMultiplier": 0.00166
           },
           {
             "ticker": "NBIS",
             "multiplier": "1",
-            "feed": "225.1251",
-            "feedAgeS": 1489,
-            "rhMid": "225.57",
+            "feed": "227.70355",
+            "feedAgeS": 905,
+            "rhMid": "228.36",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00197,
-            "devIfFeedExcludesMultiplier": 0.00197
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00287,
+            "devIfFeedExcludesMultiplier": 0.00287
           },
           {
             "ticker": "CLSK",
             "multiplier": "1",
-            "feed": "14.1069",
-            "feedAgeS": 5959,
-            "rhMid": "14.145",
+            "feed": "14.17975",
+            "feedAgeS": 1054,
+            "rhMid": "14.17",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00269,
-            "devIfFeedExcludesMultiplier": 0.00269
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00069,
+            "devIfFeedExcludesMultiplier": 0.00069
           },
           {
             "ticker": "ASML",
             "multiplier": "1.000101323251417769",
-            "feed": "1697.32576114",
-            "feedAgeS": 4471,
-            "rhMid": "1703.635",
+            "feed": "1715.42999533",
+            "feedAgeS": 46,
+            "rhMid": "1717.875",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.0038,
-            "devIfFeedExcludesMultiplier": 0.0037
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00152,
+            "devIfFeedExcludesMultiplier": 0.00142
           },
           {
             "ticker": "BABA",
             "multiplier": "1",
             "feed": "111.91685",
-            "feedAgeS": 7896,
-            "rhMid": "111.615",
+            "feedAgeS": 10793,
+            "rhMid": "111.59",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.0027,
-            "devIfFeedExcludesMultiplier": 0.0027
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00293,
+            "devIfFeedExcludesMultiplier": 0.00293
           },
           {
             "ticker": "USO",
             "multiplier": "1",
             "feed": "150.10475",
-            "feedAgeS": 633,
-            "rhMid": "150",
+            "feedAgeS": 3530,
+            "rhMid": "149.67",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.0007,
-            "devIfFeedExcludesMultiplier": 0.0007
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.0029,
+            "devIfFeedExcludesMultiplier": 0.0029
           },
           {
             "ticker": "META",
             "multiplier": "1.000541459879451635",
-            "feed": "726.92728895",
-            "feedAgeS": 1429,
-            "rhMid": "724.96",
+            "feed": "730.80223595",
+            "feedAgeS": 665,
+            "rhMid": "731.08",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00217,
-            "devIfFeedExcludesMultiplier": 0.00271
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00092,
+            "devIfFeedExcludesMultiplier": 0.00038
           },
           {
             "ticker": "MSFT",
             "multiplier": "1.000412952576205964",
             "feed": "497.3081299",
-            "feedAgeS": 8015,
-            "rhMid": "498.195",
+            "feedAgeS": 10912,
+            "rhMid": "497.675",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00219,
-            "devIfFeedExcludesMultiplier": 0.00178
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00115,
+            "devIfFeedExcludesMultiplier": 0.00074
           },
           {
             "ticker": "SLV",
             "multiplier": "1",
             "feed": "57.325",
-            "feedAgeS": 2639,
-            "rhMid": "57.29",
+            "feedAgeS": 5536,
+            "rhMid": "57.505",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00061,
-            "devIfFeedExcludesMultiplier": 0.00061
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00313,
+            "devIfFeedExcludesMultiplier": 0.00313
           },
           {
             "ticker": "CRWV",
             "multiplier": "1",
-            "feed": "87.0595",
-            "feedAgeS": 701,
-            "rhMid": "87.15",
+            "feed": "87.597",
+            "feedAgeS": 2488,
+            "rhMid": "87.72",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00104,
-            "devIfFeedExcludesMultiplier": 0.00104
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.0014,
+            "devIfFeedExcludesMultiplier": 0.0014
           },
           {
             "ticker": "AMD",
             "multiplier": "1",
-            "feed": "598.3714",
-            "feedAgeS": 4493,
-            "rhMid": "600.54",
+            "feed": "601.4815",
+            "feedAgeS": 2468,
+            "rhMid": "603.205",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00361,
-            "devIfFeedExcludesMultiplier": 0.00361
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00286,
+            "devIfFeedExcludesMultiplier": 0.00286
           },
           {
             "ticker": "GME",
             "multiplier": "1",
             "feed": "23.9504",
-            "feedAgeS": 1490,
-            "rhMid": "24.035",
+            "feedAgeS": 4387,
+            "rhMid": "24.07",
             "halted": false,
-            "quoteAt": "2026-09-24T10:27:39.545559892Z",
-            "devIfFeedIncludesMultiplier": 0.00352,
-            "devIfFeedExcludesMultiplier": 0.00352
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00497,
+            "devIfFeedExcludesMultiplier": 0.00497
           }
         ],
         "decisive": [],
-        "indicative": []
+        "indicative": [
+          {
+            "ticker": "META",
+            "multiplier": "1.000541459879451635",
+            "feed": "730.80223595",
+            "feedAgeS": 665,
+            "rhMid": "731.08",
+            "halted": false,
+            "quoteAt": "2026-09-24T11:15:58.805942563Z",
+            "devIfFeedIncludesMultiplier": 0.00092,
+            "devIfFeedExcludesMultiplier": 0.00038
+          }
+        ]
       }
     },
     {
       "name": "feed vs Robinhood quote",
       "status": "INFO",
-      "detail": "max deviation 0.38% (feed threshold 0.5%, feeds may hold price for up to 24h)"
+      "detail": "max deviation 0.50% (feed threshold 0.5%, feeds may hold price for up to 24h)"
     }
   ]
 }

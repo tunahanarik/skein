@@ -299,7 +299,10 @@ export function normalizePendleMarket(input: PendleMarketInput, ctx: PendleNorma
       : apiYield("IMPLIED_APY", apiImpliedV, "impliedApy", `Pendle market-implied APY (API; onchain rate unreadable), in ${unitLabel}`, { basis: "IMPLIED", compounding: "COMPOUNDED", denominatedIn: denom });
   // P3-1: Stock Token SY accrues uiMultiplier growth while the API reports underlyingApy 0 → the
   // API's underlying/YT figures may omit that growth. Values kept as supplied; meaning UNRESOLVED.
-  const stockUnitUnresolved = !expired && !!api && yieldToken.canonical && yieldToken.registryType === "STOCK_TOKEN" && syRateEqualsMultiplier === true && (api.underlyingApy ?? 0) === 0;
+  // Fail closed (Phase 5 fix): if the multiplier could not be read (syRateEqualsMultiplier null),
+  // the share-unit accounting cannot be ruled out either, so the meaning stays UNRESOLVED. Only a
+  // measured mismatch (false) clears it.
+  const stockUnitUnresolved = !expired && !!api && yieldToken.canonical && yieldToken.registryType === "STOCK_TOKEN" && assetType === "LIQUIDITY" && syRateEqualsMultiplier !== false && (api.underlyingApy ?? 0) === 0;
   const unresolved = stockUnitUnresolved
     ? { semantics: { status: "UNRESOLVED" as const, reason: "Pendle API reports underlyingApy 0 while SY.exchangeRate() equals the Stock Token uiMultiplier (grows with reinvested dividends); the figure may omit multiplier growth and no verified replacement exists" } }
     : {};

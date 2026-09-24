@@ -26,6 +26,23 @@ export const ROUTING_POLICY: RoutingPolicy = {
 };
 
 /**
+ * Default TRADE targets in the PRODUCT view (Phase 5, docs/asset-intelligence.md). The product
+ * response lists routes to these assets only; every other destination is counted and stays
+ * available through an explicit `tradeTarget` or the raw APIs. Chosen from live measurements
+ * (2026-09-24): the two deepest routing hubs — USDG (127 active v3 pools ≥ $50 against 76 distinct
+ * canonical counterparts) and WETH (WETH/USDG 0.01 % pool $18.9M TVL).
+ */
+export const PRODUCT_TRADE_TARGET_KEYS: readonly string[] = [key(CORE_ASSETS.USDG.address), key(CORE_ASSETS.WETH.address)];
+
+/**
+ * PRODUCT-mode display cap: route cards shown per trade target after ranking (a UX limit, not a
+ * quality judgement). NVDA had 30 visible routes to its two default targets (live, 2026-09-24);
+ * the remainder is reported as `moreRoutes` and every route stays available in DEBUG mode and
+ * through the raw APIs.
+ */
+export const PRODUCT_MAX_ROUTES_PER_TARGET = 5;
+
+/**
  * Wall-clock budget for the resumable cold pool-event scan per adapter run. On the public RPC a
  * full scan takes several minutes (rate limits + server-side log timeouts, measured 2026-09-24);
  * each run advances it and persists progress, while the factory getPool sweep already covers the

@@ -127,6 +127,12 @@ export const CACHE_TTL_MS = {
   POOL_STATE_SECONDARY: 5 * 60_000,
   /** Indicative quotes: very short-lived; see docs/trade-routing.md for the measured swap rate. */
   QUOTE: 5_000,
+  /**
+   * Product layer: one engine snapshot (all adapters, full discovery) is shared by asset,
+   * portfolio and coverage requests for this long. Same bound as POOL_STATE, so a product view is
+   * never older than the trade state it shows; freshness is always re-evaluated at response time.
+   */
+  PRODUCT_SNAPSHOT: 15_000,
   /** Longest we will serve a last-good protocol state after a failed refresh (marked degraded). */
   PROTOCOL_STATE_STALE_FALLBACK: 6 * 60 * 60_000,
 } as const;

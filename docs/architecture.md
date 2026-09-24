@@ -83,6 +83,21 @@ Uniswap v3 was added as the first TRADE adapter, through the same interface. The
 
 `ChainReader.getLogs` gained topic filters, an unbatched log client and a sub-request budget. See [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md) and [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md).
 
+## Phase 5 status
+A product read layer (`src/product/`) sits between the engine and a future API/UI. It adds:
+- `AssetIntelligenceService`: asset, category, portfolio, coverage and raw views; PRODUCT/DEBUG modes
+- usability, separate from verification (ACTIONABLE / LIMITED / INFORMATIONAL / HIDDEN_BY_DEFAULT / UNAVAILABLE)
+- per-category deterministic ranking
+- capabilities, counts, empty states
+- data quality and response-time freshness
+- privacy-safe metrics
+
+It is a pure projection: it has no protocol logic, never reads `details`, and RAW mode returns the engine output unchanged. Supporting changes:
+- the P4 policies: the trade-quality policy, the ecosystem venue metadata, production RPC rules (`ROBINHOOD_RPC_URL` required; optional `ROBINHOOD_INDEX_RPC_URL`), and `volume24h: UNKNOWN`
+- two reader hardenings: a multicall chunk whose aggregate request failed at the transport level is now retried instead of looking like per-call reverts, and viem's batch-parse crash counts as rate limiting
+
+See [asset-intelligence.md](asset-intelligence.md).
+
 ## Protocol adapter system
 
 ```

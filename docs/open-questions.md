@@ -2,6 +2,19 @@
 
 Each item names what would resolve it.
 
+## Added in Phase 5 (decide before Phase 6)
+P5-1. **Default trade targets.** The product view lists routes to USDG and WETH only. Other destinations are counted (`otherTradeDestinations`, 75 one-hop for NVDA) and need an explicit target. Should the frontend offer a target picker, or should Stock Token ↔ Stock Token pairs get a default?
+
+P5-2. **Route cap.** `PRODUCT_MAX_ROUTES_PER_TARGET = 5` is a UX limit. Several one-hop routes differ only by the fee tier of the second leg, which the user may find redundant. Should the frontend collapse those visually? Merging them in the data is ruled out because they are different pools.
+
+P5-3. **Quote latency.** An explicit-amount view quotes every route to the target sequentially: 14 routes take ≈ 5.4 s on the public RPC. With a keyed provider, should quotes run in parallel (bounded), or only for the top-N routes by liquidity?
+
+P5-4. **Borrow capacity presentation.** Only THEORETICAL_LIMIT exists (`recommendedBorrow: null`). A buffer policy is still open (P2-5). Until one exists, should the frontend show the limit at all, or only LLTV plus liquidation price?
+
+P5-5. **Informational items.** A collateral market with zero borrowable liquidity is INFORMATIONAL and shown by default. Should the frontend show it or collapse it?
+
+P5-6. **Public RPC reliability.** The public RPC intermittently answers batched multicalls with non-JSON-RPC 429 bodies. Phase 5 retries them. A keyed provider (#1 / P4-6) remains the real fix before any public deployment.
+
 ## Added in Phase 4 (decide before Phase 5)
 *All seven P4 items were decided at the start of Phase 5:*
 - **P4-1:** v4 deferred; needs a hook security policy.

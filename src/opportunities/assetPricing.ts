@@ -11,7 +11,7 @@ import { stockTokenAbi } from "../config/abis.js";
 import type { DataSource } from "../model/provenance.js";
 import type { Warning } from "../model/warnings.js";
 import type { PriceRequest } from "../pricing/priceService.js";
-import type { UsdPrice } from "../pricing/types.js";
+import type { PriceQuote, UsdPrice } from "../pricing/types.js";
 import type { AdapterContext } from "./adapter.js";
 
 export interface AssetPrice {
@@ -19,6 +19,8 @@ export interface AssetPrice {
   isChainlink: boolean;
   /** uiMultiplier read onchain (Stock Tokens only). */
   multiplier: bigint | null;
+  /** The full Phase 1 quote (method, observedAt, freshness), when one was produced. */
+  quote?: PriceQuote | null;
 }
 
 export async function priceCanonicalAssets(ctx: AdapterContext, keys: Iterable<string>): Promise<{ priceOf: (key: string) => AssetPrice; warnings: Warning[] }> {
@@ -45,6 +47,7 @@ export async function priceCanonicalAssets(ctx: AdapterContext, keys: Iterable<s
         price: q?.status === "PRICED" ? q.priceUsd : null,
         isChainlink: q?.method === "CHAINLINK_STOCK_TOKEN_FEED" || q?.method === "CHAINLINK_USDG_USD" || q?.method === "CHAINLINK_ETH_USD",
         multiplier: multiplierByKey.get(key) ?? null,
+        quote: q ?? null,
       };
     },
     warnings: priced?.warnings ?? [],

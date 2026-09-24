@@ -12,5 +12,6 @@ research/snapshots/pendle-adapter-validation.json
 research/snapshots/combined-validation.json
 research/snapshots/uniswap-validation.json
 research/snapshots/combined-trade-validation.json
+research/snapshots/intelligence-validation.json
 .tmp/
 .cache/

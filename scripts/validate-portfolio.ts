@@ -18,12 +18,12 @@ import { createRuntime } from "../src/runtime.js";
 import type { Portfolio } from "../src/portfolio/types.js";
 import { Report } from "./lib/report.js";
 
-const redact = (a: string) => "wallet#" + createHash("sha256").update(a.toLowerCase()).digest("hex").slice(0, 10);
+export const redact = (a: string) => "wallet#" + createHash("sha256").update(a.toLowerCase()).digest("hex").slice(0, 10);
 const NVDA: Address = "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC";
 const transfer = parseAbiItem("event Transfer(address indexed from, address indexed to, uint256 value)");
 
 /** Find recent recipients of `token` that are EOAs (no code). Public chain data only. */
-async function discoverHolders(rpcUrl: string, token: Address, want: number): Promise<Address[]> {
+export async function discoverHolders(rpcUrl: string, token: Address, want: number): Promise<Address[]> {
   const client = createPublicClient({ chain: robinhoodChain, transport: http(rpcUrl, { retryCount: 3 }) });
   const head = await client.getBlockNumber();
   const logs = await client.getLogs({ address: token, event: transfer, fromBlock: head - 3_000n, toBlock: head });

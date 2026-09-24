@@ -10,6 +10,7 @@ import { TtlCache } from "./lib/cache.js";
 import { HttpClient } from "./lib/http.js";
 import { getPortfolio, type PortfolioOptions } from "./portfolio/engine.js";
 import { OpportunityEngine } from "./opportunities/engine.js";
+import { AssetIntelligenceService } from "./product/service.js";
 import { MorphoAdapter } from "./protocols/morpho/adapter.js";
 import { PendleAdapter } from "./protocols/pendle/adapter.js";
 import { UniswapAdapter } from "./protocols/uniswap/adapter.js";
@@ -28,6 +29,8 @@ export interface Runtime {
   getPortfolio: (wallet: unknown, opts?: PortfolioOptions) => ReturnType<typeof getPortfolio>;
   /** Registered protocol adapters. Adding a protocol = adding an adapter here. */
   opportunities: OpportunityEngine;
+  /** Phase 5 product read API (projection of the engine's output). */
+  intelligence: AssetIntelligenceService;
 }
 
 /** Discovered-pool cache (factory events), re-verified onchain on load. Not committed. */
@@ -51,6 +54,8 @@ export function createRuntime(env: Record<string, string | undefined> = process.
       return loadAssetRegistry({ http, baseline, ...(verify ? { reader, blockNumber: blockNumber! } : {}) });
     });
 
+  const engine = new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) })], { reader, getRegistry, prices });
+  const portfolioFn: Runtime["getPortfolio"] = (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o);
   return {
     rpc,
     reader,
@@ -58,7 +63,8 @@ export function createRuntime(env: Record<string, string | undefined> = process.
     prices,
     baseline,
     getRegistry,
-    getPortfolio: (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o),
-    opportunities: new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) })], { reader, getRegistry, prices }),
+    getPortfolio: portfolioFn,
+    opportunities: engine,
+    intelligence: new AssetIntelligenceService({ engine, getPortfolio: (w) => portfolioFn(w) }),
   };
 }

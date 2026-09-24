@@ -81,6 +81,23 @@ export function isLogRangeError(e: unknown): boolean {
   return /more than \d+ results|query returned more than|block range|range (is )?too (large|wide)|limit exceeded|exceeds limit|too many (logs|results)|log query timed out/i.test(errorText(e));
 }
 
+/** viem error classes that mean the REQUEST failed (transport/provider), not that a call reverted. */
+const TRANSPORT_ERROR_NAMES = new Set(["HttpRequestError", "RpcRequestError", "UnknownRpcError", "InternalRpcError", "LimitExceededRpcError", "TimeoutError", "WebSocketRequestError", "SocketClosedError"]);
+
+/**
+ * True when a multicall per-call failure is really a transport failure of the whole aggregate
+ * request. viem's `multicall({ allowFailure: true })` folds a failed aggregate3 eth_call into one
+ * failure per call (observed 2026-09-24 under public-RPC rate limiting: "An unknown RPC error
+ * occurred" on every call of a chunk), which would otherwise bypass retry and look like reverts.
+ */
+export function isTransportFailure(e: unknown): boolean {
+  for (let cur = e as { name?: string; cause?: unknown } | undefined, depth = 0; cur && depth < 8; cur = cur.cause as typeof cur, depth++) {
+    if (cur.name && TRANSPORT_ERROR_NAMES.has(cur.name)) return true;
+  }
+  const outcome = classifyRpcError(e);
+  return outcome === "RATE_LIMITED" || outcome === "TIMEOUT";
+}
+
 export interface ChainReader {
   readonly chainId: number;
   /** Throws unless the endpoint really is Robinhood Chain (eth_chainId). */
@@ -111,7 +128,9 @@ export function classifyRpcError(e: unknown): RpcOutcome {
   // with "Too Many Requests" only in its details (observed 2026-09-24).
   const text = `${err?.name ?? ""} ${errorText(e)}`;
   const causeStatus = (err?.cause as { status?: number } | undefined)?.status;
-  if (err?.status === 429 || causeStatus === 429 || /\b429\b|too many requests|rate limit/i.test(text)) return "RATE_LIMITED";
+  // "reading 'error'": viem's batch parser crashing on the non-JSON-RPC body the public RPC returns
+  // when it rate-limits a batch (observed 2026-09-24) — retried with rate-limit backoff.
+  if (err?.status === 429 || causeStatus === 429 || /\b429\b|too many requests|rate limit|reading 'error'/i.test(text)) return "RATE_LIMITED";
   if (/timeout|timed out|TimeoutError|aborted/i.test(text)) return "TIMEOUT";
   return "ERROR";
 }
@@ -236,14 +255,18 @@ export class ViemChainReader implements ChainReader {
     for (let start = 0; start < calls.length; start += size) {
       const chunk = calls.slice(start, start + size);
       try {
-        const res = await this.withRetry(`multicall[${start}..${start + chunk.length})`, () =>
-          this.client.multicall({
+        const res = await this.withRetry(`multicall[${start}..${start + chunk.length})`, async () => {
+          const r = await this.client.multicall({
             contracts: chunk.map((c) => ({ ...c, args: c.args ?? [] })) as never,
             allowFailure: true,
             blockNumber: opts.blockNumber,
             batchSize: 0, // chunking is done above, by call count
-          }),
-        );
+          });
+          // A transport failure folded into per-call results: rethrow so the chunk is retried.
+          const t = (r as { status: string; error?: unknown }[]).find((x) => x.status === "failure" && isTransportFailure(x.error));
+          if (t) throw t.error;
+          return r;
+        });
         (res as { status: "success" | "failure"; result?: unknown; error?: Error }[]).forEach((r, i) => {
           out[start + i] =
             r.status === "success"

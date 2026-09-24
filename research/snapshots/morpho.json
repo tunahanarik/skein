@@ -1,7 +1,7 @@
 {
   "script": "morpho",
-  "startedAt": "2026-09-24T10:27:49.799Z",
-  "finishedAt": "2026-09-24T10:27:52.398Z",
+  "startedAt": "2026-09-24T11:16:06.560Z",
+  "finishedAt": "2026-09-24T11:16:09.827Z",
   "checks": [
     {
       "name": "morpho api chains",
@@ -16,24 +16,24 @@
     {
       "name": "market USDe/USDG 0xc845da65…",
       "status": "PASS",
-      "detail": "lltv 91.5%, supply 332334052.286387 USDG, API supplyApy 4.03%; params, id hash, totals and oracle match",
+      "detail": "lltv 91.5%, supply 332281962.474121 USDG, API supplyApy 4.05%; params, id hash, totals and oracle match",
       "evidence": {
         "marketId": "0xc845da65a020ddca5f132efa8fea79676d8edfdea504226a4c01e7a9e34cddd6",
-        "block": "71297997",
-        "apiBlock": 71297797,
+        "block": "71326610",
+        "apiBlock": 71326380,
         "loanToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
         "collateralToken": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
         "oracle": "0xE64849bd4AD03DfaBbe02bb521de19997a19055f",
         "oracleType": "Unknown",
         "irm": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
         "lltv": "915000000000000000",
-        "onchainTotalSupplyAssets": "332334052286387",
-        "onchainTotalBorrowAssets": "300195470840739",
-        "apiSupplyAssets": 332334052703205,
-        "apiBorrowAssets": 300195471257557,
-        "apiSupplyApy": 0.040345612798530536,
-        "apiBorrowApy": 0.04476029282877691,
-        "apiUtilization": 0.9032943474066747,
+        "onchainTotalSupplyAssets": "332281962474121",
+        "onchainTotalBorrowAssets": "300196672752894",
+        "apiSupplyAssets": 332281962474121,
+        "apiBorrowAssets": 300196672752894,
+        "apiSupplyApy": 0.04052135934257107,
+        "apiBorrowApy": 0.044948295640395534,
+        "apiUtilization": 0.9034395683643951,
         "onchainOraclePrice": "1000000000000000000000000",
         "apiOraclePrice": "1000000000000000000000000",
         "listed": true
@@ -45,8 +45,8 @@
       "detail": "lltv 62.5%, supply 11227.77281 USDG, API supplyApy 0.02%; params, id hash, totals and oracle match",
       "evidence": {
         "marketId": "0x50bc39b5722fb5634c436d74c6787f3c125b879e7b73cf9e9ecc01bbb57b8e55",
-        "block": "71297997",
-        "apiBlock": 71284633,
+        "block": "71326610",
+        "apiBlock": 71320202,
         "loanToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
         "collateralToken": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
         "oracle": "0xe8dAb19184f72b5a5a9d51A6C50A1b04b0669ce7",
@@ -55,11 +55,11 @@
         "lltv": "625000000000000000",
         "onchainTotalSupplyAssets": "11227772810",
         "onchainTotalBorrowAssets": "4342647616",
-        "apiSupplyAssets": 11227795929,
-        "apiBorrowAssets": 4342670735,
+        "apiSupplyAssets": 11227796212,
+        "apiBorrowAssets": 4342671018,
         "apiSupplyApy": 0.0002213826865228696,
         "apiBorrowApy": 0.0005724781850433468,
-        "apiUtilization": 0.38677855943065564,
+        "apiUtilization": 0.38677857488708756,
         "onchainOraclePrice": "766630927896489315961563459",
         "apiOraclePrice": "766630927896489315961563459",
         "listed": false
@@ -68,11 +68,11 @@
     {
       "name": "spark spUSDG",
       "status": "PASS",
-      "detail": "asset USDG, totalAssets 13742518.745975 USDG, savings APY 3.500%",
+      "detail": "asset USDG, totalAssets 13742562.175528 USDG, savings APY 3.500%",
       "evidence": {
         "vsr": "1000000001090862085746321732",
-        "totalAssets": "13742518745975",
-        "block": "71297997"
+        "totalAssets": "13742562175528",
+        "block": "71326610"
       }
     }
   ]
