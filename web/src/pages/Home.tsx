@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import { AlertList } from "../components/AlertForm";
 import { AssetSearch } from "../components/AssetSearch";
 import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
 import { usd } from "../format";
@@ -127,6 +128,8 @@ export function HomePage() {
           </div>
         </section>
       )}
+
+      <AlertList />
 
       <section className="section">
         <div className="section-head">

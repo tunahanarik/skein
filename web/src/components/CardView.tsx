@@ -5,6 +5,7 @@ import { useI18n, type StringKey } from "../i18n";
 import { actionLabel, ago, code, contextLine } from "../text";
 import { ProtocolLink, UsabilityBadge } from "./common";
 import { Estimate } from "./Estimate";
+import { AlertForm } from "./AlertForm";
 import { RateHistory } from "./RateHistory";
 
 const HEADLINE_LABEL: Record<string, StringKey> = {
@@ -143,6 +144,7 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
         <summary>{t("card.details")}</summary>
         <div className="body">
           {open && h && card.sourceOpportunityIds[0] && !tr && <RateHistory opportunityId={card.sourceOpportunityIds[0]} />}
+          {open && h && !tr && <AlertForm kind="RATE" assetRef={card.asset.address} symbol={card.asset.symbol} cardId={card.cardId} label={`${actionLabel(t, card)} (${card.protocol.name})`} current={Number(h.value) / 1e16} />}
           {card.fixedYield && (
             <ul style={{ margin: 0, paddingLeft: 18 }} className="muted">
               <li>{t("card.cond1")}</li>

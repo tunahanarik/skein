@@ -111,6 +111,23 @@ describe("estimate and links", () => {
   });
 });
 
+describe("alerts", () => {
+  it("a price alert that is already crossed fires, shows a banner and is stored locally", async () => {
+    await mountAt("/asset/NVDA");
+    const summary = await screen.findByText("Set an alert");
+    fireEvent.click(summary);
+    const box = summary.closest("details")!;
+    fireEvent.change(within(box).getByLabelText("Direction"), { target: { value: "ABOVE" } });
+    fireEvent.change(within(box).getByLabelText("Price in USD"), { target: { value: "1" } });
+    fireEvent.click(within(box).getByRole("button", { name: "Create alert" }));
+    expect(await screen.findByText("Alert saved.")).toBeTruthy();
+    expect(await screen.findByText("Alert:", {}, { timeout: 4000 })).toBeTruthy();
+    const stored = JSON.parse(localStorage.getItem("waypoint.alerts") ?? "[]");
+    expect(stored).toHaveLength(1);
+    expect(stored[0].triggeredAt).toBeTypeOf("number");
+  });
+});
+
 describe("shell", () => {
   it("theme toggle sets and remembers the theme", async () => {
     await mountAt("/about");

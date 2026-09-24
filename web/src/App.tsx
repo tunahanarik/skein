@@ -8,6 +8,8 @@ import { CoveragePage } from "./pages/Coverage";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
 import { linkProps, useRoute } from "./router";
+import { AlertsProvider } from "./alerts";
+import { FiredBanner } from "./components/AlertForm";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
@@ -131,13 +133,16 @@ export function App() {
   return (
     <I18nProvider>
       <WalletProvider>
-        <Header />
-        <main>
-          <div className="shell">
-            <Page />
-          </div>
-        </main>
-        <Footer />
+        <AlertsProvider>
+          <Header />
+          <main>
+            <div className="shell">
+              <FiredBanner />
+              <Page />
+            </div>
+          </main>
+          <Footer />
+        </AlertsProvider>
       </WalletProvider>
     </I18nProvider>
   );

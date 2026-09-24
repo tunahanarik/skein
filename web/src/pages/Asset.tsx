@@ -6,6 +6,7 @@ import { RouteTable } from "../components/RouteTable";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
 import { amount, usd } from "../format";
 import { useI18n } from "../i18n";
+import { AlertForm } from "../components/AlertForm";
 import { PriceChart } from "../components/PriceChart";
 import { linkProps } from "../router";
 import { useWatchlist } from "../watchlist";
@@ -158,6 +159,14 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
                 : v.price?.unpricedReason}
             </div>
             {v.asset && <PriceChart assetRef={v.asset.address} />}
+            {v.asset && v.price?.usd && (
+              <details className="more" style={{ marginTop: 6 }}>
+                <summary>{t("alert.set")}</summary>
+                <div className="body">
+                  <AlertForm kind="PRICE" assetRef={v.asset.address} symbol={v.asset.symbol} label={t("alert.price")} current={Number(v.price.usd)} />
+                </div>
+              </details>
+            )}
           </>
         ) : (
           <Skeleton h={30} w={120} />
