@@ -3,6 +3,15 @@
 Each item names what would resolve it.
 
 ## Added in Phase 4 (decide before Phase 5)
+*All seven P4 items were decided at the start of Phase 5:*
+- **P4-1:** v4 deferred; needs a hook security policy.
+- **P4-2:** no second DEX.
+- **P4-3:** Lighter and Rialto are metadata only (`src/config/ecosystem.ts`).
+- **P4-4:** a separate user-facing trade-quality policy (`src/config/tradeQuality.ts`); see docs/product-usability.md.
+- **P4-5:** volume stays UNKNOWN (`TradeMarket.volume24h`).
+- **P4-6:** production requires `ROBINHOOD_RPC_URL`, with an optional `ROBINHOOD_INDEX_RPC_URL`.
+- **P4-7:** no aggregator cross-check; that is future execution validation.
+
 P4-1. **Uniswap v4.** A large part of Stock Token liquidity and swap flow is on v4 (e.g. NVDA/USDG v4 ≈ $1M; most NVDA v4 pools are hooked). Integrating it needs three things:
 - a hook policy: an allowlist; hooked pools run arbitrary code even in quote simulations
 - singleton TVL (ModifyLiquidity replay or StateView tick walk)

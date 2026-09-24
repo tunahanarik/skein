@@ -248,6 +248,7 @@ describe("pool state, price, liquidity and TVL", () => {
     expect(m.liquidity.reserves.map((r) => r.value.amount!.raw)).toEqual([10_000n * ONE, 2_244_000n * 10n ** 6n]);
     expect(m.liquidity.activeLiquidity!.value).toBe(10n ** 20n);
     expect(m.liquidity.activeLiquidityMeaning).toMatch(/not a token or USD amount/);
+    expect(m.volume24h.status).toBe("UNKNOWN"); // P4-5: never estimated, never 0
   });
 
   it("an unpriced token ⇒ TVL unknown (never $0) ⇒ LIQUIDITY_UNVERIFIED hides it by default", async () => {

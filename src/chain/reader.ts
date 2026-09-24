@@ -142,7 +142,7 @@ export class ViemChainReader implements ChainReader {
       // Retries are handled here (not by viem) so every attempt is visible to RpcHealth.
       transport: http(config.url, { batch: { batchSize: 10, wait: 20 }, retryCount: 0, timeout: config.timeoutMs }),
     });
-    this.logClient = client ?? createPublicClient({ chain: robinhoodChain, transport: http(config.url, { retryCount: 0, timeout: config.timeoutMs }) });
+    this.logClient = client ?? createPublicClient({ chain: robinhoodChain, transport: http(config.indexUrl ?? config.url, { retryCount: 0, timeout: config.timeoutMs }) });
   }
 
   health(): RpcHealthSnapshot {

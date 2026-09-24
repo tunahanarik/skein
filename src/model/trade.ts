@@ -75,6 +75,11 @@ export interface TradeMarket {
   priceInverse: MarketPrice | null;
   liquidity: TradeLiquidity;
   state: MarketState;
+  /**
+   * 24h volume (decision P4-5): UNKNOWN unless a verified source exists. Swap-log indexing is not
+   * implemented, so it is always UNKNOWN today — never estimated, never 0.
+   */
+  volume24h: { status: "UNKNOWN"; reason: string };
   /** How the market's origin was established (e.g. factory event + factory getPool). */
   originVerified: boolean;
   verificationStatus: VerificationStatus;

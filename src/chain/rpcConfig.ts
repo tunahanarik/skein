@@ -5,6 +5,11 @@ export type RuntimeMode = "production" | "development" | "test";
 export interface RpcConfig {
   url: string;
   isPublicRpc: boolean;
+  /**
+   * Optional separate endpoint for eth_getLogs indexing (ROBINHOOD_INDEX_RPC_URL), e.g. an
+   * archive/indexing-capable plan. Falls back to `url`.
+   */
+  indexUrl?: string;
   /** Calls per Multicall3 aggregate3 request. */
   multicallChunkSize: number;
   /** Attempts per request (1 = no retry). */
@@ -49,8 +54,24 @@ export function resolveRpcConfig(env: Record<string, string | undefined>, mode: 
     throw new RpcConfigError("RPC URL must use https");
   }
   const isPublicRpc = parsed.host === new URL(PUBLIC_RPC_URL).host;
+  if (mode === "production" && !configured) {
+    throw new RpcConfigError("production requires ROBINHOOD_RPC_URL (a dedicated provider); none is set");
+  }
   if (mode === "production" && isPublicRpc) {
     throw new RpcConfigError("production requires a dedicated RPC provider (set ROBINHOOD_RPC_URL); the public RPC is not for production");
+  }
+  const indexConfigured = env.ROBINHOOD_INDEX_RPC_URL?.trim();
+  let indexUrl: string | undefined;
+  if (indexConfigured) {
+    let ip: URL;
+    try {
+      ip = new URL(indexConfigured);
+    } catch {
+      throw new RpcConfigError("ROBINHOOD_INDEX_RPC_URL is not a valid URL");
+    }
+    if (ip.protocol !== "https:" && !(mode !== "production" && ip.hostname === "localhost")) throw new RpcConfigError("index RPC URL must use https");
+    if (mode === "production" && ip.host === new URL(PUBLIC_RPC_URL).host) throw new RpcConfigError("production index RPC must not be the public RPC");
+    indexUrl = indexConfigured;
   }
   const num = (key: string, fallback: number, min: number, max: number) => {
     const v = env[key];
@@ -62,6 +83,7 @@ export function resolveRpcConfig(env: Record<string, string | undefined>, mode: 
   return {
     url,
     isPublicRpc,
+    ...(indexUrl ? { indexUrl } : {}),
     multicallChunkSize: num("RPC_MULTICALL_CHUNK_SIZE", RPC_DEFAULTS.multicallChunkSize, 1, 2_000),
     maxAttempts: num("RPC_MAX_ATTEMPTS", RPC_DEFAULTS.maxAttempts, 1, 10),
     timeoutMs: num("RPC_TIMEOUT_MS", RPC_DEFAULTS.timeoutMs, 1_000, 120_000),

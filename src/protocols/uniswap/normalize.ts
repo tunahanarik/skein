@@ -154,6 +154,7 @@ export function normalizePool(input: PoolInput, ctx: UniswapNormalizeContext): {
       activeLiquidityMeaning: "Uniswap v3 in-range liquidity L at the current tick (sqrt(x·y) units); not a token or USD amount",
     },
     state,
+    volume24h: { status: "UNKNOWN", reason: "no verified 24h volume source (needs Swap-log indexing; decision P4-5)" },
     originVerified,
     verificationStatus,
     provenance: [
