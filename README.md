@@ -2,6 +2,8 @@
 
 Read-only DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?"
 
+Protocols read today: Uniswap v3 and v4 (hookless), Ramses CL, Morpho, Pendle, Spark Savings, Beefy CLM and Steer. See [docs/protocols/coverage-expansion.md](docs/protocols/coverage-expansion.md).
+
 **Status: Phase 6: web app + HTTP API** (`pnpm start` → http://127.0.0.1:8787; see [docs/api.md](docs/api.md)). Before that, **Phase 5: product read API** ("I own this asset. What can I actually do with it?"): AssetIntelligence / PortfolioIntelligence / coverage as a projection of the raw engine, with usability, per-category ranking, data quality and freshness. It sits on top of Phase 4 (Uniswap v3 TRADE), Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
 
 ## Layout
@@ -15,7 +17,13 @@ src/portfolio/            balance reader + Portfolio Engine
 src/opportunities/        Opportunity Engine, adapter interface, filters/sorting, user-aware context
 src/protocols/morpho/     Morpho adapter (API client, onchain reads, normalization, oracle check, vaults, positions)
 src/protocols/pendle/     Pendle adapter (onchain discovery via factory logs, identity checks, API client, PT/YT/LP normalization, positions)
-src/protocols/uniswap/    Uniswap v3 adapter (resumable pool-event index + factory sweep, pool verification, state/TVL, QuoterV2 quotes)
+src/protocols/uniswap/    v3-style adapter (dialects: Uniswap v3, Ramses CL) + Uniswap v4 hookless adapter (tick-walk reserves, V4Quoter)
+src/protocols/ramses/     Ramses CL dialect (official addresses, dynamic fee)
+src/protocols/spark/      Spark Savings (spUSDG) adapter (vsr, exact rpow)
+src/protocols/beefy/      Beefy CLM adapter (API candidates, onchain identity, onchain TVL)
+src/protocols/steer/      Steer v3 vault adapter (VaultRegistry + pool checks)
+src/protocols/shared/     managed-LP helpers (official v3 pool verification)
+src/sources/geckoterminal.ts  third-party 24h pool volume (display only)
 src/trade/                generic trade graph, DIRECT/ONE_HOP routing, quote comparison (venue-independent)
 src/product/              Phase 5 product read API: AssetIntelligenceService, usability, cards, ranking, quality, metrics
 src/server/               Phase 6 read-only HTTP API (node:http), rate limiting, static web app with strict CSP
