@@ -69,6 +69,8 @@ Wallet handling (`web/src/wallet.tsx`):
 - "Use my browser wallet" calls only `eth_requestAccounts`. A wrapper refuses every other EIP-1193 method, so the app cannot request a signature or a transaction even by mistake.
 - The address is kept in React state only. It is never put in the URL, localStorage or logs.
 
+Languages: English (default) and Turkish, switchable in the header. The choice is stored in `localStorage` (a UI preference, not personal data). All wording lives in `web/src/i18n/strings.ts`. A test (`test/unit/i18n.test.ts`) checks that both languages have the same keys and placeholders and that neither uses promotional or safety claims. Action labels such as "Supply USDG" are rebuilt on the client from structured card fields, so they translate. Protocol-supplied titles and redemption terms are data and stay in English, labelled as such. Numbers, percentages and dates follow the chosen language's format.
+
 The working name "Waypoint" is a placeholder. The product name is still open, and Robinhood's terms forbid "Robinhood Chain" as a product name.
 
 ## Performance (public RPC, 2026-09-24)

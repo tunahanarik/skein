@@ -1,10 +1,12 @@
 import { useId, useMemo, useState } from "react";
 import { navigate } from "../router";
-import { TYPE_TEXT } from "../text";
+import { useI18n } from "../i18n";
+import { code } from "../text";
 import { Avatar, useAssetList } from "./common";
 
 /** Symbol / name / address search over the canonical registry. Opens the asset page. */
-export function AssetSearch({ autoFocus, placeholder = "Search NVDA, USDG, Tesla, 0x…" }: { autoFocus?: boolean; placeholder?: string }) {
+export function AssetSearch({ autoFocus }: { autoFocus?: boolean }) {
+  const { t } = useI18n();
   const list = useAssetList();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -41,7 +43,7 @@ export function AssetSearch({ autoFocus, placeholder = "Search NVDA, USDG, Tesla
   return (
     <div className="search">
       <label htmlFor={id} className="sr-only">
-        Search assets
+        {t("search.label")}
       </label>
       <input
         id={id}
@@ -49,7 +51,7 @@ export function AssetSearch({ autoFocus, placeholder = "Search NVDA, USDG, Tesla
         autoFocus={autoFocus}
         autoComplete="off"
         spellCheck={false}
-        placeholder={placeholder}
+        placeholder={t("search.placeholder")}
         value={q}
         role="combobox"
         aria-expanded={open && results.length > 0}
@@ -83,7 +85,7 @@ export function AssetSearch({ autoFocus, placeholder = "Search NVDA, USDG, Tesla
                 </div>
               </div>
               <span className="spacer" />
-              <span className="tag">{TYPE_TEXT[a.type] ?? a.type}</span>
+              <span className="tag">{code(t, "type", a.type)}</span>
             </div>
           ))}
         </div>

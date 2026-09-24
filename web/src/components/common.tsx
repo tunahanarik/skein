@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiFailure, type AssetListItem } from "../api";
 import { explorerAddress } from "../format";
-import { USABILITY_LABEL } from "../text";
+import { useI18n } from "../i18n";
+import { code } from "../text";
 
 /** Fetch with abort on dependency change. */
 export function useAsync<T>(fn: (signal: AbortSignal) => Promise<T>, deps: unknown[]) {
@@ -46,10 +47,11 @@ export function useAssetList(): AssetListItem[] | null {
 
 /** External explorer link for a contract address (new tab, no referrer). */
 export function ExplorerLink({ address, children }: { address: string; children?: ReactNode }) {
+  const { t } = useI18n();
   const href = explorerAddress(address);
   if (!href) return <span className="mono">{children ?? address}</span>;
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="mono" title="Open in Blockscout">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="mono" title={t("misc.explorer")}>
       {children ?? address} ↗
     </a>
   );
@@ -64,7 +66,8 @@ export function Avatar({ symbol, size }: { symbol: string; size?: "lg" }) {
 }
 
 export function UsabilityBadge({ status }: { status: string }) {
-  return <span className={`badge ${status}`}>{USABILITY_LABEL[status] ?? status}</span>;
+  const { t } = useI18n();
+  return <span className={`badge ${status}`}>{code(t, "use", status)}</span>;
 }
 
 export function Skeleton({ h = 16, w = "100%" }: { h?: number; w?: number | string }) {
@@ -72,8 +75,9 @@ export function Skeleton({ h = 16, w = "100%" }: { h?: number; w?: number | stri
 }
 
 export function LoadingCards({ n = 4 }: { n?: number }) {
+  const { t } = useI18n();
   return (
-    <div className="grid two" aria-busy="true" aria-label="Loading">
+    <div className="grid two" aria-busy="true" aria-label={t("misc.loading")}>
       {Array.from({ length: n }, (_, i) => (
         <div key={i} className="panel card">
           <Skeleton h={18} w="60%" />
@@ -85,24 +89,17 @@ export function LoadingCards({ n = 4 }: { n?: number }) {
   );
 }
 
-const ERROR_TEXT: Record<string, string> = {
-  RATE_LIMITED: "Too many requests. Wait a few seconds and try again.",
-  NETWORK: "The server could not be reached.",
-  UNKNOWN_ASSET: "This asset is not in the verified registry.",
-  AMBIGUOUS_SYMBOL: "Several assets share this symbol. Open it by contract address instead.",
-  BAD_ADDRESS: "That is not a valid address.",
-  INTERNAL: "Something went wrong on the server.",
-};
-
 export function ErrorBox({ error, onRetry }: { error: ApiFailure; onRetry?: () => void }) {
+  const { t } = useI18n();
+  const known = code(t, "err", error.code);
   return (
     <div className="notice bad" role="alert">
       <div>
-        <strong>{ERROR_TEXT[error.code] ?? error.message}</strong>
+        <strong>{known !== error.code ? known : error.message}</strong>
         {onRetry && (
           <div style={{ marginTop: 8 }}>
             <button className="btn small" onClick={onRetry}>
-              Try again
+              {t("err.retry")}
             </button>
           </div>
         )}

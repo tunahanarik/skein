@@ -1,34 +1,54 @@
 /** Display formatting only. Server values are exact decimal strings; rounding happens here, for humans. */
 
+let locale = "en-US";
+/** Set by the i18n provider; number and date formatting follow the chosen language. */
+export function setLocale(l: string): void {
+  locale = l;
+}
+
 export function usd(v: string | null | undefined, opts: { compact?: boolean } = {}): string {
   if (v === null || v === undefined) return "—";
   const n = Number(v);
   if (!Number.isFinite(n)) return "—";
-  if (opts.compact && Math.abs(n) >= 10_000) return "$" + new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+  if (opts.compact && Math.abs(n) >= 10_000) return "$" + new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(n);
   const digits = Math.abs(n) >= 1000 ? 0 : Math.abs(n) >= 1 ? 2 : 4;
-  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: Math.min(2, digits), maximumFractionDigits: digits });
+  return "$" + n.toLocaleString(locale, { minimumFractionDigits: Math.min(2, digits), maximumFractionDigits: digits });
 }
 
 export function amount(v: string | null | undefined, max = 6): string {
   if (v === null || v === undefined) return "—";
   const n = Number(v);
   if (!Number.isFinite(n)) return v;
-  return n.toLocaleString("en-US", { maximumFractionDigits: n !== 0 && Math.abs(n) < 1 ? Math.max(max, 4) : max });
+  return n.toLocaleString(locale, { maximumFractionDigits: n !== 0 && Math.abs(n) < 1 ? Math.max(max, 4) : max });
 }
 
 /** 1e18-scaled fraction string → percent. */
 export function pctE18(v: string | null | undefined, digits = 2): string {
   if (v === null || v === undefined) return "—";
-  return (Number(v) / 1e16).toFixed(digits) + "%";
+  return pct(Number(v) / 1e16, digits);
 }
 
-export function ago(iso: string | null | undefined, nowMs = Date.now()): string {
-  if (!iso) return "unknown age";
+export function pct(n: number, digits = 2, minDigits = digits): string {
+  const s = n.toLocaleString(locale, { minimumFractionDigits: minDigits, maximumFractionDigits: digits });
+  return locale.startsWith("tr") ? `%${s}` : `${s}%`;
+}
+
+/** Server-formatted percent ("7.28%") → localized. */
+export function pctText(display: string): string {
+  const m = /^(-?[\d.]+)%$/.exec(display.trim());
+  if (!m) return display;
+  const digits = (m[1]!.split(".")[1] ?? "").length;
+  return pct(Number(m[1]), digits);
+}
+
+/** Age parts; the caller renders them with the translated unit. */
+export function agoParts(iso: string | null | undefined, nowMs = Date.now()): { unit: "s" | "m" | "h" | "d"; n: number } | null {
+  if (!iso) return null;
   const s = Math.max(0, Math.round((nowMs - Date.parse(iso)) / 1000));
-  if (s < 90) return `${s}s ago`;
-  if (s < 5400) return `${Math.round(s / 60)}m ago`;
-  if (s < 172800) return `${Math.round(s / 3600)}h ago`;
-  return `${Math.round(s / 86400)}d ago`;
+  if (s < 90) return { unit: "s", n: s };
+  if (s < 5400) return { unit: "m", n: Math.round(s / 60) };
+  if (s < 172800) return { unit: "h", n: Math.round(s / 3600) };
+  return { unit: "d", n: Math.round(s / 86400) };
 }
 
 /** Official Robinhood Chain explorer (src/config/chains.ts, from the chain docs). Addresses only. */
@@ -43,10 +63,10 @@ export function shortAddr(a: string): string {
 
 export function date(iso: string | null | undefined): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+  return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 export function feePpm(ppm: number | null | undefined): string {
   if (ppm === null || ppm === undefined) return "—";
-  return (ppm / 10_000).toFixed(ppm % 100 === 0 ? 2 : 3).replace(/0+$/, "").replace(/\.$/, "") + "%";
+  return pct(ppm / 10_000, 3, 0);
 }

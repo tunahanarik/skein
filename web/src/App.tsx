@@ -1,14 +1,32 @@
 import { useEffect } from "react";
-import { linkProps, useRoute } from "./router";
 import { shortAddr } from "./format";
+import { I18nProvider, LANGS, useI18n, type Lang } from "./i18n";
 import { AboutPage } from "./pages/About";
 import { AssetPage } from "./pages/Asset";
 import { CoveragePage } from "./pages/Coverage";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
+import { linkProps, useRoute } from "./router";
 import { useWallet, WalletProvider } from "./wallet";
 
+function LanguagePicker() {
+  const { lang, setLang, t } = useI18n();
+  return (
+    <label className="lang">
+      <span className="sr-only">{t("shell.language")}</span>
+      <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t("shell.language")}>
+        {LANGS.map((l) => (
+          <option key={l.code} value={l.code}>
+            {l.code.toUpperCase()} · {l.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function Header() {
+  const { t } = useI18n();
   const route = useRoute();
   const w = useWallet();
   const is = (n: string) => (route.name === n ? "active" : undefined);
@@ -21,26 +39,27 @@ function Header() {
         </a>
         <nav className="main" aria-label="Main">
           <a className={is("home")} {...linkProps("/")}>
-            Explore
+            {t("nav.explore")}
           </a>
           <a className={is("wallet")} {...linkProps("/wallet")}>
-            Wallet
+            {t("nav.wallet")}
           </a>
           <a className={is("coverage")} {...linkProps("/coverage")}>
-            Coverage
+            {t("nav.coverage")}
           </a>
           <a className={is("about")} {...linkProps("/about")}>
-            How it works
+            {t("nav.about")}
           </a>
         </nav>
         <span className="spacer" />
         {w.address ? (
-          <a className="btn small" {...linkProps("/wallet")} title="Viewing this address (read-only)">
+          <a className="btn small" {...linkProps("/wallet")} title={t("shell.viewing")}>
             {shortAddr(w.address)}
           </a>
         ) : null}
-        <span className="readonly-pill" title="This app never asks for a signature or a transaction.">
-          Read-only
+        <LanguagePicker />
+        <span className="readonly-pill" title={t("shell.readOnlyTitle")}>
+          {t("shell.readOnly")}
         </span>
       </div>
     </header>
@@ -48,27 +67,24 @@ function Header() {
 }
 
 function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="bottom">
       <div className="shell">
-        <p>
-          Read-only information about Robinhood Chain assets and third-party protocols (Morpho, Pendle, Uniswap v3). Nothing here is executed, signed or
-          recommended, and nothing is financial advice. Rates and quotes are indicative and change; always check the protocol itself.
-        </p>
-        <p>Not affiliated with or endorsed by Robinhood. Stock Tokens are not offered to US persons and are restricted in some jurisdictions.</p>
+        <p>{t("footer.p1")}</p>
+        <p>{t("footer.p2")}</p>
       </div>
     </footer>
   );
 }
 
-const TITLES: Record<string, string> = { home: "Explore", wallet: "Wallet", coverage: "Coverage", about: "How it works", notfound: "Not found" };
-
 function Page() {
+  const { t } = useI18n();
   const route = useRoute();
   useEffect(() => {
-    const t = route.name === "asset" ? route.ref.slice(0, 16) : TITLES[route.name];
-    document.title = t ? `${t} · Waypoint` : "Waypoint";
-  }, [route]);
+    const title = route.name === "asset" ? route.ref.slice(0, 16) : t(`title.${route.name}`);
+    document.title = `${title} · Waypoint`;
+  }, [route, t]);
   switch (route.name) {
     case "home":
       return <HomePage />;
@@ -83,9 +99,9 @@ function Page() {
     default:
       return (
         <div className="empty">
-          <h1>Not found</h1>
+          <h1>{t("notFound.title")}</h1>
           <p>
-            <a {...linkProps("/")}>Back to explore</a>
+            <a {...linkProps("/")}>{t("notFound.back")}</a>
           </p>
         </div>
       );
@@ -94,14 +110,16 @@ function Page() {
 
 export function App() {
   return (
-    <WalletProvider>
-      <Header />
-      <main>
-        <div className="shell">
-          <Page />
-        </div>
-      </main>
-      <Footer />
-    </WalletProvider>
+    <I18nProvider>
+      <WalletProvider>
+        <Header />
+        <main>
+          <div className="shell">
+            <Page />
+          </div>
+        </main>
+        <Footer />
+      </WalletProvider>
+    </I18nProvider>
   );
 }

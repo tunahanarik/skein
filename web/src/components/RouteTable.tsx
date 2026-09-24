@@ -1,11 +1,13 @@
 import { Fragment, useState } from "react";
 import type { Card } from "../api";
 import { amount, feePpm, pctE18, usd } from "../format";
-import { NOTE_TEXT, REASON_TEXT } from "../text";
+import { useI18n } from "../i18n";
+import { code } from "../text";
 import { ExplorerLink, UsabilityBadge } from "./common";
 
 /** Compact, ranked list of trade routes (with quotes when an amount was given). Rows expand to pool detail. */
 export function RouteTable({ cards }: { cards: Card[] }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState<string | null>(null);
   const quoted = cards.some((c) => c.trade?.quote);
   return (
@@ -14,19 +16,19 @@ export function RouteTable({ cards }: { cards: Card[] }) {
         <thead>
           <tr>
             <th style={{ width: 28 }}>#</th>
-            <th>Route</th>
-            {quoted && <th style={{ textAlign: "right" }}>You get (indicative)</th>}
-            {quoted && <th style={{ textAlign: "right" }}>Price impact</th>}
-            <th style={{ textAlign: "right" }}>Pool fees</th>
-            <th style={{ textAlign: "right" }}>Thinnest pool</th>
-            <th>Status</th>
-            <th aria-label="Details" />
+            <th>{t("route.route")}</th>
+            {quoted && <th style={{ textAlign: "right" }}>{t("route.youGet")}</th>}
+            {quoted && <th style={{ textAlign: "right" }}>{t("route.impact")}</th>}
+            <th style={{ textAlign: "right" }}>{t("route.fees")}</th>
+            <th style={{ textAlign: "right" }}>{t("route.thinnest")}</th>
+            <th>{t("route.status")}</th>
+            <th aria-label={t("route.details")} />
           </tr>
         </thead>
         <tbody>
           {cards.map((c) => {
-            const t = c.trade!;
-            const q = t.quote;
+            const tr = c.trade!;
+            const q = tr.quote;
             const isOpen = open === c.cardId;
             const cols = 6 + (quoted ? 2 : 0);
             return (
@@ -35,7 +37,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                   <td className="faint num">{c.ranking?.position}</td>
                   <td>
                     <span className="path" style={{ fontWeight: 600 }}>
-                      {t.route.path.map((a, i) => (
+                      {tr.route.path.map((a, i) => (
                         <Fragment key={a.key + i}>
                           {i > 0 && <span className="arrow">→</span>}
                           {a.symbol}
@@ -54,10 +56,10 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                     </td>
                   )}
                   <td className="num" style={{ textAlign: "right" }}>
-                    {feePpm(t.route.combinedFeePpm)}
+                    {feePpm(tr.route.combinedFeePpm)}
                   </td>
                   <td className="num" style={{ textAlign: "right" }}>
-                    {usd(t.route.routeLiquidityUsd?.display, { compact: true })}
+                    {usd(tr.route.routeLiquidityUsd?.display, { compact: true })}
                   </td>
                   <td>
                     <UsabilityBadge status={c.usability.status} />
@@ -71,22 +73,26 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                       <div style={{ display: "grid", gap: 6, fontSize: 13 }}>
                         {c.usability.reasons.map((r) => (
                           <div key={r} style={{ color: "var(--warn)" }}>
-                            {REASON_TEXT[r] ?? r}
+                            {code(t, "reason", r)}
                           </div>
                         ))}
-                        {t.route.markets.map((m, i) => (
+                        {tr.route.markets.map((m, i) => (
                           <div key={m.marketId} className="muted">
-                            Pool {i + 1}: {m.protocol} · fee {feePpm(m.feePpm)} · TVL {usd(m.tvlUsd?.display, { compact: true })} ·{" "}
+                            {t("card.pool", { n: i + 1 })}: {m.protocol} · {feePpm(m.feePpm)} · TVL {usd(m.tvlUsd?.display, { compact: true })} ·{" "}
                             <ExplorerLink address={m.marketId.split(":").at(-1) ?? ""} />
                           </div>
                         ))}
                         {q && (
                           <div className="muted">
-                            Quoted at block {q.blockNumber} ({q.freshness.toLowerCase()}) for {amount(q.input.display)} {q.input.asset.symbol}. Not a guaranteed price; no minimum output.
+                            {t("route.quotedFor", { b: q.blockNumber, f: code(t, "fresh", q.freshness), x: `${amount(q.input.display)} ${q.input.asset.symbol}` })}
                           </div>
                         )}
                         <div className="faint">
-                          {[...c.usability.notes.map((n) => NOTE_TEXT[n] ?? n), `sources: ${c.sources.map((s) => s.provider).join(", ")}`, `verification: ${c.verification.replaceAll("_", " ").toLowerCase()}`].join(" · ")}
+                          {[
+                            ...c.usability.notes.map((n) => code(t, "note", n)),
+                            t("route.sources", { s: c.sources.map((s) => s.provider).join(", ") }),
+                            t("route.verification", { v: c.verification.replaceAll("_", " ").toLowerCase() }),
+                          ].join(" · ")}
                         </div>
                       </div>
                     </td>

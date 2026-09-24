@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import { api, type Coverage } from "../api";
 import { Avatar, ErrorBox, Skeleton, useAsync } from "../components/common";
 import { usd } from "../format";
+import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
-import { TYPE_TEXT } from "../text";
+import { code } from "../text";
 
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 const RANK: Record<string, number> = { ACTIONABLE: 0, LIMITED_ONLY: 1, INFORMATIONAL_ONLY: 2, NONE: 3 };
 type SortKey = "symbol" | "options" | (typeof CATS)[number];
 
 export function CoveragePage() {
+  const { t } = useI18n();
   const res = useAsync((s) => api.coverage(s), []);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"ALL" | (typeof CATS)[number]>("ALL");
@@ -30,43 +32,45 @@ export function CoveragePage() {
       );
   }, [res.data, q, filter, sort]);
 
+  const legend = t("coverage.legend", { g: "\u0000g", a: "\u0000a", b: "\u0000b", n: "\u0000n" }).split(/\u0000([gabn])/);
+  const DOT: Record<string, string> = { g: "ACTIONABLE", a: "LIMITED_ONLY", b: "INFORMATIONAL_ONLY", n: "NONE" };
+
   return (
     <>
-      <h1>Coverage</h1>
+      <h1>{t("coverage.title")}</h1>
       <p className="muted" style={{ maxWidth: 720 }}>
-        What every verified Robinhood Chain asset can do today across the protocols we read (Uniswap v3, Morpho, Pendle). A green dot means at least one opportunity passes every
-        check; amber means only limited ones exist (for example under $10k of liquidity).
+        {t("coverage.lead")}
       </p>
       <div className="row" style={{ margin: "16px 0" }}>
-        <input className="input" style={{ maxWidth: 240 }} placeholder="Filter by symbol" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Filter by symbol" />
-        <div className="tabs" role="group" aria-label="Show assets that can">
+        <input className="input" style={{ maxWidth: 240 }} placeholder={t("coverage.filter")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={t("coverage.filter")} />
+        <div className="tabs" role="group" aria-label={t("coverage.showCan")}>
           {(["ALL", ...CATS] as const).map((c) => (
             <button key={c} aria-pressed={filter === c} onClick={() => setFilter(c)}>
-              {c === "ALL" ? "All" : c[0] + c.slice(1).toLowerCase()}
+              {c === "ALL" ? t("coverage.all") : t(`cat.${c}`)}
             </button>
           ))}
         </div>
         <span className="spacer" />
-        <span className="small muted">{res.data ? `${rows.length} of ${res.data.rows.length}` : ""}</span>
+        <span className="small muted">{res.data ? t("coverage.of", { a: rows.length, b: res.data.rows.length }) : ""}</span>
       </div>
       {res.error && <ErrorBox error={res.error} onRetry={res.reload} />}
       <div className="panel table-wrap">
         <table className="data">
           <thead>
             <tr>
-              <th className="sortable" onClick={() => setSort("symbol")} aria-sort={sort === "symbol" ? "ascending" : "none"}>
-                Asset
+              <th className="sortable" onClick={() => setSort("symbol")}>
+                {t("coverage.asset")}
               </th>
-              <th>Price</th>
+              <th>{t("coverage.price")}</th>
               {CATS.map((c) => (
                 <th key={c} className="sortable" onClick={() => setSort(c)} style={{ textAlign: "center" }}>
-                  {c[0] + c.slice(1).toLowerCase()}
+                  {t(`cat.${c}`)}
                 </th>
               ))}
               <th className="sortable" onClick={() => setSort("options")} style={{ textAlign: "right" }}>
-                Available / limited
+                {t("coverage.availLim")}
               </th>
-              <th>Protocols</th>
+              <th>{t("coverage.protocols")}</th>
             </tr>
           </thead>
           <tbody>
@@ -88,13 +92,13 @@ export function CoveragePage() {
                       <a {...linkProps(`/asset/${r.asset.address}`)} style={{ fontWeight: 600, color: "var(--text)" }}>
                         {r.asset.symbol}
                       </a>
-                      <div className="small muted">{TYPE_TEXT[r.asset.registryType ?? ""] ?? r.asset.registryType}</div>
+                      <div className="small muted">{code(t, "type", r.asset.registryType)}</div>
                     </div>
                   </div>
                 </td>
                 <td className="num">{usd(r.portfolioPriceUsd)}</td>
                 {CATS.map((c) => (
-                  <td key={c} style={{ textAlign: "center" }} title={r.capabilities.detail[c]}>
+                  <td key={c} style={{ textAlign: "center" }} title={t(`cap.${r.capabilities.detail[c]}`)}>
                     <span className={`dot ${r.capabilities.detail[c]}`} />
                   </td>
                 ))}
@@ -108,8 +112,7 @@ export function CoveragePage() {
         </table>
       </div>
       <p className="faint small">
-        Legend: <span className="dot ACTIONABLE" /> available · <span className="dot LIMITED_ONLY" /> limited only · <span className="dot INFORMATIONAL_ONLY" /> information only ·{" "}
-        <span className="dot NONE" /> nothing. Counts are raw opportunities (each pool direction counts once).
+        {legend.map((part, i) => (i % 2 === 1 ? <span key={i} className={`dot ${DOT[part]}`} /> : <span key={i}>{part}</span>))}
       </p>
     </>
   );

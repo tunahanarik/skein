@@ -3,6 +3,7 @@
  * EIP-1193 wallet for its address with `eth_requestAccounts` — the only wallet method this app
  * ever calls. It never requests a signature or a transaction.
  */
+import type { StringKey } from "./i18n";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 interface Eip1193 {
@@ -27,7 +28,8 @@ interface WalletState {
   source: "connected" | "pasted" | null;
   hasInjected: boolean;
   connecting: boolean;
-  error: string | null;
+  /** i18n key of the last error, if any. */
+  error: StringKey | null;
   connect(): Promise<void>;
   usePasted(a: string): boolean;
   clear(): void;
@@ -39,7 +41,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [source, setSource] = useState<WalletState["source"]>(null);
   const [connecting, setConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<StringKey | null>(null);
   const provider = useMemo(injected, []);
 
   useEffect(() => {
@@ -58,7 +60,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(async () => {
     if (!provider) {
-      setError("No browser wallet found. Paste an address instead.");
+      setError("wallet.err.noWallet");
       return;
     }
     setConnecting(true);
@@ -70,7 +72,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setAddress(a);
       setSource("connected");
     } catch (e) {
-      setError((e as { code?: number }).code === 4001 ? "Connection request was declined." : "Could not read an address from the wallet.");
+      setError((e as { code?: number }).code === 4001 ? "wallet.err.declined" : "wallet.err.read");
     } finally {
       setConnecting(false);
     }
@@ -86,7 +88,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     usePasted: (a) => {
       const v = a.trim();
       if (!isAddr(v)) {
-        setError("That is not a valid address (0x followed by 40 hex characters).");
+        setError("wallet.err.invalid");
         return false;
       }
       setError(null);
