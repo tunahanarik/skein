@@ -1,0 +1,1339 @@
+[
+ {
+  "tvl": 560395157.2233796,
+  "name": "Morpho Blue",
+  "category": "Lending",
+  "slug": "morpho-blue",
+  "url": "https://app.morpho.org"
+ },
+ {
+  "tvl": 511090475.78591025,
+  "name": "Steakhouse Financial",
+  "category": "Risk Curators",
+  "slug": "steakhouse-financial",
+  "url": "https://www.steakhouse.financial/"
+ },
+ {
+  "tvl": 196643563.76277897,
+  "name": "Uniswap V4",
+  "category": "Dexs",
+  "slug": "uniswap-v4",
+  "url": "https://app.uniswap.org/"
+ },
+ {
+  "tvl": 100197830.98079236,
+  "name": "Lighter Robinhood Perps",
+  "category": "Derivatives",
+  "slug": "lighter-robinhood-perps",
+  "url": "https://robinhoodchain.lighter.xyz/trade/LIT"
+ },
+ {
+  "tvl": 60719078.90567063,
+  "name": "Uniswap V3",
+  "category": "Dexs",
+  "slug": "uniswap-v3",
+  "url": "https://app.uniswap.org/"
+ },
+ {
+  "tvl": 47138102.988924176,
+  "name": "Fables",
+  "category": "Dexs",
+  "slug": "fables",
+  "url": "https://www.fables.fi/"
+ },
+ {
+  "tvl": 36885536.33919244,
+  "name": "Gate",
+  "category": "CEX",
+  "slug": "gate",
+  "url": "https://www.gate.com"
+ },
+ {
+  "tvl": 22015321.295894556,
+  "name": "Arcus Perps",
+  "category": "Derivatives",
+  "slug": "arcus-perps",
+  "url": "https://arcus.xyz/"
+ },
+ {
+  "tvl": 16854570.37605412,
+  "name": "Uniswap V2",
+  "category": "Dexs",
+  "slug": "uniswap-v2",
+  "url": "https://app.uniswap.org/"
+ },
+ {
+  "tvl": 14160695.786054816,
+  "name": "Spark Savings",
+  "category": "Yield",
+  "slug": "spark-savings",
+  "url": "https://spark.finance/"
+ },
+ {
+  "tvl": 8613113.806075962,
+  "name": "UNCX Network V3",
+  "category": "Token Locker",
+  "slug": "uncx-network-v3",
+  "url": "https://uncx.network/"
+ },
+ {
+  "tvl": 7228755.498297928,
+  "name": "up v3",
+  "category": "Dexs",
+  "slug": "up-v3",
+  "url": "https://up33.xyz/"
+ },
+ {
+  "tvl": 7228561.075826483,
+  "name": "Ramses CL V2",
+  "category": "Dexs",
+  "slug": "ramses-cl-v2",
+  "url": "https://ramses.xyz"
+ },
+ {
+  "tvl": 7144134.394549734,
+  "name": "Snuggle",
+  "category": "Liquidity Manager",
+  "slug": "snuggle",
+  "url": "https://snuggle.fi/"
+ },
+ {
+  "tvl": 4947516.4421867635,
+  "name": "NOXA Fun",
+  "category": "Launchpad",
+  "slug": "noxa-fun",
+  "url": "https://fun.noxa.eth.limo/"
+ },
+ {
+  "tvl": 4200229.169741691,
+  "name": "Longbow",
+  "category": "Lending",
+  "slug": "longbow",
+  "url": "https://www.longbow.cash/"
+ },
+ {
+  "tvl": 3338572.5363855716,
+  "name": "vfat.io",
+  "category": "Yield Aggregator",
+  "slug": "vfat.io",
+  "url": "https://vfat.io/yield"
+ },
+ {
+  "tvl": 2926396.7904648595,
+  "name": "Beefy",
+  "category": "Yield Aggregator",
+  "slug": "beefy",
+  "url": "https://beefy.com"
+ },
+ {
+  "tvl": 2911425.8919071336,
+  "name": "StonkBrokers Safety Deposit Box",
+  "category": "Token Locker",
+  "slug": "stonkbrokers-safety-deposit-box",
+  "url": "https://www.stonkbrokers.cash"
+ },
+ {
+  "tvl": 2602038.6852659965,
+  "name": "PancakeSwap AMM V3",
+  "category": "Dexs",
+  "slug": "pancakeswap-amm-v3",
+  "url": "https://pancakeswap.finance/swap"
+ },
+ {
+  "tvl": 2440187.1898142695,
+  "name": "SushiSwap V3",
+  "category": "Dexs",
+  "slug": "sushiswap-v3",
+  "url": "https://sushi.com/"
+ },
+ {
+  "tvl": 2310429.8457102263,
+  "name": "Meridian Perps",
+  "category": "Derivatives",
+  "slug": "meridian-perps",
+  "url": "https://app.meridian.xyz/"
+ },
+ {
+  "tvl": 2225095.180202706,
+  "name": "Neutral Trade",
+  "category": "Onchain Capital Allocator",
+  "slug": "neutral-trade",
+  "url": "https://www.neutral.trade/"
+ },
+ {
+  "tvl": 1666060.5097831306,
+  "name": "Ekubo",
+  "category": "Dexs",
+  "slug": "ekubo",
+  "url": "https://ekubo.org/"
+ },
+ {
+  "tvl": 1451805.1248277745,
+  "name": "DexFi Aggregator",
+  "category": "Yield Aggregator",
+  "slug": "dexfi-aggregator",
+  "url": "https://dexfi.com/"
+ },
+ {
+  "tvl": 1413482.4958120242,
+  "name": "LayerZero V2",
+  "category": "Bridge",
+  "slug": "layerzero-v2",
+  "url": "https://layerzero.network/"
+ },
+ {
+  "tvl": 1185088.9637136403,
+  "name": "GIGA V3",
+  "category": "Dexs",
+  "slug": "giga-v3",
+  "url": "https://gigadex.fi"
+ },
+ {
+  "tvl": 1148874.2300057164,
+  "name": "up v2",
+  "category": "Dexs",
+  "slug": "up-v2",
+  "url": "https://up33.xyz/"
+ },
+ {
+  "tvl": 1139477.9315597066,
+  "name": "Alandale V3",
+  "category": "Dexs",
+  "slug": "alandale-v3",
+  "url": "https://alandale.xyz"
+ },
+ {
+  "tvl": 1126804.2414013895,
+  "name": "STONX",
+  "category": "Dexs",
+  "slug": "stonx",
+  "url": "https://ekubo.org"
+ },
+ {
+  "tvl": 1005220.9463813211,
+  "name": "Saffron Vaults",
+  "category": "Yield",
+  "slug": "saffron-vaults",
+  "url": "https://saffron.finance"
+ },
+ {
+  "tvl": 828586.672425007,
+  "name": "T3tris Finance",
+  "category": "Onchain Capital Allocator",
+  "slug": "t3tris-finance",
+  "url": "https://t3tris.finance/"
+ },
+ {
+  "tvl": 782893.629058974,
+  "name": "UNCX Network V4",
+  "category": "Token Locker",
+  "slug": "uncx-network-v4",
+  "url": "https://uncx.network/"
+ },
+ {
+  "tvl": 733161.379732364,
+  "name": "Ramses DLMM",
+  "category": "Dexs",
+  "slug": "ramses-dlmm",
+  "url": "https://ramses.xyz"
+ },
+ {
+  "tvl": 642578.9614794613,
+  "name": "Curve DEX",
+  "category": "Dexs",
+  "slug": "curve-dex",
+  "url": "https://curve.finance"
+ },
+ {
+  "tvl": 624886.6690006864,
+  "name": "StonkBrokers Smart LP",
+  "category": "Liquidity Manager",
+  "slug": "stonkbrokers-smart-lp",
+  "url": "https://www.stonkbrokers.cash"
+ },
+ {
+  "tvl": 605797.7067630916,
+  "name": "Gami Labs",
+  "category": "Risk Curators",
+  "slug": "gami-labs",
+  "url": "https://gamilabs.io/"
+ },
+ {
+  "tvl": 593528.8962509944,
+  "name": "Arcus pTokens",
+  "category": "Derivatives",
+  "slug": "arcus-ptokens",
+  "url": "https://arcus.xyz/"
+ },
+ {
+  "tvl": 580937.8680599872,
+  "name": "Symbiosis",
+  "category": "Cross Chain Bridge",
+  "slug": "symbiosis",
+  "url": "https://symbiosis.finance"
+ },
+ {
+  "tvl": 540345.7885641796,
+  "name": "Pendle V2",
+  "category": "Yield",
+  "slug": "pendle-v2",
+  "url": "https://pendle.finance/"
+ },
+ {
+  "tvl": 490369.31996336364,
+  "name": "Steer Protocol",
+  "category": "Liquidity Manager",
+  "slug": "steer-protocol",
+  "url": "https://app.steer.finance"
+ },
+ {
+  "tvl": 483743.77832071984,
+  "name": "EARN",
+  "category": "Liquidity Automation",
+  "slug": "earn",
+  "url": "https://earnonhood.com"
+ },
+ {
+  "tvl": 435620.7052442959,
+  "name": "GIGA V2",
+  "category": "Dexs",
+  "slug": "giga-v2",
+  "url": "https://gigadex.fi"
+ },
+ {
+  "tvl": 402097.44550977304,
+  "name": "Kittenswap Algebra",
+  "category": "Dexs",
+  "slug": "kittenswap-algebra",
+  "url": "https://kittenswap.finance"
+ },
+ {
+  "tvl": 370980.1692850699,
+  "name": "Meridian Predict",
+  "category": "Prediction Market",
+  "slug": "meridian-predict",
+  "url": "https://app.meridian.xyz/predict"
+ },
+ {
+  "tvl": 356847.33451494726,
+  "name": "Native Credit Pool",
+  "category": "Lending",
+  "slug": "native-credit-pool",
+  "url": "https://native.org"
+ },
+ {
+  "tvl": 353779.58106966835,
+  "name": "Orvex",
+  "category": "Dexs",
+  "slug": "orvex",
+  "url": "https://orvex.fi/"
+ },
+ {
+  "tvl": 310200.64661863574,
+  "name": "Kipseli",
+  "category": "Dexs",
+  "slug": "kipseli",
+  "url": ""
+ },
+ {
+  "tvl": 250515.24286191145,
+  "name": "token.select",
+  "category": "Launchpad",
+  "slug": "token.select",
+  "url": "https://token.select"
+ },
+ {
+  "tvl": 240304.29727538172,
+  "name": "Flock Credit",
+  "category": "Lending",
+  "slug": "flock-credit",
+  "url": "https://www.ravenhood.xyz/flock-credit"
+ },
+ {
+  "tvl": 235188.92108549716,
+  "name": "What The Hook",
+  "category": "Liquidity Automation",
+  "slug": "what-the-hook",
+  "url": "https://www.whatthehook.io"
+ },
+ {
+  "tvl": 223208.18500263494,
+  "name": "Arcadia V2",
+  "category": "Liquidity Manager",
+  "slug": "arcadia-v2",
+  "url": "https://arcadia.finance"
+ },
+ {
+  "tvl": 221184.45883897896,
+  "name": "Raphael Exchange CL",
+  "category": "Dexs",
+  "slug": "raphael-exchange-cl",
+  "url": "https://www.raphael.exchange/"
+ },
+ {
+  "tvl": 211459.38194912256,
+  "name": "Ramses Legacy V2",
+  "category": "Dexs",
+  "slug": "ramses-legacy-v2",
+  "url": "https://ramses.xyz"
+ },
+ {
+  "tvl": 188148.59207489743,
+  "name": "Raphael Exchange AMM",
+  "category": "Dexs",
+  "slug": "raphael-exchange-amm",
+  "url": "https://www.raphael.exchange/"
+ },
+ {
+  "tvl": 186932.76008609767,
+  "name": "StockRip",
+  "category": "Gamified Mining",
+  "slug": "stockrip",
+  "url": "https://stockrip.com/"
+ },
+ {
+  "tvl": 159863.37853108736,
+  "name": "BrownFi V3",
+  "category": "Dexs",
+  "slug": "brownfi-v3",
+  "url": "https://brownfi.io/"
+ },
+ {
+  "tvl": 153106.6043280493,
+  "name": "EZManager",
+  "category": "Liquidity Manager",
+  "slug": "ezmanager",
+  "url": "https://ezmanager.finance"
+ },
+ {
+  "tvl": 149348.6117624248,
+  "name": "SectorOne DLMM",
+  "category": "Dexs",
+  "slug": "sectorone-dlmm",
+  "url": "https://sectorone.xyz"
+ },
+ {
+  "tvl": 143311.20701609418,
+  "name": "SLVR",
+  "category": "Gamified Mining",
+  "slug": "slvr",
+  "url": "https://slvr.fun/"
+ },
+ {
+  "tvl": 116247.63749280378,
+  "name": "HASHCATS",
+  "category": "Gamified Mining",
+  "slug": "hashcats",
+  "url": ""
+ },
+ {
+  "tvl": 102614.24848467931,
+  "name": "Krystal Auto-Farm Vault",
+  "category": "AI Agents",
+  "slug": "krystal-auto-farm-vault",
+  "url": "https://krystal.app"
+ },
+ {
+  "tvl": 101576.80783974034,
+  "name": "Ripe Protocol",
+  "category": "Lending",
+  "slug": "ripe-protocol",
+  "url": "https://www.ripe.finance/"
+ },
+ {
+  "tvl": 99985.44220290781,
+  "name": "D2 Finance",
+  "category": "Onchain Capital Allocator",
+  "slug": "d2-finance",
+  "url": "https://d2.finance/strategies"
+ },
+ {
+  "tvl": 83376.11592266466,
+  "name": "Astro",
+  "category": "Luck Games",
+  "slug": "astro",
+  "url": "https://astro.fun"
+ },
+ {
+  "tvl": 82748.40007772435,
+  "name": "UNCX Network V2",
+  "category": "Token Locker",
+  "slug": "uncx-network-v2",
+  "url": "https://uncx.network/"
+ },
+ {
+  "tvl": 78040.65174014853,
+  "name": "Hookers",
+  "category": "Launchpad",
+  "slug": "hookers",
+  "url": "https://www.hookersrh.com"
+ },
+ {
+  "tvl": 77925.46187437006,
+  "name": "Frontier",
+  "category": "Launchpad",
+  "slug": "frontier",
+  "url": "https://frontier.fun"
+ },
+ {
+  "tvl": 73580.86235623684,
+  "name": "Twofold",
+  "category": "Dexs",
+  "slug": "twofold",
+  "url": "https://twofold.fi"
+ },
+ {
+  "tvl": 71068.75487992821,
+  "name": "EZMoney",
+  "category": "Liquidity Manager",
+  "slug": "ezmoney",
+  "url": "https://ezmoney.finance"
+ },
+ {
+  "tvl": 67605.42180443238,
+  "name": "PancakeSwap AMM",
+  "category": "Dexs",
+  "slug": "pancakeswap-amm",
+  "url": "https://pancakeswap.finance/"
+ },
+ {
+  "tvl": 65781.53196081147,
+  "name": "Sherwood",
+  "category": "Privacy",
+  "slug": "sherwood",
+  "url": "https://sherwood.cash"
+ },
+ {
+  "tvl": 60868.28521260971,
+  "name": "Sentry",
+  "category": "Launchpad",
+  "slug": "sentry",
+  "url": "https://sentry.trading"
+ },
+ {
+  "tvl": 59452.334267627084,
+  "name": "Hybra V3",
+  "category": "Dexs",
+  "slug": "hybra-v3",
+  "url": "https://www.hybra.finance?code=GRYN2U"
+ },
+ {
+  "tvl": 53222.28655200914,
+  "name": "ARMSys",
+  "category": "Yield",
+  "slug": "armsys",
+  "url": "https://armsys.xyz"
+ },
+ {
+  "tvl": 51033.43946512589,
+  "name": "Alandale V2",
+  "category": "Dexs",
+  "slug": "alandale-v2",
+  "url": "https://alandale.xyz"
+ },
+ {
+  "tvl": 50552.09919596853,
+  "name": "Ellipse Bridge",
+  "category": "Bridge",
+  "slug": "ellipse-bridge",
+  "url": ""
+ },
+ {
+  "tvl": 49765.147060954536,
+  "name": "Skate AMM",
+  "category": "Dexs",
+  "slug": "skate-amm",
+  "url": "https://amm.skatechain.org/swap"
+ },
+ {
+  "tvl": 47998.326859699024,
+  "name": "PARE",
+  "category": "Interest Rate Derivatives",
+  "slug": "pare",
+  "url": "https://parestocks.com"
+ },
+ {
+  "tvl": 47061.79245064795,
+  "name": "Coinbarrel",
+  "category": "Launchpad",
+  "slug": "coinbarrel",
+  "url": "https://coinbarrel.com"
+ },
+ {
+  "tvl": 45271.9603736628,
+  "name": "FrothSwap",
+  "category": "Dexs",
+  "slug": "frothswap",
+  "url": "https://froth.meme/"
+ },
+ {
+  "tvl": 44926.30120007601,
+  "name": "0Swap",
+  "category": "Dexs",
+  "slug": "0swap",
+  "url": "https://www.0swap.exchange"
+ },
+ {
+  "tvl": 44514.42693776098,
+  "name": "Gage",
+  "category": "Lending",
+  "slug": "gage",
+  "url": "https://gage.cash"
+ },
+ {
+  "tvl": 42283.214972856964,
+  "name": "Spine Finance",
+  "category": "Lending",
+  "slug": "spine-finance",
+  "url": ""
+ },
+ {
+  "tvl": 37129.519129968365,
+  "name": "Deepstate",
+  "category": "Dexs",
+  "slug": "deepstate",
+  "url": "https://deepstate.sh/"
+ },
+ {
+  "tvl": 34430.62476672723,
+  "name": "StonkBrokers Nightshades",
+  "category": "Launchpad",
+  "slug": "stonkbrokers-nightshades",
+  "url": "https://www.stonkbrokers.cash"
+ },
+ {
+  "tvl": 33090.38869263411,
+  "name": "Orchard",
+  "category": "Gamified Mining",
+  "slug": "orchard",
+  "url": "https://orchard.gold"
+ },
+ {
+  "tvl": 29534.421146627803,
+  "name": "Peeps",
+  "category": "Launchpad",
+  "slug": "peeps",
+  "url": "https://peeps.wtf"
+ },
+ {
+  "tvl": 28456.70205363575,
+  "name": "Zona",
+  "category": "Lending",
+  "slug": "zona",
+  "url": "https://www.zona.finance/"
+ },
+ {
+  "tvl": 28425.019228551042,
+  "name": "Catnip",
+  "category": "Dexs",
+  "slug": "catnip",
+  "url": "https://catnipexchange.com/"
+ },
+ {
+  "tvl": 26586.259969565504,
+  "name": "Delta",
+  "category": "Liquidity Manager",
+  "slug": "delta",
+  "url": "https://deltaliquidity.app/"
+ },
+ {
+  "tvl": 26147.176825273677,
+  "name": "Privacy Cash",
+  "category": "Privacy",
+  "slug": "privacy-cash",
+  "url": "https://privacycash.org/"
+ },
+ {
+  "tvl": 25727.16161341166,
+  "name": "STOCKMON",
+  "category": "NFT Automated Strategies",
+  "slug": "stockmon",
+  "url": "https://stockmon.app"
+ },
+ {
+  "tvl": 24075.83616282468,
+  "name": "STRATO Bridge",
+  "category": "Bridge",
+  "slug": "strato-bridge",
+  "url": "https://strato.nexus/"
+ },
+ {
+  "tvl": 18339.618890168193,
+  "name": "RobinSwap V3",
+  "category": "Dexs",
+  "slug": "robinswap-v3",
+  "url": "https://www.robinswap.finance"
+ },
+ {
+  "tvl": 16526.65474185905,
+  "name": "SwapHood V3",
+  "category": "Dexs",
+  "slug": "swaphood-v3",
+  "url": "https://www.swaphood.finance/#/"
+ },
+ {
+  "tvl": 15993.556574655306,
+  "name": "Based Alpha",
+  "category": "Launchpad",
+  "slug": "based-alpha",
+  "url": "https://alpha.based.one"
+ },
+ {
+  "tvl": 14861.24038185705,
+  "name": "RaiseHood",
+  "category": "Launchpad",
+  "slug": "raisehood",
+  "url": "https://www.raisehood.xyz"
+ },
+ {
+  "tvl": 14794.723871001686,
+  "name": "MerryForge",
+  "category": "Launchpad",
+  "slug": "merryforge",
+  "url": "https://www.merryforge.app"
+ },
+ {
+  "tvl": 13142.479776010483,
+  "name": "Spiral Stake",
+  "category": "Yield Aggregator",
+  "slug": "spiral-stake",
+  "url": "https://spiralstake.xyz"
+ },
+ {
+  "tvl": 12857.95633114928,
+  "name": "Pez Family",
+  "category": "Launchpad",
+  "slug": "pez-family",
+  "url": "https://pez.family"
+ },
+ {
+  "tvl": 11766.568513920265,
+  "name": "Sheriff V3",
+  "category": "Dexs",
+  "slug": "sheriff-v3",
+  "url": "https://app.sheriff.exchange/"
+ },
+ {
+  "tvl": 11409.368812969584,
+  "name": "Unihood",
+  "category": "Launchpad",
+  "slug": "unihood",
+  "url": "https://unihood.fun"
+ },
+ {
+  "tvl": 11245.542222547694,
+  "name": "TermMax",
+  "category": "Lending",
+  "slug": "termmax",
+  "url": "https://ts.finance/termmax/"
+ },
+ {
+  "tvl": 10860.934063966904,
+  "name": "Vimen",
+  "category": "Indexes",
+  "slug": "vimen",
+  "url": "https://vimen.org"
+ },
+ {
+  "tvl": 9214.48764484815,
+  "name": "Accountable",
+  "category": "Uncollateralized Lending",
+  "slug": "accountable",
+  "url": "https://accountable.capital/"
+ },
+ {
+  "tvl": 7630.273436022409,
+  "name": "PerpsHood",
+  "category": "Launchpad",
+  "slug": "perpshood",
+  "url": ""
+ },
+ {
+  "tvl": 6681.308395987187,
+  "name": "AEON Protocol",
+  "category": "Dexs",
+  "slug": "aeon-protocol",
+  "url": "https://www.aeonprotocol.net/"
+ },
+ {
+  "tvl": 6634.491608894939,
+  "name": "Fake Wall Street",
+  "category": "Luck Games",
+  "slug": "fake-wall-street",
+  "url": "https://fws.fun"
+ },
+ {
+  "tvl": 6625.456543765281,
+  "name": "Boardwalk",
+  "category": "Launchpad",
+  "slug": "boardwalk",
+  "url": "https://www.useboardwalk.com/"
+ },
+ {
+  "tvl": 5955.979471044643,
+  "name": "SwapHood V2",
+  "category": "Dexs",
+  "slug": "swaphood-v2",
+  "url": "https://www.swaphood.finance/#/"
+ },
+ {
+  "tvl": 5462.449716245043,
+  "name": "DexLaunch",
+  "category": "Launchpad",
+  "slug": "dexlaunch",
+  "url": "https://dexlaunch.fun"
+ },
+ {
+  "tvl": 5339.214745901522,
+  "name": "Quiver Protocol",
+  "category": "Liquidity Manager",
+  "slug": "quiver-protocol",
+  "url": "https://quiverprotocol.finance"
+ },
+ {
+  "tvl": 4934.35163602464,
+  "name": "KeelLabs",
+  "category": "Liquidity Manager",
+  "slug": "keellabs",
+  "url": "https://keellabs.app/#inicio"
+ },
+ {
+  "tvl": 4397.1952677906065,
+  "name": "GlueHook",
+  "category": "Liquidity Automation",
+  "slug": "gluehook",
+  "url": "https://gluehook.trade"
+ },
+ {
+  "tvl": 2929.2280515979232,
+  "name": "Morpheus",
+  "category": "Dexs",
+  "slug": "morpheus",
+  "url": ""
+ },
+ {
+  "tvl": 2847.6169770366805,
+  "name": "LUNA",
+  "category": "Gamified Mining",
+  "slug": "luna",
+  "url": ""
+ },
+ {
+  "tvl": 2815.9894442421764,
+  "name": "Sheriff V2",
+  "category": "Dexs",
+  "slug": "sheriff-v2",
+  "url": "https://app.sheriff.exchange/"
+ },
+ {
+  "tvl": 2810.6744311804896,
+  "name": "SushiSwap V4",
+  "category": "Dexs",
+  "slug": "sushiswap-v4",
+  "url": "https://sushi.com/"
+ },
+ {
+  "tvl": 2720.8326973164176,
+  "name": "ParitySwap V2",
+  "category": "Dexs",
+  "slug": "parityswap-v2",
+  "url": "https://app.parityswap.io"
+ },
+ {
+  "tvl": 2569.447073830401,
+  "name": "Catch Exchange",
+  "category": "RWA",
+  "slug": "catch-exchange",
+  "url": "https://catch.exchange/"
+ },
+ {
+  "tvl": 2113.4025747929804,
+  "name": "RobinFun",
+  "category": "Launchpad",
+  "slug": "robinfun",
+  "url": "https://robinfun.live/"
+ },
+ {
+  "tvl": 1814.5168509111008,
+  "name": "RH.fun",
+  "category": "Launchpad",
+  "slug": "rh.fun",
+  "url": "https://rh.fun"
+ },
+ {
+  "tvl": 1591.0301641177698,
+  "name": "Orixium",
+  "category": "Gamified Mining",
+  "slug": "orixium",
+  "url": "https://cave.watch"
+ },
+ {
+  "tvl": 1532.8382084962507,
+  "name": "Ample",
+  "category": "Yield Lottery",
+  "slug": "ample",
+  "url": "https://ample.money/"
+ },
+ {
+  "tvl": 1393.437868219635,
+  "name": "RobinSwap V2",
+  "category": "Dexs",
+  "slug": "robinswap-v2",
+  "url": "https://www.robinswap.finance"
+ },
+ {
+  "tvl": 1353.8598998106386,
+  "name": "kicker",
+  "category": "Yield",
+  "slug": "kicker",
+  "url": ""
+ },
+ {
+  "tvl": 1227.0549247377262,
+  "name": "YieldFlow Yield Farming",
+  "category": "Liquidity Manager",
+  "slug": "yieldflow-yield-farming",
+  "url": "https://yieldflow.com"
+ },
+ {
+  "tvl": 1156.3961714737918,
+  "name": "Hoodbets",
+  "category": "Prediction Market",
+  "slug": "hoodbets",
+  "url": "https://hoodbets.xyz"
+ },
+ {
+  "tvl": 1122.6200253989418,
+  "name": "LiquidCore",
+  "category": "Dexs",
+  "slug": "liquidcore",
+  "url": "https://liqd.ag"
+ },
+ {
+  "tvl": 769.5959995103798,
+  "name": "HoodMint",
+  "category": "Launchpad",
+  "slug": "hoodmint",
+  "url": "https://hoodmint.fun"
+ },
+ {
+  "tvl": 664.2580183729704,
+  "name": "Phera DEX",
+  "category": "Dexs",
+  "slug": "phera-dex",
+  "url": "https://phera.pro"
+ },
+ {
+  "tvl": 662.8598580866525,
+  "name": "BowStop",
+  "category": "Gamified Mining",
+  "slug": "bowstop",
+  "url": "https://bowstop.xyz"
+ },
+ {
+  "tvl": 646.9424853162311,
+  "name": "heks.fun",
+  "category": "Launchpad",
+  "slug": "heks.fun",
+  "url": ""
+ },
+ {
+  "tvl": 598.3410501716053,
+  "name": "ArrowPad.fun",
+  "category": "Launchpad",
+  "slug": "arrowpad.fun",
+  "url": "https://arrowpad.fun/"
+ },
+ {
+  "tvl": 543.3724450425395,
+  "name": "ROAR",
+  "category": "Gamified Mining",
+  "slug": "roar",
+  "url": "https://roar.supply/"
+ },
+ {
+  "tvl": 538.6100703528383,
+  "name": "Synthra V3",
+  "category": "Dexs",
+  "slug": "synthra-v3",
+  "url": "https://app.synthra.org"
+ },
+ {
+  "tvl": 435.9838993385056,
+  "name": "RobinIndex",
+  "category": "Indexes",
+  "slug": "robinindex",
+  "url": ""
+ },
+ {
+  "tvl": 347.2450928423555,
+  "name": "SoDEX Bridge",
+  "category": "Bridge",
+  "slug": "sodex-bridge",
+  "url": "https://ssi.sosovalue.com"
+ },
+ {
+  "tvl": 307.24929849031946,
+  "name": "ParitySwap V3",
+  "category": "Dexs",
+  "slug": "parityswap-v3",
+  "url": "https://app.parityswap.io"
+ },
+ {
+  "tvl": 295.1424027701542,
+  "name": "STEEL",
+  "category": "Gamified Mining",
+  "slug": "steel",
+  "url": ""
+ },
+ {
+  "tvl": 206.55225789935804,
+  "name": "LayerBank",
+  "category": "Lending",
+  "slug": "layerbank",
+  "url": "https://layerbank.finance"
+ },
+ {
+  "tvl": 196.8167111628951,
+  "name": "Oter Finance",
+  "category": "Lending",
+  "slug": "oter-finance",
+  "url": ""
+ },
+ {
+  "tvl": 174.68253251151097,
+  "name": "MinePea",
+  "category": "Gamified Mining",
+  "slug": "minepea",
+  "url": ""
+ },
+ {
+  "tvl": 158.69752322152675,
+  "name": "Kyros Finance",
+  "category": "Lending",
+  "slug": "kyros-finance",
+  "url": "https://kyros.finance/"
+ },
+ {
+  "tvl": 132.64097407856767,
+  "name": "Phera DEX Launchpad",
+  "category": "Launchpad",
+  "slug": "phera-dex-launchpad",
+  "url": "https://phera.pro"
+ },
+ {
+  "tvl": 130.89531663709192,
+  "name": "basedbid",
+  "category": "Launchpad",
+  "slug": "basedbid",
+  "url": "https://www.based.bid/"
+ },
+ {
+  "tvl": 121.68809414308171,
+  "name": "DOTT",
+  "category": "Launchpad",
+  "slug": "dott",
+  "url": ""
+ },
+ {
+  "tvl": 109.54366520295073,
+  "name": "Mixpad",
+  "category": "Launchpad",
+  "slug": "mixpad",
+  "url": "https://mixpad.fun"
+ },
+ {
+  "tvl": 89.85809027854611,
+  "name": "HOODZ",
+  "category": "Gaming",
+  "slug": "hoodz",
+  "url": "https://hoodz.gg"
+ },
+ {
+  "tvl": 88.69533448049893,
+  "name": "Waddle Club",
+  "category": "Farm",
+  "slug": "waddle-club",
+  "url": "https://staking.waddleclub.xyz"
+ },
+ {
+  "tvl": 85.8306191914452,
+  "name": "Hood Index",
+  "category": "Indexes",
+  "slug": "hood-index",
+  "url": ""
+ },
+ {
+  "tvl": 78.18385984179054,
+  "name": "Hoodit",
+  "category": "Dexs",
+  "slug": "hoodit",
+  "url": "https://hoodit.xyz"
+ },
+ {
+  "tvl": 56.938593850421476,
+  "name": "HoodPump",
+  "category": "Launchpad",
+  "slug": "hoodpump",
+  "url": ""
+ },
+ {
+  "tvl": 52.360613022725296,
+  "name": "Ilyris",
+  "category": "Dexs",
+  "slug": "ilyris",
+  "url": ""
+ },
+ {
+  "tvl": 51.90323827497097,
+  "name": "VS Trade",
+  "category": "Derivatives",
+  "slug": "vs-trade",
+  "url": ""
+ },
+ {
+  "tvl": 43.14746575687012,
+  "name": "HoodSale",
+  "category": "Launchpad",
+  "slug": "hoodsale",
+  "url": ""
+ },
+ {
+  "tvl": 42.493825402548225,
+  "name": "Turret",
+  "category": "Lending",
+  "slug": "turret",
+  "url": ""
+ },
+ {
+  "tvl": 41.125861490968774,
+  "name": "KOLSwap",
+  "category": "Dexs",
+  "slug": "kolswap",
+  "url": "https://kolmarket.ai"
+ },
+ {
+  "tvl": 33.93426496167716,
+  "name": "Yieldfy",
+  "category": "Yield Aggregator",
+  "slug": "yieldfy",
+  "url": "https://www.yieldfy.ai/"
+ },
+ {
+  "tvl": 29.053814298457244,
+  "name": "DaWabLauncher",
+  "category": "Launchpad",
+  "slug": "dawablauncher",
+  "url": ""
+ },
+ {
+  "tvl": 26.82116658223046,
+  "name": "Nullark",
+  "category": "Privacy",
+  "slug": "nullark",
+  "url": ""
+ },
+ {
+  "tvl": 24.81233715616394,
+  "name": "H00D",
+  "category": "Launchpad",
+  "slug": "h00d",
+  "url": ""
+ },
+ {
+  "tvl": 22.21310332860838,
+  "name": "Synthra Launchpad",
+  "category": "Launchpad",
+  "slug": "synthra-launchpad",
+  "url": "https://app.synthra.org"
+ },
+ {
+  "tvl": 13.4904561739125,
+  "name": "Solon Earn",
+  "category": "Leveraged Farming",
+  "slug": "solon-earn",
+  "url": "https://solonlend.xyz"
+ },
+ {
+  "tvl": 13.258072277776476,
+  "name": "Solon Borrow",
+  "category": "Risk Curators",
+  "slug": "solon-borrow",
+  "url": "https://solonlend.xyz"
+ },
+ {
+  "tvl": 9.998546212501115,
+  "name": "Lagoon",
+  "category": "Onchain Capital Allocator",
+  "slug": "lagoon",
+  "url": "https://lagoon.finance"
+ },
+ {
+  "tvl": 8.238699333751047,
+  "name": "DropSwap",
+  "category": "DEX Aggregator",
+  "slug": "dropswap",
+  "url": "https://dropswap.finance"
+ },
+ {
+  "tvl": 7.837088875090613,
+  "name": "ymym.meme",
+  "category": "Launchpad",
+  "slug": "ymym.meme",
+  "url": "https://ymym.meme/"
+ },
+ {
+  "tvl": 2.011459534009154,
+  "name": "Sharewoods",
+  "category": "Lending",
+  "slug": "sharewoods",
+  "url": "https://app.sharewoods.xyz"
+ },
+ {
+  "tvl": 1.1301948234413721,
+  "name": "ArrowPad",
+  "category": "Launchpad",
+  "slug": "arrowpad",
+  "url": " "
+ },
+ {
+  "tvl": 0.7107632443541391,
+  "name": "Bonker",
+  "category": "Launchpad",
+  "slug": "bonker",
+  "url": "https://bonker.wtf"
+ },
+ {
+  "tvl": 0.6087306735119907,
+  "name": "BowYard",
+  "category": "Launchpad",
+  "slug": "bowyard",
+  "url": ""
+ },
+ {
+  "tvl": 0.31147475671480523,
+  "name": "Hybra V2",
+  "category": "Dexs",
+  "slug": "hybra-v2",
+  "url": "https://www.hybra.finance?code=GRYN2U"
+ },
+ {
+  "tvl": 0.04998984355390381,
+  "name": "Moonvault",
+  "category": "Yield Aggregator",
+  "slug": "moonvault",
+  "url": "https://moonvault.org/"
+ },
+ {
+  "tvl": 0.020002694871812082,
+  "name": "BlueFun",
+  "category": "Launchpad",
+  "slug": "bluefun",
+  "url": ""
+ },
+ {
+  "tvl": 0,
+  "name": "wambo.fun",
+  "category": "Prediction Market",
+  "slug": "wambo.fun",
+  "url": ""
+ },
+ {
+  "tvl": 0,
+  "name": "popi",
+  "category": "Launchpad",
+  "slug": "popi",
+  "url": ""
+ },
+ {
+  "tvl": 0,
+  "name": "keep.coffee",
+  "category": "Launchpad",
+  "slug": "keep.coffee",
+  "url": "https://keep.coffee"
+ },
+ {
+  "tvl": 0,
+  "name": "USDAX Finance",
+  "category": "CDP",
+  "slug": "usdax-finance",
+  "url": ""
+ },
+ {
+  "tvl": 0,
+  "name": "Tirelire",
+  "category": "Liquidity Manager",
+  "slug": "tirelire",
+  "url": "https://tirelire.xyz"
+ },
+ {
+  "tvl": 0,
+  "name": "Spark Liquidity Layer",
+  "category": "Onchain Capital Allocator",
+  "slug": "spark-liquidity-layer",
+  "url": "https://spark.finance/"
+ },
+ {
+  "tvl": 0,
+  "name": "Ravenhood Mindshare",
+  "category": "Volume Boosting",
+  "slug": "ravenhood-mindshare",
+  "url": "https://www.ravenhood.xyz/mindshare"
+ },
+ {
+  "tvl": 0,
+  "name": "NetNet Capital Management",
+  "category": "Reserve Currency",
+  "slug": "netnet-capital-management",
+  "url": "https://netnet.capital"
+ },
+ {
+  "tvl": 0,
+  "name": "NUKES.FUN",
+  "category": "Reserve Currency",
+  "slug": "nukes.fun",
+  "url": "https://nukes.fun/"
+ },
+ {
+  "tvl": 0,
+  "name": "LuckyLaunch",
+  "category": "Launchpad",
+  "slug": "luckylaunch",
+  "url": "https://avalove.app/luckylaunch/"
+ },
+ {
+  "tvl": 0,
+  "name": "HoodVault by HoodMarket",
+  "category": "Indexes",
+  "slug": "hoodvault-by-hoodmarket",
+  "url": "https://hoodvault.hoodmarket.io"
+ },
+ {
+  "tvl": 0,
+  "name": "Fusion by IPOR",
+  "category": "Yield Aggregator",
+  "slug": "fusion-by-ipor",
+  "url": "https://app.ipor.io/fusion"
+ },
+ {
+  "tvl": 0,
+  "name": "Dirac Classic Curation",
+  "category": "Risk Curators",
+  "slug": "dirac-classic-curation",
+  "url": "https://dirac.finance"
+ },
+ {
+  "tvl": 0,
+  "name": "AvaLove",
+  "category": "Launchpad",
+  "slug": "avalove",
+  "url": "https://avalove.app"
+ },
+ {
+  "tvl": 0,
+  "name": "AutoRange",
+  "category": "Dexs",
+  "slug": "autorange",
+  "url": "https://autorange.xyz/"
+ }
+]

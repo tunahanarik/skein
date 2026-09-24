@@ -1,0 +1,13 @@
+const fs=require("fs");const m=JSON.parse(fs.readFileSync("markets_all.json"));
+const r=JSON.parse(fs.readFileSync("rhj-assets.json")).assets;const stock={};r.forEach(a=>a.deployments.forEach(d=>{if(d.chainId==4663)stock[d.contractAddress.toLowerCase()]=1}));
+const f=(x,d=2)=>x==null?"":(x*100).toFixed(d);const u=x=>x==null?"":Math.round(x).toLocaleString("en-US");
+m.sort((a,b)=>(b.state?.supplyAssetsUsd||0)-(a.state?.supplyAssetsUsd||0)||(b.state?.collateralAssetsUsd||0)-(a.state?.collateralAssetsUsd||0));
+const hdr="| id | listed | loan | collateral (addr) | stock? | lltv% | oracle (type) | supplyApy% | borrowApy% | util% | supplyUsd | borrowUsd | liquidityUsd | collatUsd | warnings |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n";
+const row=x=>`| ${x.marketId} | ${x.listed?"Y":"N"} | ${x.loanAsset.symbol} ${x.loanAsset.address} | ${x.collateralAsset?.symbol||"-"} ${x.collateralAsset?.address||""} | ${x.collateralAsset&&stock[x.collateralAsset.address.toLowerCase()]?"Y":""} | ${Number(x.lltv)/1e16} | ${x.oracle?.address||"none"} (${x.oracle?.type||"-"}) | ${f(x.state?.supplyApy)} | ${f(x.state?.borrowApy)} | ${f(x.state?.utilization,1)} | ${u(x.state?.supplyAssetsUsd)} | ${u(x.state?.borrowAssetsUsd)} | ${u(x.state?.liquidityAssetsUsd)} | ${u(x.state?.collateralAssetsUsd)} | ${x.warnings.map(w=>w.type).join(",")} |`;
+const ts=fs.readFileSync("fetched_at.txt","utf8").trim();
+fs.writeFileSync("morpho_markets_4663.md",`# Morpho Blue markets on 4663 (API fetched ${ts}; ${m.length} markets)\n\n`+hdr+m.map(row).join("\n")+"\n");
+const ne=m.filter(x=>(x.state?.supplyAssetsUsd||0)>=1||(x.state?.collateralAssetsUsd||0)>=1||x.listed);
+fs.writeFileSync("morpho_markets_nonempty.md",hdr+ne.map(row).join("\n")+"\n");
+console.log("nonempty",ne.length,"of",m.length);
+const v=JSON.parse(fs.readFileSync("vaultv2s.json")).data.vaultV2s.items.sort((a,b)=>(b.totalAssetsUsd||0)-(a.totalAssetsUsd||0));
+fs.writeFileSync("morpho_vaults_4663.md","| address | name | listed | asset | totalAssetsUsd | apy% | netApy% | curator | type | warnings |\n|---|---|---|---|---|---|---|---|---|---|\n"+v.map(x=>`| ${x.address} | ${x.name||"(empty)"} | ${x.listed?"Y":"N"} | ${x.asset.symbol} | ${u(x.totalAssetsUsd)} | ${f(x.apy)} | ${f(x.netApy)} | ${x.curator.address} | ${x.type} | ${x.warnings.map(w=>w.type).join(",")} |`).join("\n")+"\n");

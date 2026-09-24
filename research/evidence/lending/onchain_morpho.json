@@ -1,0 +1,172 @@
+{
+ "chainId": 4663,
+ "block": 71130970,
+ "code": {
+  "morpho": {
+   "address": "0x9D53d5E3bd5E8d4Cbfa6DB1ca238AEA02E651010",
+   "codeBytes": 15582
+  },
+  "adaptiveCurveIrm": {
+   "address": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+   "codeBytes": 2282
+  },
+  "chainlinkOracleV2Factory": {
+   "address": "0xB7c16F6F8cF531447Bf27Ca7220f981E79C9cdF2",
+   "codeBytes": 4464
+  },
+  "vaultV2Factory": {
+   "address": "0x0FBad98595b0186dA120E41f77C102beb49f803c",
+   "codeBytes": 23124
+  },
+  "morphoVaultV1AdapterFactory": {
+   "address": "0x7a91222F3f7B927bB8fb624593Ca86e111C2F85e",
+   "codeBytes": 5775
+  },
+  "morphoMarketV1AdapterV2Factory": {
+   "address": "0x79370Ed003CE325C088E530d5e8655c99c2993e1",
+   "codeBytes": 13633
+  },
+  "registryList": {
+   "address": "0xe785a2eFD384BA7B95BaEd3851BC76aeD67C676f",
+   "codeBytes": 1377
+  },
+  "vaultV2BluePublicAllocator": {
+   "address": "0xCe5c1aFa115fF8b1D6913509bfc79D9AE08CC857",
+   "codeBytes": 7697
+  },
+  "bundler3": {
+   "address": "0x6478e9393d4C5bB4d53ee881d1DE78786A0344a6",
+   "codeBytes": 1547
+  },
+  "generalAdapter1": {
+   "address": "0xc5E188541D107e8B79e43478bDE365F1406665D6",
+   "codeBytes": 13830
+  },
+  "vaultBundlesV1": {
+   "address": "0xcC108538f36242D6E0d6B9255f6D9Ccd137D70Fe",
+   "codeBytes": 6781
+  },
+  "vaultExitBundlesV1": {
+   "address": "0xCE29862924756584BBD0D75CA1249d22007E2813",
+   "codeBytes": 13287
+  },
+  "blueBundlesV1": {
+   "address": "0x53A1eB6589861F686af7c531211E35Aefe30210f",
+   "codeBytes": 18095
+  },
+  "preLiquidationFactory": {
+   "address": "0x0B0cFa151c06d2342799267754b0a2c320C43D5B",
+   "codeBytes": 8381
+  },
+  "midnight": {
+   "address": "0x6120765Ba5336150BbdDdD0Cd9108B5bFD369632",
+   "codeBytes": 24557
+  },
+  "midnightBundles": {
+   "address": "0x71aa985ff80AbcE3b8b443845633674Ca9f7575C",
+   "codeBytes": 16513
+  },
+  "permit2": {
+   "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+   "codeBytes": 9152
+  }
+ },
+ "owner": "0x060595638692de6ccd47ca04094f1772d3d39728",
+ "feeRecipient": "0x0000000000000000000000000000000000000000",
+ "irmEnabled": true,
+ "lltv915Enabled": true,
+ "markets": {
+  "0xc845da65a020ddca5f132efa8fea79676d8edfdea504226a4c01e7a9e34cddd6": {
+   "params": {
+    "loanToken": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    "collateralToken": "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34",
+    "oracle": "0xe64849bd4ad03dfabbe02bb521de19997a19055f",
+    "irm": "0x2bd3d5965b26b51814ac95127b2b80dd6ccc0fa1",
+    "lltv": "915000000000000000"
+   },
+   "idCheck": true,
+   "state": {
+    "totalSupplyAssets": "332128491655104",
+    "totalSupplyShares": "329147531504008385582",
+    "totalBorrowAssets": "300188412255144",
+    "totalBorrowShares": "297152180561919920611",
+    "lastUpdate": "1790228777",
+    "fee": "0"
+   },
+   "oraclePrice": "1000000000000000000000000",
+   "borrowRatePerSec": "1407582791",
+   "borrowApyCalc": 0.04538948709260591,
+   "supplyApyCalc": 0.04102447819368023,
+   "utilization": 0.9038321607375741
+  },
+  "0x919a9b6b94dae7c86620eaf7a08e597aae8a4c3a9e9c7671771fbaf62b6b61c7": {
+   "params": {
+    "loanToken": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    "collateralToken": "0x40858070814a57fdf33a613ae84fe0a8b4a874f7",
+    "oracle": "0x152c638fad68913739ee19ba8ef47faeb09dca91",
+    "irm": "0x2bd3d5965b26b51814ac95127b2b80dd6ccc0fa1",
+    "lltv": "915000000000000000"
+   },
+   "idCheck": true,
+   "state": {
+    "totalSupplyAssets": "121978922144144",
+    "totalSupplyShares": "120815383458946800648",
+    "totalBorrowAssets": "108437237670584",
+    "totalBorrowShares": "107275984992626305952",
+    "lastUpdate": "1790228723",
+    "fee": "0"
+   },
+   "oraclePrice": "1012058842183886954000000000000000000",
+   "borrowRatePerSec": "1255662421",
+   "borrowApyCalc": 0.040393045486398646,
+   "supplyApyCalc": 0.0359087471560971,
+   "utilization": 0.8889834060219222
+  },
+  "0x66306c087add8907752320b309934abcc354d21626de8115c79df49d9c214edc": {
+   "params": {
+    "loanToken": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    "collateralToken": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+    "oracle": "0xc5b8a6c5fdf14f9744db1c8595f49e42ce23031a",
+    "irm": "0x2bd3d5965b26b51814ac95127b2b80dd6ccc0fa1",
+    "lltv": "625000000000000000"
+   },
+   "idCheck": true,
+   "state": {
+    "totalSupplyAssets": "6578669583",
+    "totalSupplyShares": "3288710954521889",
+    "totalBorrowAssets": "417102878",
+    "totalBorrowShares": "416958477736447",
+    "lastUpdate": "1789949759",
+    "fee": "0"
+   },
+   "oraclePrice": "225529403843654071133597976",
+   "borrowRatePerSec": "9602842",
+   "borrowApyCalc": 0.0003028810845279901,
+   "supplyApyCalc": 0.000019203361782273284,
+   "utilization": 0.0634023145162723
+  },
+  "0x50bc39b5722fb5634c436d74c6787f3c125b879e7b73cf9e9ecc01bbb57b8e55": {
+   "params": {
+    "loanToken": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    "collateralToken": "0x117cc2133c37b721f49de2a7a74833232b3b4c0c",
+    "oracle": "0xe8dab19184f72b5a5a9d51a6c50a1b04b0669ce7",
+    "irm": "0x2bd3d5965b26b51814ac95127b2b80dd6ccc0fa1",
+    "lltv": "625000000000000000"
+   },
+   "idCheck": true,
+   "state": {
+    "totalSupplyAssets": "11227772810",
+    "totalSupplyShares": "11226302964508704",
+    "totalBorrowAssets": "4342647616",
+    "totalBorrowShares": "4341875478333978",
+    "lastUpdate": "1789950968",
+    "fee": "0"
+   },
+   "oraclePrice": "766630927896489315961563459",
+   "borrowRatePerSec": "18147970",
+   "borrowApyCalc": 0.0005724781850433468,
+   "supplyApyCalc": 0.00022142156486068914,
+   "utilization": 0.38677729675223094
+  }
+ }
+}

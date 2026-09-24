@@ -1,0 +1,2074 @@
+[
+ {
+  "chainId": 4663,
+  "type": "ERC20LOGPROCESSOR",
+  "identifier": "0xBeEff033F34C046626B8D0A041844C5d1A5409ddWHITELIST_CAMPAIGN",
+  "name": "[Robinhood Users Only] Supply to Steakhouse USDG V2 vault on Morpho",
+  "description": "Earn rewards by supplying to the Steakhouse USDG V2 vault on Morpho from the Robinhood App",
+  "howToSteps": [
+   "Go to the Robinhood App and supply USDG on Morpho.",
+   "Keep the deposit active. Withdrawals reduce your accrual in real time.",
+   "Check each campaign's rules for minimum supply amounts or address restrictions."
+  ],
+  "status": "LIVE",
+  "action": "LEND",
+  "tvl": 484271978.813107,
+  "apr": 3.046668927525834,
+  "totalApr": 7.0116182147630415,
+  "maxApr": 0,
+  "dailyRewards": 40422.23823555896,
+  "maxDailyRewards": 317560.3698630136,
+  "tags": [],
+  "liveCampaigns": 2,
+  "earliestCampaignStart": "1782910800",
+  "latestCampaignStart": "1782910800",
+  "earliestCampaignEnd": "1814446800",
+  "latestCampaignEnd": "1814446800",
+  "id": "5701731715065456649",
+  "nativeApr": 3.964949287237207,
+  "depositUrl": "https://applink.robinhood.com/u/home",
+  "explorerAddress": "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+  "lastCampaignCreatedAt": 1782749317,
+  "tokens": [
+   {
+    "id": "13836752388278225121",
+    "name": "Steakhouse USDG",
+    "chainId": 4663,
+    "address": "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+    "decimals": 18,
+    "symbol": "steakUSDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 1.0078200594125446,
+    "updatedAt": 1790228287,
+    "priceSource": "Computed Price - 0xa40876de21a985dc0754a8be134c8b9320504787a72adced67adc198c1f96816 on chain 4663",
+    "displaySymbol": "steakUSDG"
+   },
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [
+   {
+    "slug": "robinhood",
+    "name": "Robinhood Earn",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+    "id": "7f6a39f1-9cdc-43fd-9b39-0ecc4b6a4229"
+   }
+  ],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 3.046668927525834,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "SOFR_SPREAD_RATCHET",
+     "identifier": "0x71e89fac78a38031802eeeecb633ff27eaec79dd6790e26187fd072942d6d0b5",
+     "type": "CAMPAIGN",
+     "value": 0.28000000000000114,
+     "timestamp": "1790208000"
+    },
+    {
+     "distributionType": "SOFR_SPREAD_RATCHET",
+     "identifier": "0xa40876de21a985dc0754a8be134c8b9320504787a72adced67adc198c1f96816",
+     "type": "CAMPAIGN",
+     "value": 2.7666689275258327,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "nativeAprRecord": {
+   "title": "Morpho Vault V2 Native APR - steakUSDG",
+   "description": "Native APR (without rewards) for Morpho V2 vault steakUSDG (0xbeeff033f34c046626b8d0a041844c5d1a5409dd) on chain 4663",
+   "value": 3.964949287237207,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "title": "Morpho Vault V2 Native APR - steakUSDG",
+     "description": "Native APR (without rewards) for Morpho V2 vault steakUSDG (0xbeeff033f34c046626b8d0a041844c5d1a5409dd) on chain 4663",
+     "value": 3.964949287237207
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "955537684953128565",
+   "total": 484224911.72989136,
+   "timestamp": "1790227678",
+   "breakdowns": []
+  },
+  "rewardsRecord": {
+   "id": "25604482800976162",
+   "total": 40422.23823555896,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "7483905993076503252",
+      "name": "Steakhouse USDG (wrapped)",
+      "chainId": 4663,
+      "address": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "decimals": 18,
+      "symbol": "steakUSDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 1.007909,
+      "updatedAt": 1790228021,
+      "priceSource": "Price Source 0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "displaySymbol": "steakUSDG",
+      "underlyingTokenId": "13836752388278225121"
+     },
+     "amount": "36419235377814169452544",
+     "maxAmount": "273972602739726024179712",
+     "value": 36707.2751104173,
+     "maxValue": 276139.45205479447,
+     "distributionType": "SOFR_SPREAD_RATCHET",
+     "onChainCampaignId": "0xa40876de21a985dc0754a8be134c8b9320504787a72adced67adc198c1f96816",
+     "id": "edd27508-8e13-40bf-aa94-2bf371de0680",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 39356.43224806319,
+     "min": 32875.39054250231,
+     "max": 40214.93952168193,
+     "avg": 36820.34132435781,
+     "samples": 20,
+     "campaignId": "2096001692856068734",
+     "dailyRewardsRecordId": "25604482800976162"
+    },
+    {
+     "token": {
+      "id": "7483905993076503252",
+      "name": "Steakhouse USDG (wrapped)",
+      "chainId": 4663,
+      "address": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "decimals": 18,
+      "symbol": "steakUSDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 1.007909,
+      "updatedAt": 1790228021,
+      "priceSource": "Price Source 0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "displaySymbol": "steakUSDG",
+      "underlyingTokenId": "13836752388278225121"
+     },
+     "amount": "3685812037735210287104",
+     "maxAmount": "41095890410958906982400",
+     "value": 3714.9631251416577,
+     "maxValue": 41420.91780821918,
+     "distributionType": "SOFR_SPREAD_RATCHET",
+     "onChainCampaignId": "0x71e89fac78a38031802eeeecb633ff27eaec79dd6790e26187fd072942d6d0b5",
+     "id": "6854d05c-4bc8-40a4-b0ba-843101e5a934",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 3629.390921062216,
+     "min": 3629.390921062216,
+     "max": 3685.9518049705125,
+     "avg": 3670.0281504009668,
+     "samples": 20,
+     "campaignId": "17444897265936555067",
+     "dailyRewardsRecordId": "25604482800976162"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOCOLLATERAL",
+  "identifier": "0xc845dA65a020DDca5f132EFA8Fea79676D8EDFDE",
+  "name": "Deposit USDe as collateral on USDe/USDG 91.5%",
+  "description": "Earn rewards by supplying USDe as a collateral on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and deposit USDe as collateral on the USDe/USDG 91.5% market.",
+   "Rewards are based on your deposited collateral. No borrowing required.",
+   "Check each campaign's rules for minimum deposit amounts or market-specific conditions."
+  ],
+  "status": "LIVE",
+  "action": "LEND",
+  "tvl": 336653001.3562324,
+  "apr": 3.9905316034172085,
+  "totalApr": 3.9905316034172085,
+  "maxApr": 0.0475,
+  "dailyRewards": 36806.1490766384,
+  "maxDailyRewards": 36806.1490766384,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1789738200",
+  "latestCampaignStart": "1789738200",
+  "earliestCampaignEnd": "1790294400",
+  "latestCampaignEnd": "1790294400",
+  "id": "6518393048281704051",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0xc845da65a020ddca5f132efa8fea79676d8edfdea504226a4c01e7a9e34cddd6/usde-usdg#market",
+  "explorerAddress": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+  "lastCampaignCreatedAt": 1789739613,
+  "tokens": [
+   {
+    "id": "9501840966080422808",
+    "name": "USDe",
+    "chainId": 4663,
+    "address": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+    "decimals": 18,
+    "symbol": "USDe",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/USDe.png",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9996614552705566,
+    "updatedAt": 1790228032,
+    "priceSource": "Price Source 0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+    "displaySymbol": "USDe",
+    "underlyingTokenId": "9501840966080422808"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [
+   {
+    "slug": "ethena",
+    "name": "Ethena Liquid Leverage",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/ethena.svg",
+    "id": "ec8c59b5-f55d-4dd6-be41-76eaea78afd4"
+   }
+  ],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 3.9905316034172085,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "MAX_REWARD_VALUE_PER_LIQUIDITY_VALUE",
+     "identifier": "0xba3d255243ee1b7cf828e78b81d6c88f03f4aac81c5fdc1e85800b633dc094f9",
+     "type": "CAMPAIGN",
+     "value": 3.9905316034172085,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "4635298069319807920",
+   "total": 336653001.3562324,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "8223728520728535884",
+     "type": "TOKEN",
+     "value": 336767012.0532134
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "4635298069319807920",
+   "total": 36806.1490766384,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "8223728520728535884",
+      "name": "USDe (wrapped)",
+      "chainId": 4663,
+      "address": "0xd61b3d417019c8C0A6ED367143DB618d10E3DA46",
+      "decimals": 18,
+      "symbol": "USDe",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/USDe.png",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.9996614552705566,
+      "updatedAt": 1790228027,
+      "priceSource": "Price Source 0xd61b3d417019c8C0A6ED367143DB618d10E3DA46",
+      "displaySymbol": "USDe",
+      "underlyingTokenId": "9501840966080422808"
+     },
+     "amount": "36818613824294026739712",
+     "maxAmount": "36818613824294026739712",
+     "value": 36806.1490766384,
+     "maxValue": 36806.1490766384,
+     "distributionType": "MAX_REWARD_VALUE_PER_LIQUIDITY_VALUE",
+     "onChainCampaignId": "0xba3d255243ee1b7cf828e78b81d6c88f03f4aac81c5fdc1e85800b633dc094f9",
+     "id": "6b11fedd-f454-465a-b783-ec2515839072",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 43825.84403432229,
+     "min": 36799.82330602522,
+     "max": 43825.8440343223,
+     "avg": 40584.27638412997,
+     "samples": 20,
+     "campaignId": "14740252258480717125",
+     "dailyRewardsRecordId": "4635298069319807920"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "ERC20LOGPROCESSOR",
+  "identifier": "0x99347d5F70D3838763f6Bddcf80304C8aa953B57",
+  "name": "[UNVERIFIED] Supply to NetNet Credit V2 vault on Morpho on Robinhood Chain",
+  "description": "Are you sure you want to interact with the unverified NetNet Credit V2 vault on Robinhood Chain? Proceeding with this unverified vault may pose security risks. Unverified vaults could potentially be used for phishing attempts. Please ensure you trust the source before continuing.",
+  "howToSteps": [
+   "Go to the protocol and supply nnUSDG.",
+   "Keep the deposit active. Withdrawals reduce your accrual in real time.",
+   "Check each campaign's rules for minimum supply amounts or address restrictions."
+  ],
+  "status": "LIVE",
+  "action": "LEND",
+  "tvl": 1786057.6667502215,
+  "apr": 14.15801371087108,
+  "totalApr": 14.15801371087108,
+  "maxApr": 0,
+  "dailyRewards": 692.795313267289,
+  "maxDailyRewards": 692.795313267289,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1789051680",
+  "latestCampaignStart": "1789051680",
+  "earliestCampaignEnd": "1790261280",
+  "latestCampaignEnd": "1790261280",
+  "id": "14185056096406830160",
+  "depositUrl": "https://app.netnet.capital/#/credit",
+  "explorerAddress": "0x99347d5F70D3838763f6Bddcf80304C8aa953B57",
+  "lastCampaignCreatedAt": 1789024935,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   },
+   {
+    "id": "9419740911227214272",
+    "name": "NetNet Credit",
+    "chainId": 4663,
+    "address": "0x99347d5F70D3838763f6Bddcf80304C8aa953B57",
+    "decimals": 18,
+    "symbol": "nnUSDG",
+    "icon": "",
+    "verified": false,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 1.0040270762689394,
+    "updatedAt": 1790228288,
+    "priceSource": "Computed Price - 0xc1c0f4f2844126468a0eefe6cef23b9a1610a2679e2967681be0dfd4505a568c on chain 4663",
+    "displaySymbol": "nnUSDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 14.15801371087108,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "0xc1c0f4f2844126468a0eefe6cef23b9a1610a2679e2967681be0dfd4505a568c",
+     "type": "CAMPAIGN",
+     "value": 14.15801371087108,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "12839741359989226166",
+   "total": 1786057.6667502215,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "9419740911227214272",
+     "type": "TOKEN",
+     "value": 1778905.9468034885
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "12839741359989226166",
+   "total": 692.795313267289,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "1566521100361621217",
+      "name": "Global Dollar",
+      "chainId": 4663,
+      "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "decimals": 6,
+      "symbol": "USDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.9999107626537088,
+      "updatedAt": 1790227980,
+      "priceSource": "Price Source USDG",
+      "displaySymbol": "USDG"
+     },
+     "amount": "692857142",
+     "maxAmount": "692857142",
+     "value": 692.795313267289,
+     "maxValue": 692.795313267289,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "0xc1c0f4f2844126468a0eefe6cef23b9a1610a2679e2967681be0dfd4505a568c",
+     "id": "6b8b3900-3ee8-47aa-820b-af3494e8cc55",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 692.857142,
+     "min": 692.857142,
+     "max": 692.857142,
+     "avg": 692.8571420000004,
+     "samples": 20,
+     "campaignId": "7933395384346910021",
+     "dailyRewardsRecordId": "12839741359989226166"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "UNCLAIMED_DISTRIBUTOR",
+  "identifier": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786WHITELIST_CAMPAIGN",
+  "name": "Unclaimed steakUSDG in Distributor",
+  "description": "Earn rewards by holding steakUSDG",
+  "howToSteps": [
+   "Acquire and hold steakUSDG in a self-custodied wallet.",
+   "Only on-chain wallet balances qualify. Do not deposit into third-party protocols or CEX accounts.",
+   "Check each campaign's rules for any address restrictions or minimum balance thresholds."
+  ],
+  "status": "LIVE",
+  "action": "HOLD",
+  "tvl": 499139.07582295366,
+  "apr": 4.564579555978365,
+  "totalApr": 4.564579555978365,
+  "maxApr": 0,
+  "dailyRewards": 62.420221397726216,
+  "maxDailyRewards": 62.420221397726216,
+  "tags": [],
+  "liveCampaigns": 2,
+  "earliestCampaignStart": "1782910800",
+  "latestCampaignStart": "1782910800",
+  "earliestCampaignEnd": "1814446800",
+  "latestCampaignEnd": "1814446800",
+  "id": "6623316778157115212",
+  "lastCampaignCreatedAt": 1783002991,
+  "tokens": [
+   {
+    "id": "7483905993076503252",
+    "name": "Steakhouse USDG (wrapped)",
+    "chainId": 4663,
+    "address": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+    "decimals": 18,
+    "symbol": "steakUSDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 1.007909,
+    "updatedAt": 1790228021,
+    "priceSource": "Price Source 0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+    "displaySymbol": "steakUSDG",
+    "underlyingTokenId": "13836752388278225121"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 4.564579555978365,
+   "timestamp": "1784073600",
+   "breakdowns": [
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "1008934592146927654",
+     "type": "CAMPAIGN",
+     "value": 0.5200217349386688,
+     "timestamp": "1784073600"
+    },
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "11834119059518795163",
+     "type": "CAMPAIGN",
+     "value": 4.044557821039696,
+     "timestamp": "1784073600"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "1524181159707418849",
+   "total": 499139.07582295366,
+   "timestamp": "1784073600",
+   "breakdowns": [
+    {
+     "identifier": "13836752388278225121",
+     "type": "TOKEN",
+     "value": 497644.1621882615
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "1524181159707418849",
+   "total": 62.420221397726216,
+   "timestamp": "1784073600",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "7483905993076503252",
+      "name": "Steakhouse USDG (wrapped)",
+      "chainId": 4663,
+      "address": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "decimals": 18,
+      "symbol": "steakUSDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 1.007909,
+      "updatedAt": 1790228021,
+      "priceSource": "Price Source 0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "displaySymbol": "steakUSDG",
+      "underlyingTokenId": "13836752388278225121"
+     },
+     "amount": "55143851733514526720",
+     "maxAmount": "55143851733514526720",
+     "value": 55.57998445687489,
+     "maxValue": 55.57998445687489,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "11834119059518795163",
+     "id": "e4cf3e42-959b-45c1-8b33-226728d9e573",
+     "grain": "DAY",
+     "timestamp": "1784073600",
+     "open": null,
+     "min": null,
+     "max": null,
+     "avg": null,
+     "samples": 1,
+     "campaignId": "15666449541317593297",
+     "dailyRewardsRecordId": "1524181159707418849"
+    },
+    {
+     "token": {
+      "id": "7483905993076503252",
+      "name": "Steakhouse USDG (wrapped)",
+      "chainId": 4663,
+      "address": "0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "decimals": 18,
+      "symbol": "steakUSDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 1.007909,
+      "updatedAt": 1790228021,
+      "priceSource": "Price Source 0x4377416Ec0Ccc830664b78d741E9672B8aA00786",
+      "displaySymbol": "steakUSDG",
+      "underlyingTokenId": "13836752388278225121"
+     },
+     "amount": "7089422088740637696",
+     "maxAmount": "7089422088740637696",
+     "value": 7.145492328040487,
+     "maxValue": 7.145492328040487,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "1008934592146927654",
+     "id": "70fc6bcd-e33e-4b99-a627-0324b7b9f233",
+     "grain": "DAY",
+     "timestamp": "1784073600",
+     "open": null,
+     "min": null,
+     "max": null,
+     "avg": null,
+     "samples": 1,
+     "campaignId": "14442590337694090606",
+     "dailyRewardsRecordId": "1524181159707418849"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "ENCOMPASSING",
+  "identifier": "0x2AF67DF25AbB91E5F11fc7C090650C2c07E59f6E",
+  "name": "Spiral Stake syrupUSDG/USDG loop",
+  "description": "Visit your dashboard to check if you've earned rewards from this airdrop",
+  "howToSteps": [
+   "Connect your wallet on Merkl to check if you qualify.",
+   "If eligible, claim your rewards directly from this page."
+  ],
+  "status": "LIVE",
+  "action": "DROP",
+  "tvl": 12987.42,
+  "apr": 25.94,
+  "totalApr": 25.94,
+  "maxApr": 0,
+  "dailyRewards": 35.71109795198191,
+  "maxDailyRewards": 35.71109795198191,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1789540200",
+  "latestCampaignStart": "1789540200",
+  "earliestCampaignEnd": "1790760600",
+  "latestCampaignEnd": "1790760600",
+  "id": "5189126918506134093",
+  "lastCampaignCreatedAt": 1789551567,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 25.94,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "0x0d420160fc31be6d992ac10677bd22d7d733a93c0197741c4a2e1d741d04ca84",
+     "type": "CAMPAIGN",
+     "value": 25.94,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "4677430522949804711",
+   "total": 12987.42,
+   "timestamp": "1790208000",
+   "breakdowns": []
+  },
+  "rewardsRecord": {
+   "id": "4677430522949804711",
+   "total": 35.71109795198191,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "1566521100361621217",
+      "name": "Global Dollar",
+      "chainId": 4663,
+      "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "decimals": 6,
+      "symbol": "USDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.9999107626537088,
+      "updatedAt": 1790227980,
+      "priceSource": "Price Source USDG",
+      "displaySymbol": "USDG"
+     },
+     "amount": "35714285",
+     "maxAmount": "35714285",
+     "value": 35.71109795198191,
+     "maxValue": 35.71109795198191,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "0x0d420160fc31be6d992ac10677bd22d7d733a93c0197741c4a2e1d741d04ca84",
+     "id": "b9df64f6-9ea5-4583-aadb-7be4539e1a15",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 35.714285,
+     "min": 35.714285,
+     "max": 35.714285,
+     "avg": 35.71428500000001,
+     "samples": 20,
+     "campaignId": "2147202570438216460",
+     "dailyRewardsRecordId": "4677430522949804711"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOBORROW",
+  "identifier": "0x9eb061674020355c26A343c01EacF31b39a1DBB7",
+  "name": "Borrow USDG on STEERUV417/USDG 38.5%",
+  "description": "Earn rewards by borrowing USDG using STEERUV417 on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and borrow USDG.",
+   "Keep your borrow position active for the duration of the campaign.",
+   "Check each campaign's rules for minimum borrow amounts or eligible collateral types."
+  ],
+  "status": "LIVE",
+  "action": "BORROW",
+  "tvl": 17199.58689453047,
+  "apr": 36.81166833498442,
+  "totalApr": 36.81166833498442,
+  "maxApr": 0,
+  "dailyRewards": 17.346451733156172,
+  "maxDailyRewards": 17.346451733156172,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1790107200",
+  "latestCampaignStart": "1790107200",
+  "earliestCampaignEnd": "1790452800",
+  "latestCampaignEnd": "1790452800",
+  "id": "3441720688659906447",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0x9eb061674020355c26a343c01eacf31b39a1dbb79f35a0596412bb7f14e33cee",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1790091230,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 36.81166833498442,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "0xf6ec2386959068cfde7cfe7671e4a8980db3ad88fad04c6b16571c49080d6454",
+     "type": "CAMPAIGN",
+     "value": 36.81166833498442,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "3749402604867186362",
+   "total": 17199.58689453047,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "6580524947531313040",
+     "type": "TOKEN",
+     "value": 17201.121877
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "3749402604867186362",
+   "total": 17.346451733156172,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "6580524947531313040",
+      "name": "EARN",
+      "chainId": 4663,
+      "address": "0xA3b6AEe90017b72c0812dC1e013De70eB2917ba3",
+      "decimals": 18,
+      "symbol": "EARN",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/EARN.png",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.0000311007650975458,
+      "updatedAt": 1790028234,
+      "priceSource": "Price Source 0xA3b6AEe90017b72c0812dC1e013De70eB2917ba3",
+      "displaySymbol": "EARN"
+     },
+     "amount": "557749999999999981649920",
+     "maxAmount": "557749999999999981649920",
+     "value": 17.346451733156172,
+     "maxValue": 17.346451733156172,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "0xf6ec2386959068cfde7cfe7671e4a8980db3ad88fad04c6b16571c49080d6454",
+     "id": "f49c63f6-5678-4e18-9233-38f6aa88da82",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 557750,
+     "min": 557750,
+     "max": 557750,
+     "avg": 557750,
+     "samples": 20,
+     "campaignId": "3784980243671318296",
+     "dailyRewardsRecordId": "3749402604867186362"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOSUPPLY",
+  "identifier": "0x9eb061674020355c26A343c01EacF31b39a1DBB7",
+  "name": "Supply USDG on STEERUV417/USDG 38.5%",
+  "description": "Earn rewards by supplying USDG on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and supply USDG.",
+   "Keep the deposit active. Withdrawals reduce your accrual in real time.",
+   "Check each campaign's rules for minimum supply amounts or address restrictions."
+  ],
+  "status": "LIVE",
+  "action": "LEND",
+  "tvl": 26982.35503335227,
+  "apr": 23.46516779123185,
+  "totalApr": 23.46516779123185,
+  "maxApr": 0,
+  "dailyRewards": 17.346451733156172,
+  "maxDailyRewards": 17.346451733156172,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1790107200",
+  "latestCampaignStart": "1790107200",
+  "earliestCampaignEnd": "1790452800",
+  "latestCampaignEnd": "1790452800",
+  "id": "359541612625590662",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0x9eb061674020355c26a343c01eacf31b39a1dbb79f35a0596412bb7f14e33cee",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1790091224,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 23.46516779123185,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "DUTCH_AUCTION",
+     "identifier": "0x5096b8f6413a05b60e6b1fce2552e14276c6586c2be5a062fa88ef15c5301092",
+     "type": "CAMPAIGN",
+     "value": 23.46516779123185,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "2268787674088102660",
+   "total": 26982.35503335227,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "1566521100361621217",
+     "type": "TOKEN",
+     "value": 26984.763082
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "2268787674088102660",
+   "total": 17.346451733156172,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "6580524947531313040",
+      "name": "EARN",
+      "chainId": 4663,
+      "address": "0xA3b6AEe90017b72c0812dC1e013De70eB2917ba3",
+      "decimals": 18,
+      "symbol": "EARN",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/EARN.png",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.0000311007650975458,
+      "updatedAt": 1790028234,
+      "priceSource": "Price Source 0xA3b6AEe90017b72c0812dC1e013De70eB2917ba3",
+      "displaySymbol": "EARN"
+     },
+     "amount": "557749999999999981649920",
+     "maxAmount": "557749999999999981649920",
+     "value": 17.346451733156172,
+     "maxValue": 17.346451733156172,
+     "distributionType": "DUTCH_AUCTION",
+     "onChainCampaignId": "0x5096b8f6413a05b60e6b1fce2552e14276c6586c2be5a062fa88ef15c5301092",
+     "id": "b3bcc6e5-2097-4cd7-bb66-1c437b54c160",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 557750,
+     "min": 557750,
+     "max": 557750,
+     "avg": 557750,
+     "samples": 20,
+     "campaignId": "7199993368117933676",
+     "dailyRewardsRecordId": "2268787674088102660"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOBORROW",
+  "identifier": "0x7C1e38bF461dA47DF9805AE9b7e97A12EC023625",
+  "name": "Borrow USDG on CASHCAT/USDG 62.5%",
+  "description": "Earn rewards by borrowing USDG using CASHCAT on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and borrow USDG.",
+   "Keep your borrow position active for the duration of the campaign.",
+   "Check each campaign's rules for minimum borrow amounts or eligible collateral types."
+  ],
+  "status": "LIVE",
+  "action": "BORROW",
+  "tvl": 243.72262789844467,
+  "apr": 9.999957783641854,
+  "totalApr": 9.999957783641854,
+  "maxApr": 0.1,
+  "dailyRewards": 0.06677304081925203,
+  "maxDailyRewards": 117.13772100774014,
+  "tags": [],
+  "liveCampaigns": 1,
+  "earliestCampaignStart": "1789563600",
+  "latestCampaignStart": "1789563600",
+  "earliestCampaignEnd": "1793487540",
+  "latestCampaignEnd": "1793487540",
+  "id": "4441557718138389818",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0x7c1e38bf461da47df9805ae9b7e97a12ec023625a1f92d2a403b3b9a92260894",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1789561663,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 9.999957783641854,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "distributionType": "MAX_REWARD_VALUE_PER_LIQUIDITY_VALUE",
+     "identifier": "0xb001b244aaa9efbfe9c565297c6b30c1a81d957e310ba8ad6f1e8167584ccf59",
+     "type": "CAMPAIGN",
+     "value": 9.999957783641854,
+     "timestamp": "1790208000"
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "9109498149116164518",
+   "total": 243.72262789844467,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "1566521100361621217",
+     "type": "TOKEN",
+     "value": 243.744379
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "9109498149116164518",
+   "total": 0.06677304081925203,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "token": {
+      "id": "1566521100361621217",
+      "name": "Global Dollar",
+      "chainId": 4663,
+      "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+      "decimals": 6,
+      "symbol": "USDG",
+      "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+      "verified": true,
+      "isNative": false,
+      "isTest": false,
+      "type": "TOKEN",
+      "price": 0.9999107626537088,
+      "updatedAt": 1790227980,
+      "priceSource": "Price Source USDG",
+      "displaySymbol": "USDG"
+     },
+     "amount": "66779",
+     "maxAmount": "117148175",
+     "value": 0.06677304081925203,
+     "maxValue": 117.13772100774014,
+     "distributionType": "MAX_REWARD_VALUE_PER_LIQUIDITY_VALUE",
+     "onChainCampaignId": "0xb001b244aaa9efbfe9c565297c6b30c1a81d957e310ba8ad6f1e8167584ccf59",
+     "id": "a7ce981c-51e5-46cb-8854-bde0fc16c860",
+     "grain": "DAY",
+     "timestamp": "1790208000",
+     "open": 0.066779,
+     "min": 0.066779,
+     "max": 0.066779,
+     "avg": 0.06677899999999999,
+     "samples": 20,
+     "campaignId": "16388827853733845986",
+     "dailyRewardsRecordId": "9109498149116164518"
+    }
+   ]
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOBORROW",
+  "identifier": "0xedc213C29E117c66Ae8deb3b53AF2Ce3B66A9011",
+  "name": "Borrow USDG on BIGTECH/USDG 38.5%",
+  "description": "Earn rewards by borrowing USDG using BIGTECH on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and borrow USDG.",
+   "Keep your borrow position active for the duration of the campaign.",
+   "Check each campaign's rules for minimum borrow amounts or eligible collateral types."
+  ],
+  "status": "PAST",
+  "action": "BORROW",
+  "tvl": 1620.8810643831418,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "id": "11029616453048958311",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0xedc213c29e117c66ae8deb3b53af2ce3b66a9011c2152e83e412b2c5cd40ea3e",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1789400911,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1789603200",
+   "breakdowns": [
+    {
+     "identifier": "0xf6a79c1bfa948ad29e99c2a3b6549f808a90a163073b2d4969684779f294fb2a",
+     "type": "CAMPAIGN",
+     "value": 0,
+     "timestamp": "1789603200",
+     "Campaign": {
+      "distributionType": "DUTCH_AUCTION"
+     }
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "15793461018724972339",
+   "total": 1620.8810643831418,
+   "timestamp": "1789603200",
+   "breakdowns": [
+    {
+     "identifier": "6580524947531313040",
+     "type": "TOKEN",
+     "value": 1620.934643
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "15793461018724972339",
+   "total": 30.2113320680864,
+   "timestamp": "1789603200",
+   "breakdowns": []
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "ERC20LOGPROCESSOR",
+  "identifier": "0x8046118a5B0D1BCBcbd4d5f2C9AA9eecC5bf771d",
+  "name": "[UNVERIFIED] Supply to EARN V2 vault on Morpho on Robinhood Chain",
+  "description": "Are you sure you want to interact with the unverified EARN V2 vault on Robinhood Chain? Proceeding with this unverified vault may pose security risks. Unverified vaults could potentially be used for phishing attempts. Please ensure you trust the source before continuing.",
+  "howToSteps": [
+   "Go to the protocol and supply EARNVAULT.",
+   "Keep the deposit active. Withdrawals reduce your accrual in real time.",
+   "Check each campaign's rules for minimum supply amounts or address restrictions."
+  ],
+  "status": "PAST",
+  "action": "LEND",
+  "tvl": 3236.3278066433413,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "id": "12406490233759137093",
+  "explorerAddress": "0x8046118a5B0D1BCBcbd4d5f2C9AA9eecC5bf771d",
+  "lastCampaignCreatedAt": 1785843443,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   },
+   {
+    "id": "17875707959696111858",
+    "name": "EARN",
+    "chainId": 4663,
+    "address": "0x8046118a5B0D1BCBcbd4d5f2C9AA9eecC5bf771d",
+    "decimals": 18,
+    "symbol": "EARNVAULT",
+    "icon": "",
+    "verified": false,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "displaySymbol": "EARNVAULT"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1786060800",
+   "breakdowns": [
+    {
+     "identifier": "0x1dc932874659faf75a8e1192f11f74df69bfe0d8776a07f6b9c95df68e4460db",
+     "type": "CAMPAIGN",
+     "value": 0,
+     "timestamp": "1786060800",
+     "Campaign": {
+      "distributionType": "DUTCH_AUCTION"
+     }
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "10668921446697576893",
+   "total": 3236.3278066433413,
+   "timestamp": "1786060800",
+   "breakdowns": [
+    {
+     "identifier": "17875707959696111858",
+     "type": "TOKEN",
+     "value": 3238.05100254926
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "10668921446697576893",
+   "total": 29.09136267077567,
+   "timestamp": "1786060800",
+   "breakdowns": []
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "ERC20LOGPROCESSOR",
+  "identifier": "0x1b4Ac49C993D9b8949C07ee62B9322296344399c",
+  "name": "Hold Moon Morpho Robinhood Steakhouse V2 USDG",
+  "description": "Earn rewards by holding moonMorphoRobinhoodSteakhouseV2USDG",
+  "howToSteps": [
+   "Acquire and hold moonMorphoRobinhoodSteakhouseV2USDG in a self-custodied wallet.",
+   "Only on-chain wallet balances qualify. Do not deposit into third-party protocols or CEX accounts.",
+   "Check each campaign's rules for any address restrictions or minimum balance thresholds."
+  ],
+  "status": "PAST",
+  "action": "HOLD",
+  "tvl": 0,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "id": "16434351822553717976",
+  "explorerAddress": "0x1b4Ac49C993D9b8949C07ee62B9322296344399c",
+  "lastCampaignCreatedAt": 1784279086,
+  "tokens": [
+   {
+    "id": "16208594429604210489",
+    "name": "Moon Morpho Robinhood Steakhouse V2 USDG",
+    "chainId": 4663,
+    "address": "0x1b4Ac49C993D9b8949C07ee62B9322296344399c",
+    "decimals": 18,
+    "symbol": "moonMorphoRobinhoodSteakhouseV2USDG",
+    "icon": "",
+    "verified": false,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "displaySymbol": "moonMorphoRobinhoodSteakhouseV2USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1784764800",
+   "breakdowns": [
+    {
+     "identifier": "0x5919a3ceff759a7aab6142989bab1048680d25ff974994a20157822caba8b18c",
+     "type": "CAMPAIGN",
+     "value": 0,
+     "timestamp": "1784764800",
+     "Campaign": {
+      "distributionType": "DUTCH_AUCTION"
+     }
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "3737324588111150326",
+   "total": 0,
+   "timestamp": "1784764800",
+   "breakdowns": []
+  },
+  "rewardsRecord": {
+   "id": "3737324588111150326",
+   "total": 48.491610693225816,
+   "timestamp": "1784764800",
+   "breakdowns": []
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOCOLLATERAL",
+  "identifier": "0xedc213C29E117c66Ae8deb3b53AF2Ce3B66A9011",
+  "name": "Deposit BIGTECH as collateral on BIGTECH/USDG 38.5%",
+  "description": "Earn rewards by supplying BIGTECH as a collateral on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and deposit BIGTECH as collateral on the BIGTECH/USDG 38.5% market.",
+   "Rewards are based on your deposited collateral. No borrowing required.",
+   "Check each campaign's rules for minimum deposit amounts or market-specific conditions."
+  ],
+  "status": "PAST",
+  "action": "BORROW",
+  "tvl": 9237.985128288627,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "id": "1871796087680131644",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0xedc213c29e117c66ae8deb3b53af2ce3b66a9011c2152e83e412b2c5cd40ea3e",
+  "explorerAddress": "0xf23942801CD33c75a2D6e4832BC2FB05Ca1044ec",
+  "lastCampaignCreatedAt": 1789400911,
+  "tokens": [
+   {
+    "id": "7127085312099170685",
+    "name": "BIG TECH",
+    "chainId": 4663,
+    "address": "0xf23942801CD33c75a2D6e4832BC2FB05Ca1044ec",
+    "decimals": 18,
+    "symbol": "BIGTECH",
+    "icon": "",
+    "verified": false,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 2008.6564699666073,
+    "updatedAt": 1790228288,
+    "priceSource": "Computed Price - 0x55199efd2e3afb3eb7b7d0c30297bc375bbae2e4cad698e78befdb892d9262ab on chain 4663",
+    "displaySymbol": "BIGTECH"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1789603200",
+   "breakdowns": [
+    {
+     "identifier": "0x428d44fbb9d429ff8e7bcbd05a2230d5985690baf0e1ef7b24cfff928960e59d",
+     "type": "CAMPAIGN",
+     "value": 0,
+     "timestamp": "1789603200",
+     "Campaign": {
+      "distributionType": "DUTCH_AUCTION"
+     }
+    }
+   ]
+  },
+  "tvlRecord": {
+   "id": "11461317264956077853",
+   "total": 9237.985128288627,
+   "timestamp": "1789603200",
+   "breakdowns": [
+    {
+     "identifier": "6580524947531313040",
+     "type": "TOKEN",
+     "value": 4.652378988119719
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "11461317264956077853",
+   "total": 24.169065654469115,
+   "timestamp": "1789603200",
+   "breakdowns": []
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOBORROW",
+  "identifier": "0xe5a6d99c3721eF2aB00Fb16F0AD226BC7c87A903",
+  "name": "Borrow USDG on AI/USDG 62.5%",
+  "description": "Earn rewards by borrowing USDG using AI on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and borrow USDG.",
+   "Keep your borrow position active for the duration of the campaign.",
+   "Check each campaign's rules for minimum borrow amounts or eligible collateral types."
+  ],
+  "status": "SOON",
+  "action": "BORROW",
+  "tvl": 0.0899919686388338,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "earliestCampaignStart": "1790258400",
+  "latestCampaignStart": "1790258400",
+  "earliestCampaignEnd": "1793491140",
+  "latestCampaignEnd": "1793491140",
+  "id": "1968331178255592479",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0xe5a6d99c3721ef2ab00fb16f0ad226bc7c87a90394f82e27dc6bbca4b1d95c5d",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1790183547,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1790208000",
+   "breakdowns": []
+  },
+  "tvlRecord": {
+   "id": "14241004879158039953",
+   "total": 0.0899919686388338,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "1566521100361621217",
+     "type": "TOKEN",
+     "value": 0.09
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "14241004879158039953",
+   "total": 0,
+   "timestamp": "1790208000",
+   "breakdowns": []
+  }
+ },
+ {
+  "chainId": 4663,
+  "type": "MORPHOBORROW",
+  "identifier": "0x1A31D1c8c05a98B94777663912e4166bF50f3fCd",
+  "name": "Borrow USDG on PONS/USDG 62.5%",
+  "description": "Earn rewards by borrowing USDG using PONS on Morpho on Robinhood Chain",
+  "howToSteps": [
+   "Go to Morpho and borrow USDG.",
+   "Keep your borrow position active for the duration of the campaign.",
+   "Check each campaign's rules for minimum borrow amounts or eligible collateral types."
+  ],
+  "status": "SOON",
+  "action": "BORROW",
+  "tvl": 0.6562124361175122,
+  "apr": 0,
+  "totalApr": 0,
+  "maxApr": null,
+  "dailyRewards": 0,
+  "maxDailyRewards": 0,
+  "tags": [],
+  "liveCampaigns": 0,
+  "earliestCampaignStart": "1790258400",
+  "latestCampaignStart": "1790258400",
+  "earliestCampaignEnd": "1793491140",
+  "latestCampaignEnd": "1793491140",
+  "id": "8625490305990013633",
+  "depositUrl": "https://app.morpho.org/robinhood-chain/market/0x1a31d1c8c05a98b94777663912e4166bf50f3fcdc9c3c3d29deb55634ac58239",
+  "explorerAddress": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "lastCampaignCreatedAt": 1790183260,
+  "tokens": [
+   {
+    "id": "1566521100361621217",
+    "name": "Global Dollar",
+    "chainId": 4663,
+    "address": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+    "decimals": 6,
+    "symbol": "USDG",
+    "icon": "https://storage.googleapis.com/merkl-static-assets/tokens/usdg.svg",
+    "verified": true,
+    "isNative": false,
+    "isTest": false,
+    "type": "TOKEN",
+    "price": 0.9999107626537088,
+    "updatedAt": 1790227980,
+    "priceSource": "Price Source USDG",
+    "displaySymbol": "USDG"
+   }
+  ],
+  "chain": {
+   "id": 4663,
+   "name": "Robinhood Chain",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/chains/4663.jpg",
+   "liveCampaigns": 58,
+   "endOfDisputePeriod": 1790222400,
+   "explorers": [
+    {
+     "id": "7270140860948740114",
+     "type": "BLOCKSCOUT",
+     "url": "https://robinhoodchain.blockscout.com/",
+     "chainId": 4663
+    }
+   ],
+   "lastClaimsOnchainFetchTimestamp": "1790227910"
+  },
+  "protocol": {
+   "id": "morpho",
+   "name": "Morpho",
+   "icon": "https://storage.googleapis.com/merkl-static-assets/protocols/morpho.svg",
+   "tags": [
+    "LENDING",
+    "drip"
+   ],
+   "description": "Open infrastructure for onchain loans",
+   "url": "https://morpho.org/",
+   "banner": null,
+   "opportunityBannerLight": null,
+   "opportunityBannerDark": null,
+   "trustData": {
+    "tvl": 11064665796.477116,
+    "slug": "morpho-blue",
+    "hacks": [],
+    "audits": "2",
+    "github": [],
+    "twitter": "Morpho",
+    "category": "Lending",
+    "listedAt": 1705261273,
+    "syncedAt": 1790136218,
+    "audit_note": null,
+    "audit_links": [
+     "https://docs.morpho.org/morpho-blue/concepts/security/audits/"
+    ],
+    "parentProtocol": "parent#morpho"
+   },
+   "dailyRewards": 0,
+   "numberOfLiveCampaigns": 0,
+   "opportunityLiveTags": []
+  },
+  "activePrograms": [],
+  "depositUrls": [],
+  "aprRecord": {
+   "cumulated": 0,
+   "timestamp": "1790208000",
+   "breakdowns": []
+  },
+  "tvlRecord": {
+   "id": "3694531034418903595",
+   "total": 0.6562124361175122,
+   "timestamp": "1790208000",
+   "breakdowns": [
+    {
+     "identifier": "1566521100361621217",
+     "type": "TOKEN",
+     "value": 0.656271
+    }
+   ]
+  },
+  "rewardsRecord": {
+   "id": "3694531034418903595",
+   "total": 0,
+   "timestamp": "1790208000",
+   "breakdowns": []
+  }
+ }
+]

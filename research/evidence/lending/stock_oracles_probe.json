@@ -1,0 +1,954 @@
+{
+ "0xA8ddB73954ca5bCde36d68D61AB9237d03275fd0": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xfcc1d59436a291271c8931925f09c211cbb34244401b082ac3bd8d2b50963f20",
+    "coll": "DELL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xe8598Bc02719c5b00133329743051D739B0321ae": {
+  "price": "340080335779779819816216540",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xfb89cd660644af485ed5eb7dc4fe20623a7934537258c95635ac9a3a87d787fd",
+    "coll": "GOOGL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0x1440704059616f3aa4a6087B1B52Fdb87183d20E": {
+  "price": "377990980811726944574988251",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xfa83733bf91efe91c9ef2ff56ab4ff6dcd3ef7c90e55f20ae7e88070e0b84634",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0x13Ed9699E98B15a1AEA6B09B043b29D3C89457Cd": {
+  "price": "28492336745419523601089380",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xf9566d437f9ad34df3084aea5866d2765d5afb519b619ec3b9b2c2c4c1221bc8",
+    "coll": "HIMS",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xfA6e814Ab26b459C909F86C9650D433D5330B86D": {
+  "price": "225529403843654071133597976",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xf54d700dd3fe889872bfc868788de849e8a5b1adfd73bb3d983c8e264e970604",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x280855A5BF983bf005f19992C157007930B3de2A": {
+  "price": "378025000000000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xf4dff250826a86627545e5c6594b3b249db3ad2ec5eed56c02833d2a67acf445",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 15.031822640253514,
+    "borrowUsd": 11.906782449581904,
+    "collUsd": 23.276359688496466,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xC5b5E605BF6c8A1371e0Cb0e348A0dFDE9e0c889": {
+  "price": "766630927896489315961563459",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xe4f745e6620e169ee2664111e61e448d2e0d58ea0129fd5fb0db940f5e0f801b",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 0.0009999027917156034,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0xfF1D77a191A338674Ccf17aF48f7F9384587E457": {
+  "price": "336028886140247377736003759",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xe3813a231ef3c073d21615ab0a8788ebfae23e95e7e5571880c7619d5b05f404",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0x1F62414E13b10046A4CaE31168831Cd7148C3547": {
+  "price": "121935000000000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xe077b1bcc0038cf4222e10ee6f6fe5a2749b8d20083ddb53e3dd4e68516d86ed",
+    "coll": "INTC",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xD625d488D552775D2867194C618B945E5dDfE097": {
+  "price": "336219105392642472191502764",
+  "token": "0xaf3d76f1834a1d425780943c99ea8a608f8a93f9",
+  "baseFeed": "0x6b22a786baa607d76728168703a39ea9c99f2cd0",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xdeb4782d012d5fd3b24962538c2f6559049d70bda4dabd2e4212dacb96c28d45",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 238935.63171812956,
+    "borrowUsd": 1.0008686978124008,
+    "collUsd": 827.8076146502086,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xc927890355242959AAd7e6e76E738Cec18f4e9df": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xdd5526da32ddca02fb46eca8b982c3d396a23709e17e96ce116c71c3360f3adb",
+    "coll": "RGTI",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x5df8D763C1Ffb2DDa49FfA3cA7906a24B8797eac": {
+  "price": "225529403843654071133597976",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xd780a699a2022b90fd14e89b61523e6b6b6fdd3833158fcb701b878a5902255f",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xdB7b3F39178e8B1cE48424047557C023b54F0c64": {
+  "price": "336028886140247377736003759",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xd621b5373890ce0be9b20ca17a75c57944e8dbb997172fd61e1ea48af63fad96",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 0.001000902694507319,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0x3a1C456e53EAB70164f46d26f81504235ac09014": {
+  "price": "905658421301294998879551318",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xccdfcd98e6779322b28ecdc0c513ed3bd510ccb2fd15ee6a70d6cf142398db41",
+    "coll": "COST",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xe22F21EC30d5725446c3B6f645e3e46fcB4bA526": {
+  "price": "766630927896489315961563459",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xc40e93b78f25c887d184c4f5c8797db157752f79948a6a51d747147a22531e9b",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xeB3a281fD7d4A375F3332805C02b2c84cC2dbec1": {
+  "price": "766699924680000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": "0x319724394d3a0e3669269846abe664cd621f9f6a",
+  "markets": [
+   {
+    "id": "0xc000f9a159a0701664cbebb99dc746f8c456e92fc720e797bd445124704c009d",
+    "coll": "SPY",
+    "type": "ChainlinkOracle",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xcf29960266420A42f12061699ec2daBd7eEa8D6e": {
+  "price": "225254705000000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xbe3a53552a5600381ca1d858cc425a2601becbd77c43c753698890a22adbbb0d",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 99.99027917156035,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x91b93178448D0769163eC59Ba7b01566013B45D4": {
+  "price": "225529403843654071133597976",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xb74600c27a3424eac0a9288f539d5165a125a5102d08b5313c303e29c0eaf8bf",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x10AC7506227bD990C898b9BF59afaf0e04E1568B": {
+  "price": "741651877231049205571498565",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xb6befab1632196d5c55ccf320cca0e56f6331548ace2bd8ae11b5130d7db52c5",
+    "coll": "QQQ",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x1a0995D2Bb8304a91C4D42AC13245F4CA036fADf": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0xb66d504f2207f15d2bc3f0039c461f6efae91a1627e6c73288b2f4165a5b2f35",
+    "coll": "SPCX",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x7b205ba006ba6269298158A4AEaf89088EeaE286": {
+  "price": "101138355940000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": "0xa0df4ee0fff975306345875e3548fcc519577a11",
+  "markets": [
+   {
+    "id": "0x9ecbc985b58baba5a91bbbb5116f6800537236c16df8dfd7ed51deb167f2a0a7",
+    "coll": "SGOV",
+    "type": "ChainlinkOracle",
+    "supplyUsd": 0.000001999805583431207,
+    "borrowUsd": 0,
+    "collUsd": 0.5844051515765833,
+    "lltv": "915000000000000000"
+   }
+  ]
+ },
+ "0x872F9D8955B34e841227a92dE755cd63042Ab7A5": {
+  "price": "148760661540461358477737003",
+  "token": "0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea",
+  "baseFeed": "0xb265810950ba6c5c0ff821c9963014a56fd8bffb",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x9b4b47cdf7e295341c6c6cdfd3efb9805c4a5b3d580dba0c0c39d3a4232b297b",
+    "coll": "SPCX",
+    "type": "Unknown",
+    "supplyUsd": 279927.71603854856,
+    "borrowUsd": 114.11097638936351,
+    "collUsd": 1055.8974967925842,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x004c9A862edBc066643D4C8944E5c54bd0952420": {
+  "price": "377990980811726944574988251",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x90cfa614aa677da7d08655f5efd6dbb6e1ab75349a9fb6e8385c6673c1e1a42d",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x11De06b53F9b976e21384E9B374086aEC7b7E585": {
+  "price": "766630927896489315961563459",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x90b439eeec826e243629556331f016ad85cb3addf558c0bff76f3a52b3266545",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xd0D07692D28610d90798C2176c6953e40Fca2BD2": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x8b6d2a1f15140524fdc359783b29b22c65972b0c045ef1be476c81c8fef5cd8b",
+    "coll": "SNDK",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xED29D310cfa91778A5850538DA28ed42234Cb78c": {
+  "price": "225704225027937154124128828",
+  "token": "0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec",
+  "baseFeed": "0x379ec4f7c378f34a1b47e4f3cbebcbac3e8e9f15",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x8b16891f032a93b771347c9cb470a780e6699dd701553d3402aa3cdba6189c3e",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 173775.83233322354,
+    "borrowUsd": 901.9578237035254,
+    "collUsd": 2971.630757469018,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x66e5Da27b5f095394891B6d5dEe1c33ca3987B06": {
+  "price": "71313759776991985408677744",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x892a0adf84e7e752d8ad2ad61c9248dcc9657e41c6c7f7b94267491e60f0b382",
+    "coll": "NFLX",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x12Ec3474D1e321e0aAB065278B97FBC7eDa5F424": {
+  "price": "340146285659647125474707276",
+  "token": "0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3",
+  "baseFeed": "0xf6f373a037c30f0e5010d854385ca89185ae638b",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x7fa81b10e5d21b2e4c571f862442bc11aff2ed14f02335868d0ff933fd40d0ba",
+    "coll": "GOOGL",
+    "type": "Unknown",
+    "supplyUsd": 158792.7425462724,
+    "borrowUsd": 1.001370649013842,
+    "collUsd": 153.68091312204334,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x11C5782FF9440Bf48f032D71840831be5f405Ab3": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x7c937a27516c7ce2cbcfd07d7558fc024d684361b82bcd9e6d4bb5f6dd9e8050",
+    "coll": "MSFT",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0xA563885F7dE7757A6A1451729fe23e51196232c7": {
+  "price": "147836694697477227049565539",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x6ec35438fc89648e0d269863633189aca4426e89e05565b9111a7e69643c5b1d",
+    "coll": "USO",
+    "type": "Unknown",
+    "supplyUsd": 9.999027917156035,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x1c958B4c2d3539241e5b0868d274305eb8eD0241": {
+  "price": "340080335779779819816216540",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x686fdee2de161b1abd777e14ca5f5b37e9267e083ee5d6ad2c31dedee27bc95d",
+    "coll": "GOOGL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xCe96f48Ee4404f06174E46f0D2020D2Bc5d705c2": {
+  "price": "336028886140247377736003759",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x6641d1333a00edf42f79b931554f1c81971656f18d881245f9547b471d5a49fb",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xBe230340e497e87B546f334711d8AAF82e48B853": {
+  "price": "336028886140247377736003759",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x63c71d3a1afd71c674be55f07a27ad783edf20d63372111ae5b2e7162963b7ac",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x721314Bf05e4736fF21A9f6BE83f47dff3eF95F8": {
+  "price": "92051715345618894299513043",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x6278621c30bb6006fa661cb9354ccf3fc40261eacb30f6a9278e9e6506acb07e",
+    "coll": "CRCL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xEb247f0Ab23fbFA2409e4997Fd2e521c63b7A0DC": {
+  "price": "377990980811726944574988251",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x5aa5f8658d66626c3640fee26fa655c66116e9626fb3ebfdd83da00772161b91",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x244C80f271952d2CB5F005bEe56dDE0dFEA6De50": {
+  "price": "148760661540461358477737003",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x48524bc435f468489472b207d60557c7637a241d4ba971a6c9cca5468c8e5d61",
+    "coll": "SPCX",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xAc527aF81B3b37bF876243A6502EfD3674e9A504": {
+  "price": "150633827079190446716840127",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x40b8233028846e58fc22dca599a503d77bfc131b1f02d8c622bf8efa64ea6c97",
+    "coll": "RDDT",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x3ebD3088b69A5eeC3bDF03B82CcF19c3Bc1fa894": {
+  "price": "197862192402683758461738443",
+  "token": "0x6330d8c3178a418788df01a47479c0ce7ccf450b",
+  "baseFeed": "0xa3a468a452940b7d6b69991207b508c609a98ef2",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x3ebd43d91c3960a9fac32bedd5c60428e0e414de5bdd67fda770207afb0eb615",
+    "coll": "COIN",
+    "type": "Unknown",
+    "supplyUsd": 3.0445110195352116,
+    "borrowUsd": 3.0445110195352116,
+    "collUsd": 320.16607554885354,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xc2eEdbe68687C5E45Ea9532A0d5516F2EC78E3b6": {
+  "price": "741718625900000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": "0x80901d846d5d7b030f26b480776ee3b29374c2ae",
+  "markets": [
+   {
+    "id": "0x3d487a03ed905fd38ccd80ada05730f3ea7745e7dd51c08fdeb4bb0f45c3c0cb",
+    "coll": "QQQ",
+    "type": "ChainlinkOracle",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xc7B219c58fF4Cc70F46Ef39cb40A6bcc84155077": {
+  "price": "225529403843654071133597976",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x3ce44383b860237d3a78a88caf9edcbec36b040d7be2998ef8222eec8719bd48",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0.0009999027917156034,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0x4f6185269EbcAD4cFA0371d63b29d923956E60AC": {
+  "price": "336028886140247377736003759",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x3b788195cc0f5eb987e14d91d9b8875cf742c55faf9822ae25701f71a3ed7133",
+    "coll": "AAPL",
+    "type": "Unknown",
+    "supplyUsd": 3.2496840730757115,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xF31147989Da4C19C060A1A6fc425981f499EE2b7": {
+  "price": "225549701490000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x3ac6e757d6d8ac808dc7f00a389b07b18645d3cbd198a353e6b877194ddda6dc",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xc4E6f466e9e69334Cc9A32E120D42AE9A21Ca4E4": {
+  "price": "1065348832635062844344009039",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x3a102899ece6ef59195b5621897486f074ad98db36e8fabbec50195b0760ab86",
+    "coll": "MU",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0xA6aAebAE5833776DaD374DbB4A3caBb9F2a39C22": {
+  "price": "766630927896489315961563459",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x34e22aabcc39112dafb870cd7626a3d7f6ebdfbb3436eba34c23e4f26604b783",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x436E106a92d6386C0E0dA44eB55Ede09fEeee4fF": {
+  "price": "340080335779779819816216540",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x325fc8e0610ad5403445c01009e6ab488082a24d61c1dfbd4b8f55184a2eb228",
+    "coll": "GOOGL",
+    "type": "Unknown",
+    "supplyUsd": 0.0009999027917156034,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0xcb9a035fe0e8f321e36286405fEBC70dE42DB34e": {
+  "price": "500015795672726464927156555",
+  "token": "0xe93237c50d904957cf27e7b1133b510c669c2e74",
+  "baseFeed": "0x45c3c877c15e6ba2ebb19ea114ea508d14c1af2e",
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x2e1859aa8f143b7220088f80562c6dfe0bf8e52b87d9cedf8da8805f231994ce",
+    "coll": "MSFT",
+    "type": "Unknown",
+    "supplyUsd": 29.656451866928307,
+    "borrowUsd": 5.013831566652594,
+    "collUsd": 274.6554982963958,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x2d3fc316Ef26Eb15a48bACCc43b1F11026b43165": {
+  "price": "377990980811726944574988251",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x2cedec528cb3c02b27986d8e2e1cefb35d1ee39ceb268f2e0c4e55179224216d",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 0.0009999027917156034,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "860000000000000000"
+   }
+  ]
+ },
+ "0x2599449F32D6845789fAE5a6FD646971AE0D18b9": {
+  "price": "24102830745232929036386725",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x29bb3cb1a28dd968ef42292f3817b702e3400f8d877e76af1c1bbadaa7021f37",
+    "coll": "GME",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "385000000000000000"
+   }
+  ]
+ },
+ "0x94d7d2f6790c676a2d3133B4d7dd689526b7c4e5": {
+  "price": "225529403843654071133597976",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x21539fb91cac5c218508f89d6bd946eabaeed3b4ff185e802bbb73c2f77c25de",
+    "coll": "NVDA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0xC53793F920182835532BC7E69eAAb0eD455D0558": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x1c20e013bc6bf7e356a3b7fe0ed8a92deecce8e56680900d32e466a86f356b15",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xEad960d619a70EEfb5d76A25895f8E0423CC6C4a": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x1b8b34fd794924dcbd8c92f5efc54ccb1e977ad4ff2386f7be6d4d26a2fbdecb",
+    "coll": "QQQ",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xF6880F7080d77641fFe40a776c0D41ca0393e217": {
+  "price": "340080335779779819816216540",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x188ae84afe56b1da5fd161ff6ff879a321d8bb1598dfafc8a74e3f20a8977ee6",
+    "coll": "GOOGL",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0x8d5EA9596311e766a01369B069A81fD468772ECd": {
+  "price": null,
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x17d2f23d96c0a7c54197556f966a49e2802e49b574d8e39cfb3e1c0d91bf78fe",
+    "coll": "TSM",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0xcdaE1cf00Bc20139d98Da6b7d1decD8F44a634F8": {
+  "price": "377990980811726944574988251",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x173aa178280d8df45242d82a6ed72c8a3e8dc494ab5264045bd986146ab5e613",
+    "coll": "TSLA",
+    "type": "Unknown",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "770000000000000000"
+   }
+  ]
+ },
+ "0x637e9531f03cC7f4f0Bb256Ec791176461F7ae4b": {
+  "price": "58065000000000000000000000",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": "0x209b73908e92ae021826ed79609845451ecba2ce",
+  "markets": [
+   {
+    "id": "0x123796e4c218eddcb445a8900ee5986dd6439b7d1e91cbcacb1fbfc827e10291",
+    "coll": "SLV",
+    "type": "ChainlinkOracle",
+    "supplyUsd": 0,
+    "borrowUsd": 0,
+    "collUsd": 0,
+    "lltv": "625000000000000000"
+   }
+  ]
+ },
+ "0x3697E6E149B8F080a753d3f624600a3a3C9Cc72C": {
+  "price": "766630927896489315961563459",
+  "token": null,
+  "baseFeed": null,
+  "BASE_FEED_1": null,
+  "markets": [
+   {
+    "id": "0x077088f9ae5f5c1d35439ee68f4bdbb176368a1a73fd4c8cb8e004143d0c5c30",
+    "coll": "SPY",
+    "type": "Unknown",
+    "supplyUsd": 33.331035632218445,
+    "borrowUsd": 0.0009419084297960985,
+    "collUsd": 45.961499999999994,
+    "lltv": "770000000000000000"
+   }
+  ]
+ }
+}

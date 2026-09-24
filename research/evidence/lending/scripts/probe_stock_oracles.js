@@ -1,0 +1,10 @@
+const L=require("./lib");const fs=require("fs");
+const r=JSON.parse(fs.readFileSync("rhj-assets.json")).assets;const stock={};r.forEach(a=>a.deployments.forEach(d=>{if(d.chainId==4663)stock[d.contractAddress.toLowerCase()]=a}));
+const m=JSON.parse(fs.readFileSync("markets_all.json"));
+const targets=m.filter(x=>x.collateralAsset&&stock[x.collateralAsset.address.toLowerCase()]&&x.oracle&&x.oracle.type!="ChainlinkOracleV2");
+const uniq=[...new Set(targets.map(x=>x.oracle.address))];console.log("stock markets w/ non-CLv2 oracle:",targets.length,"unique oracles:",uniq.length);
+(async()=>{const out={};const calls=[];uniq.forEach(o=>{calls.push(L.call(o,L.sel("price()")),L.call(o,L.sel("token()")),L.call(o,L.sel("baseFeed()")),L.call(o,L.sel("BASE_FEED_1()")))});
+ const res=await L.batchAll(calls);
+ uniq.forEach((o,i)=>{const g=k=>{const x=res[i*4+k];return x.result&&x.result!="0x"?x.result:null};out[o]={price:g(0)&&BigInt(g(0)).toString(),token:g(1)&&L.addr(BigInt(g(1))),baseFeed:g(2)&&L.addr(BigInt(g(2))),BASE_FEED_1:g(3)&&L.addr(BigInt(g(3))),markets:targets.filter(t=>t.oracle.address==o).map(t=>({id:t.marketId,coll:t.collateralAsset.symbol,type:t.oracle.type,supplyUsd:t.state?.supplyAssetsUsd,borrowUsd:t.state?.borrowAssetsUsd,collUsd:t.state?.collateralAssetsUsd,lltv:t.lltv}))}});
+ fs.writeFileSync("stock_oracles_probe.json",JSON.stringify(out,null,1));
+ for(const [o,v] of Object.entries(out))console.log(o,v.markets.map(x=>x.coll+"("+x.type+",sup$"+Math.round(x.supplyUsd)+",bor$"+Math.round(x.borrowUsd)+",col$"+Math.round(x.collUsd)+")").join(" "),"token()",v.token,"baseFeed()",v.baseFeed,"BASE_FEED_1",v.BASE_FEED_1,"price",v.price)})();

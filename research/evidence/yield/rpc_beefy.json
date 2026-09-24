@@ -1,0 +1,146 @@
+{
+ "fetchedAt": "2026-09-24T05:55:59.742Z",
+ "out": [
+  {
+   "label": "clm.code",
+   "method": "eth_getCode",
+   "params": [
+    "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+    "latest"
+   ],
+   "result": "0x363d3d373d3d3d363d73fd4017ad7c1092aafebc82621b4dee59f178d74c5af43d82803e903d91602b57fd5bf3"
+  },
+  {
+   "label": "clm.strategy",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+     "data": "0xa8c62e76"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000006859c1e8cb10badc7f2ba702f0d99e3be5e9ef3d"
+  },
+  {
+   "label": "clm.wants",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+     "data": "0x65844934"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000bd7d308f8e1639fab988df18a8011f41eacad730000000000000000000000005fc5360d0400a0fd4f2af552add042d716f1d168"
+  },
+  {
+   "label": "clm.balances",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+     "data": "0x7bb98a68"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000001f0d99d71e5399e7000000000000000000000000000000000000000000000000000000030446191f"
+  },
+  {
+   "label": "clm.totalSupply",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+     "data": "0x18160ddd"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000000000000000000000000000000000003c6b42c83"
+  },
+  {
+   "label": "clm.name",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x1e8d576F71D5F416e7573b960fF59C4Fb77976ad",
+     "data": "0x06fdde03"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001f436f7720556e697377617020526f62696e686f6f6420574554482d5553444700"
+  },
+  {
+   "label": "strat.pool",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x6859C1e8cB10BADc7F2bA702f0D99e3bE5E9EF3D",
+     "data": "0x16f0115b"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000069bfaf19c9f377bb306a89aed9f6b07e2c1a8d9a"
+  },
+  {
+   "label": "strat.range",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x6859C1e8cB10BADc7F2bA702f0D99e3bE5E9EF3D",
+     "data": "0xe97206a9"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000079b7641fba292b12f9500a400000000000000000000000000000000000000000a44c25cd34fbacd7b7d70e1"
+  },
+  {
+   "label": "strat.isCalm",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x6859C1e8cB10BADc7F2bA702f0D99e3bE5E9EF3D",
+     "data": "0x9bdde46b"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+  },
+  {
+   "label": "pool.factory",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x69BfaF19C9f377BB306a89aEd9F6B07e2c1a8d9a",
+     "data": "0xc45a0155"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000001f7d7550b1b028f7571e69a784071f0205fd2efa"
+  },
+  {
+   "label": "pool.token0",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x69BfaF19C9f377BB306a89aEd9F6B07e2c1a8d9a",
+     "data": "0x0dfe1681"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000bd7d308f8e1639fab988df18a8011f41eacad73"
+  },
+  {
+   "label": "pool.token1",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x69BfaF19C9f377BB306a89aEd9F6B07e2c1a8d9a",
+     "data": "0xd21220a7"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000005fc5360d0400a0fd4f2af552add042d716f1d168"
+  }
+ ]
+}

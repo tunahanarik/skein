@@ -1,0 +1,758 @@
+[
+ {
+  "id": "up33-cow-robinhood-cashcat-weth-vault",
+  "name": "CASHCAT-WETH",
+  "type": "standard",
+  "token": "CASHCAT-WETH",
+  "tokenAddress": "0x137731B8B2D7Cd24aB4A4A9061f2D7b4Fd1aBFEE",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x25012D654bF9107B6E0Af0248656fEf0b718dBd3",
+  "earnedToken": "mooCowUp33RobinhoodCASHCAT-WETH",
+  "earnedTokenAddress": "0x25012D654bF9107B6E0Af0248656fEf0b718dBd3",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-cashcat-weth",
+  "status": "active",
+  "createdAt": 1784538044,
+  "platformId": "up",
+  "assets": [
+   "CASHCAT",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x9FA6b11836Df0Ef5d6BDCbeD95B745BD49afb5F9",
+  "pricePerFullShare": "10132332846463284301",
+  "lastHarvest": 1790170827
+ },
+ {
+  "id": "up33-cow-robinhood-usdg-net-vault",
+  "name": "NET-USDG",
+  "type": "standard",
+  "token": "NET-USDG",
+  "tokenAddress": "0x5A725556514222d0cc81501A9294a3135b7C41C4",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x25B418FcFe8543c25AD9d78246839E5Cf3a3b50D",
+  "earnedToken": "mooCowUp33RobinhoodNET-USDG",
+  "earnedTokenAddress": "0x25B418FcFe8543c25AD9d78246839E5Cf3a3b50D",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-usdg-net",
+  "status": "active",
+  "createdAt": 1790058637,
+  "platformId": "up",
+  "assets": [
+   "NET",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xf3716d43aeEa0af0928A9F86a99623613710a7fF",
+  "pricePerFullShare": "1080039956526815493",
+  "lastHarvest": 1790163660
+ },
+ {
+  "id": "alandale-cow-robinhood-weth-usdg-vault",
+  "name": "WETH-USDG",
+  "type": "standard",
+  "token": "WETH-USDG",
+  "tokenAddress": "0x9fB66d84764c66A7f5C11F8eE3074d0e9F610C59",
+  "tokenDecimals": 18,
+  "tokenProviderId": "alandale",
+  "earnContractAddress": "0x4ED469Ac0080bE3CD192530D482E4d321823e743",
+  "earnedToken": "mooCowAlandaleRobinhoodWETH-USDG",
+  "earnedTokenAddress": "0x4ED469Ac0080bE3CD192530D482E4d321823e743",
+  "oracle": "lps",
+  "oracleId": "alandale-cow-robinhood-weth-usdg",
+  "status": "active",
+  "createdAt": 1789554886,
+  "platformId": "alandale",
+  "assets": [
+   "WETH",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xc13f974547a41783490834E73DF53E2aB5AF0A69",
+  "pricePerFullShare": "1009990154907823691",
+  "lastHarvest": 1790228512
+ },
+ {
+  "id": "up33-cow-robinhood-weth-usdg-vault",
+  "name": "WETH-USDG",
+  "type": "standard",
+  "token": "WETH-USDG",
+  "tokenAddress": "0x4319C71984790f96ac190a7709B380F6F27DD238",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x5008aa698d3BeDEa757C519F5342f861d7Ef78ed",
+  "earnedToken": "mooCowUp33RobinhoodWETH-USDG",
+  "earnedTokenAddress": "0x5008aa698d3BeDEa757C519F5342f861d7Ef78ed",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-usdg",
+  "status": "active",
+  "createdAt": 1784538281,
+  "platformId": "up",
+  "assets": [
+   "WETH",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xcAA1843987dF56D91586AE12c886428aE117A8c3",
+  "pricePerFullShare": "1035782754749696986",
+  "lastHarvest": 1787430143
+ },
+ {
+  "id": "up33-cow-robinhood-weth-stonkbroker-vault",
+  "name": "STONKBROKER-WETH",
+  "type": "standard",
+  "token": "STONKBROKER-WETH",
+  "tokenAddress": "0x5794bB61E83397049c40D87BbF3d44AF583A27Ce",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x544c7Ef9265dc08d93B5394116E68aE7D9e60730",
+  "earnedToken": "mooCowUp33RobinhoodSTONKBROKER-WETH",
+  "earnedTokenAddress": "0x544c7Ef9265dc08d93B5394116E68aE7D9e60730",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-stonkbroker",
+  "status": "active",
+  "createdAt": 1786523797,
+  "platformId": "up",
+  "assets": [
+   "STONKBROKER",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xF9601dF1485D6E0b9B9128871e706EAcF443b627",
+  "pricePerFullShare": "2077530745162568093",
+  "lastHarvest": 1790228543
+ },
+ {
+  "id": "up33-cow-robinhood-weth-up-vault",
+  "name": "UP-WETH",
+  "type": "standard",
+  "token": "UP-WETH",
+  "tokenAddress": "0x36759534741E28Eb052238738963D684bFe719E4",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x56EA4b4AFAFbb87CFD8Fd8a0266a2F86561677b8",
+  "earnedToken": "mooCowUp33RobinhoodUP-WETH",
+  "earnedTokenAddress": "0x56EA4b4AFAFbb87CFD8Fd8a0266a2F86561677b8",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-up",
+  "status": "active",
+  "createdAt": 1784537619,
+  "platformId": "up",
+  "assets": [
+   "UP33",
+   "WETH"
+  ],
+  "icons": [
+   "UP33",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xff5347A7b0A6E11BB9e34046219b0C1181668a76",
+  "pricePerFullShare": "1986328611120152958",
+  "lastHarvest": 1790212259
+ },
+ {
+  "id": "up33-cow-robinhood-usdg-nvda-vault",
+  "name": "NVDA-USDG",
+  "type": "standard",
+  "token": "NVDA-USDG up33",
+  "tokenAddress": "0x63185DA98b76E7FA49d5d0611a6E211ee2988201",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x612afcA34f218F9EB434b6C7458da0670F84DDf0",
+  "earnedToken": "mooCowUp33RobinhoodNVDA-USDG",
+  "earnedTokenAddress": "0x612afcA34f218F9EB434b6C7458da0670F84DDf0",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-usdg-nvda",
+  "status": "active",
+  "createdAt": 1786635778,
+  "platformId": "up",
+  "assets": [
+   "NVDArh",
+   "USDG"
+  ],
+  "icons": [
+   "NVDA",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x3853DfA280F486Ba54D69b1E681594e3E0894ef6",
+  "pricePerFullShare": "1381115849801837471",
+  "lastHarvest": 1790165426
+ },
+ {
+  "id": "up33-cow-robinhood-up-stonkbroker-vault",
+  "name": "STONKBROKER-UP",
+  "type": "standard",
+  "token": "STONKBROKER-UP",
+  "tokenAddress": "0xd922173C136443a1F7795A86B28Da964ea2BF6bc",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x658b48154b96D4aCA3Fe9531305C546c0E2de950",
+  "earnedToken": "mooCowUp33RobinhoodSTONKBROKER-UP",
+  "earnedTokenAddress": "0x658b48154b96D4aCA3Fe9531305C546c0E2de950",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-up-stonkbroker",
+  "status": "active",
+  "createdAt": 1786523797,
+  "platformId": "up",
+  "assets": [
+   "STONKBROKER",
+   "UP33"
+  ],
+  "icons": [
+   "STONKBROKER",
+   "UP33"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x1C9484b75BA1Ed7a47dC4D6396E35302CF6F238d",
+  "pricePerFullShare": "1904329437607716682",
+  "lastHarvest": 1790192429
+ },
+ {
+  "id": "up33-cow-robinhood-weth-frong-vault",
+  "name": "FRONG-WETH",
+  "type": "standard",
+  "token": "FRONG-WETH",
+  "tokenAddress": "0x9818f01EDCcc3d8EB86B859931C3B877cf44A108",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x75588e48f7b4Ed9365d78C6cD509f3C7B804Ca47",
+  "earnedToken": "mooCowUp33RobinhoodFRONG-WETH",
+  "earnedTokenAddress": "0x75588e48f7b4Ed9365d78C6cD509f3C7B804Ca47",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-frong",
+  "status": "active",
+  "createdAt": 1786523797,
+  "platformId": "up",
+  "assets": [
+   "FRONG",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xD9546Cb5962a1d9605FB4A8c92002bFD32C30D72",
+  "pricePerFullShare": "2477497813111713850",
+  "lastHarvest": 1788781193
+ },
+ {
+  "id": "up33-cow-robinhood-usdg-intc-vault",
+  "name": "INTC-USDG",
+  "type": "standard",
+  "token": "INTC-USDG",
+  "tokenAddress": "0x599ac767099bB6f01712867BfA1Fc1Aa27DEFD37",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x8353c496114CF66D10545fdc2B4e6dFBafd37e3b",
+  "earnedToken": "mooCowUp33RobinhoodINTC-USDG",
+  "earnedTokenAddress": "0x8353c496114CF66D10545fdc2B4e6dFBafd37e3b",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-usdg-intc",
+  "status": "active",
+  "createdAt": 1786635778,
+  "platformId": "up",
+  "assets": [
+   "INTCrh",
+   "USDG"
+  ],
+  "icons": [
+   "INTC",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x5976CaD6C93F0bf346962e03d6fe7C93e10200b9",
+  "pricePerFullShare": "1544491885675008189",
+  "lastHarvest": 1790215822
+ },
+ {
+  "id": "alandale-cow-robinhood-weth-spy-vault",
+  "name": "SPY-WETH",
+  "type": "standard",
+  "token": "SPY-WETH",
+  "tokenAddress": "0xd9B95DcECf21528D5e98D4167EBd30Eb5fd1666f",
+  "tokenDecimals": 18,
+  "tokenProviderId": "alandale",
+  "earnContractAddress": "0x87673A619Fc4F3Fc08068A0BB04f60aA2D04ca62",
+  "earnedToken": "mooCowAlandaleRobinhoodSPY-WETH",
+  "earnedTokenAddress": "0x87673A619Fc4F3Fc08068A0BB04f60aA2D04ca62",
+  "oracle": "lps",
+  "oracleId": "alandale-cow-robinhood-weth-spy",
+  "status": "active",
+  "createdAt": 1789555197,
+  "platformId": "alandale",
+  "assets": [
+   "SPYrh",
+   "WETH"
+  ],
+  "icons": [
+   "SPY",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xd14df0D8797E3A92f6b377c24F8772b232dF0808",
+  "pricePerFullShare": "1007578443626532682",
+  "lastHarvest": 1790203518
+ },
+ {
+  "id": "up33-cow-robinhood-weth-tendies-vault",
+  "name": "TENDIES-WETH",
+  "type": "standard",
+  "token": "TENDIES-WETH",
+  "tokenAddress": "0x9619bFB1f2D97E2B23F23310205e4c2089c1A45d",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0x97DCDc29a3B3e2F556564279f7D09eE40eB74E45",
+  "earnedToken": "mooCowUp33RobinhoodTENDIES-WETH",
+  "earnedTokenAddress": "0x97DCDc29a3B3e2F556564279f7D09eE40eB74E45",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-tendies",
+  "status": "active",
+  "createdAt": 1786523797,
+  "platformId": "up",
+  "assets": [
+   "TENDIES",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": true,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": false,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x691970D8744A6902C5Dd0A120daB0876867B0480",
+  "pricePerFullShare": "2487172178958968717",
+  "lastHarvest": 1788776396
+ },
+ {
+  "id": "up33-weth-up",
+  "name": "UP-WETH vLP",
+  "type": "standard",
+  "token": "vAMM-UP-WETH",
+  "tokenAddress": "0x8697bB63743678640710b1270E98772a29642B3c",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0xC447184BF75a84Ace3087515CCFFb54937838FC8",
+  "earnedToken": "mooUpRobinhoodUP-WETH",
+  "earnedTokenAddress": "0xC447184BF75a84Ace3087515CCFFb54937838FC8",
+  "oracle": "lps",
+  "oracleId": "up33-weth-up",
+  "status": "active",
+  "createdAt": 1784532533,
+  "platformId": "up",
+  "assets": [
+   "UP33",
+   "WETH"
+  ],
+  "risks": {
+   "updatedAt": 1784532533,
+   "complex": false,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "lp",
+  "addLiquidityUrl": "https://up33.xyz/liquidity/new?pool=0x8697bB63743678640710b1270E98772a29642B3c",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "solidly",
+    "ammId": "robinhood-up33"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xa6343A3C9780b5803BF35AbAAa4f951250b1DD49",
+  "pricePerFullShare": "6855067999681799359",
+  "lastHarvest": 1790208621
+ },
+ {
+  "id": "alandale-cow-robinhood-weth-lute-vault",
+  "name": "LUTE-WETH",
+  "type": "standard",
+  "token": "LUTE-WETH",
+  "tokenAddress": "0xE232CC0841445c39A0de44F887277a6882067aE6",
+  "tokenDecimals": 18,
+  "tokenProviderId": "alandale",
+  "earnContractAddress": "0xd4A452bB077618b931603DbcB60ea43c05eBEa45",
+  "earnedToken": "mooCowAlandaleRobinhoodLUTE-WETH",
+  "earnedTokenAddress": "0xd4A452bB077618b931603DbcB60ea43c05eBEa45",
+  "oracle": "lps",
+  "oracleId": "alandale-cow-robinhood-weth-lute",
+  "status": "active",
+  "createdAt": 1789554911,
+  "platformId": "alandale",
+  "assets": [
+   "LUTE",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0xeA99fa0D0776d6D097C6069D5c1A70224C6CEf5c",
+  "pricePerFullShare": "1027995133135341112",
+  "lastHarvest": 1790215421
+ },
+ {
+  "id": "alandale-cow-robinhood-usdg-lute-vault",
+  "name": "LUTE-USDG",
+  "type": "standard",
+  "token": "LUTE-USDG",
+  "tokenAddress": "0xAC82Faa24D9139D5abB943DCdEE18995847A4525",
+  "tokenDecimals": 18,
+  "tokenProviderId": "alandale",
+  "earnContractAddress": "0xe50D89C43D0D13eE1439Bb5E94876A1163a26434",
+  "earnedToken": "mooCowAlandaleRobinhoodLUTE-USDG",
+  "earnedTokenAddress": "0xe50D89C43D0D13eE1439Bb5E94876A1163a26434",
+  "oracle": "lps",
+  "oracleId": "alandale-cow-robinhood-usdg-lute",
+  "status": "active",
+  "createdAt": 1789554997,
+  "platformId": "alandale",
+  "assets": [
+   "LUTE",
+   "USDG"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x150eADF2B4D15cd015ca2624bBF4Cf50FcF99E4F",
+  "pricePerFullShare": "1030983260714726440",
+  "lastHarvest": 1790215398
+ },
+ {
+  "id": "up33-cow-robinhood-weth-virtual-vault",
+  "name": "VIRTUAL-WETH",
+  "type": "standard",
+  "token": "VIRTUAL-WETH",
+  "tokenAddress": "0x37698C12ecc727178617c5b7d694377eb98dE058",
+  "tokenDecimals": 18,
+  "tokenProviderId": "up",
+  "earnContractAddress": "0xEbFB46b7A3E37aF48352c1Dd2FAc61EBBb907EC8",
+  "earnedToken": "mooCowUp33RobinhoodVIRTUAL-WETH",
+  "earnedTokenAddress": "0xEbFB46b7A3E37aF48352c1Dd2FAc61EBBb907EC8",
+  "oracle": "lps",
+  "oracleId": "up33-cow-robinhood-weth-virtual",
+  "status": "active",
+  "createdAt": 1786523797,
+  "platformId": "up",
+  "assets": [
+   "VIRTUAL",
+   "WETH"
+  ],
+  "risks": {
+   "complex": true,
+   "curated": false,
+   "notAudited": false,
+   "notBattleTested": false,
+   "notCorrelated": true,
+   "notTimelocked": true,
+   "notVerified": false,
+   "synthAsset": false
+  },
+  "strategyTypeId": "compounds",
+  "network": "robinhood",
+  "zaps": [
+   {
+    "strategyId": "vault-composer"
+   },
+   {
+    "strategyId": "reward-pool-to-vault"
+   }
+  ],
+  "isGovVault": false,
+  "chain": "robinhood",
+  "strategy": "0x08dD85fde0a8504780886fb9C3928e392853e9E8",
+  "pricePerFullShare": "1379458776303460294",
+  "lastHarvest": 1788685820
+ }
+]

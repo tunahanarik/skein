@@ -1,0 +1,104 @@
+== GT NVDA: 20 pools (page1)
+  0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3 | uniswap-v3-robinhood | NVDA / USDG 0.05% | reserve $5,696,238 | vol24 $14,194,685
+  0xcbdfea90430a30ee4469c9902e120a77e7c7e4711d5643671c1d1957f2f1ce27 | bankr-robinhood | AI / NVDA | reserve $23,666,942 | vol24 $518,184
+  0x62ab521f71431f78ac374cdbadc6cda3c8916b6c | uniswap-v3-robinhood | NVDA / WETH 0.05% | reserve $1,118,372 | vol24 $4,750,328
+  0xbc732a1a0baabce2574ec2bca24fccad8e2c38a061a37cefc17a2fd12809394f | uniswap-v4-robinhood | SPY / NVDA 0.05% | reserve $1,128,437 | vol24 $837,462
+  0x18a5af4e442f8be68968cc1f00d537f8af2d12cd | up-v3 | NVDA / USDG 0.3% | reserve $196,934 | vol24 $2,049,180
+  0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1 | uniswap-v4-robinhood | NVDA / USDG 0.3% | reserve $1,143,983 | vol24 $101,290
+  0xdac1904d823f7d6bcaaf431ceee40c934fed321b | ramses-v3-robinhood | NVDA / USDG 0.05% | reserve $172,391 | vol24 $657,411
+  0xa95b1fbdccb15d2b07509b980f63adab8a94303b1781f5ebc53b72942d12ddc1 | pons-v2-dex | ORBIO / NVDA | reserve $671,309 | vol24 $123,598
+  0x7990aad9e8fb048f49a155a7df5603db0366f0657035b78eb4196395cccb3dcd | uniswap-v4-robinhood | NVDA / USDG | reserve $427,961 | vol24 $149,636
+  0xb553e268a7790255e0db206aa27fa32e805b431645b230441fbd8beeb7618fc8 | pons-v2-dex | CEREBRO / NVDA | reserve $110,802 | vol24 $501,784
+  0xf8996e22ac7a67fae741830ad83b3b4d5e5de203 | ramses-v3-robinhood | NVDA / WETH 0.3% | reserve $143,114 | vol24 $340,446
+  0x99c8f9fb1f73ccd0977fd39ff3508c387223b3be27aa984c09dd06c2f4674e4e | pons-v2-dex | DARK / NVDA | reserve $170,684 | vol24 $272,869
+== DS NVDA: 30 pairs
+  0xcbdfea90430a30ee4469c9902e120a77e7c7e4711d5643671c1d1957f2f1ce27 | uniswap ['v4'] | NVDA/AI | liq $5,759,411 base 10369 quote 14510136 | vol24 $519,310
+  0xd4EB21209C4D6093f80B5b84f5C45cc093EA14a3 | uniswap ['v3'] | NVDA/USDG | liq $5,694,282 base 8307.804 quote 3823555 | vol24 $14,199,498
+  0x62AB521f71431f78ac374CdbadC6cda3c8916b6C | uniswap ['v3'] | NVDA/WETH | liq $1,118,340 base 3176.1161 quote 150.1988 | vol24 $4,754,287
+  0x3bb34a44f1b2b5f32c034c38a53065a521a47b199700fa9bd19d60985ff24bf1 | uniswap ['v4'] | NVDA/USDG | liq $989,814 base 1868.856 quote 568584 | vol24 $101,085
+  0x7990aad9e8fb048f49a155a7df5603db0366f0657035b78eb4196395cccb3dcd | uniswap ['v4'] | NVDA/USDG | liq $439,715 base 1147.2423 quote 181258 | vol24 $149,527
+  0xC0Be1cb0f674D9737C72B2A63fC542361185b807 | uniswap ['v3'] | NVDA/WETH | liq $276,341 base 853.913 quote 31.2396 | vol24 $147,254
+  0x18A5aF4E442F8be68968Cc1f00D537F8af2D12Cd | up ['v3'] | NVDA/USDG | liq $196,866 base 438.08951 quote 98243 | vol24 $2,050,578
+  0xaa8039d8e39d2bbcae23762e71f5a12162875a61848f0d96914c827f61877ef6 | uniswap ['v4'] | NVDA/ETH | liq $177,019 base 599.9615 quote 15.1623 | vol24 $1,537
+  0xdac1904D823F7d6bcAaF431ceEe40c934fEd321b | ramses ['v3'] | NVDA/USDG | liq $172,426 base 392.6525 quote 84022 | vol24 $657,024
+  0xF8996E22ac7A67fAe741830Ad83B3b4D5e5de203 | ramses ['v3'] | NVDA/WETH | liq $143,010 base 495.2747 quote 11.7425 | vol24 $340,387
+  0xdf5c0bcd967d54774c139a4ef803ec994779736346fb4c21b50ed241b1fd2682 | uniswap ['v4'] | NVDA/USDG | liq $105,367 base 183.96 quote 63978 | vol24 $45,232
+  0xb56D399C77bBb510568fa37BDbd6Aa2Aa3ebAe7D | kittenswap None | NVDA/USDG | liq $55,650 base 154.8172 quote 20789 | vol24 $367,477
+== GT AAPL: 20 pools (page1)
+  0xaae0d815ee56e4092a5e5c2911e676fea50b2d6d | uniswap-v3-robinhood | AAPL / USDG 0.05% | reserve $504,198 | vol24 $1,624,216
+  0x7e271c400427ecb727f5fbb27dec69254bce7c4219e95e3535d0ed128f79648a | bankr-robinhood | INU / AAPL | reserve $934,926 | vol24 $330,444
+  0x8bb3514e2204e1cdf3ac149efee7ff04d91b719f | uniswap-v3-robinhood | AAPL / WETH 0.05% | reserve $218,558 | vol24 $1,357,837
+  0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb | uniswap-v4-robinhood | AAPL / USDG 0.3% | reserve $839,331 | vol24 $238,486
+  0xeab0adac76db99a233ed077ca6be7a3f708baee6f98b17df69f7e1a07d1dc2e4 | uniswap-v4-robinhood | SPY / AAPL 0.035% | reserve $343,443 | vol24 $448,119
+  0x19d55aba3e5d2c389b7011c634725136dfdcae33 | up-v3 | AAPL / USDG 0.3% | reserve $178,324 | vol24 $496,095
+  0xc39187cec78a076c41a4085598b4cc05be2ed9b04a3443167471fa0fc4984188 | bankr-robinhood | ICOIN / AAPL | reserve $636,295 | vol24 $115,848
+  0xa2347ba69167e5602f74640ffbf737ee7cdd825e4726d3462564fc6533070147 | uniswap-v4-robinhood | AAPL / USDG | reserve $269,961 | vol24 $150,540
+  0xb299893eaf009c9325b788a84c1dd85501a24f78228e4a94769be52326f0919b | pons-v2-dex | PENPE / AAPL | reserve $119,269 | vol24 $139,754
+  0x7458bf9fb741da112910cd1ff786d5ee95bcb729fc3dcda258e8bc0956f3d5ef | uniswap-v4-robinhood | AAPL / WETH 0.25% | reserve $89,718 | vol24 $100,039
+  0x6f7368f0dd18a4e1db631095363d109e6ade9293 | ramses-v3-robinhood | AAPL / USDG 0.01% | reserve $52,340 | vol24 $134,335
+  0xf9bb10a8277b44d30d5a4338a73e1c30d8e659d5 | alandale-cl | AAPL / USDG 0.025% | reserve $37,292 | vol24 $169,761
+== DS AAPL: 30 pairs
+  0x7e271c400427ecb727f5fbb27dec69254bce7c4219e95e3535d0ed128f79648a | uniswap ['v4'] | INU/AAPL | liq $899,391 base 64153476 quote 1250.2406 | vol24 $329,371
+  0xc748f4671a867db48b552f6b7650bf3255e05f80f00e3f7aad1b17ccb7898fdb | uniswap ['v4'] | AAPL/USDG | liq $702,702 base 820.07926 quote 426741 | vol24 $238,278
+  0xAae0d815EE56e4092a5E5C2911E676Fea50B2d6D | uniswap ['v3'] | AAPL/USDG | liq $504,254 base 887.3276 quote 205588 | vol24 $1,621,973
+  0xeab0adac76db99a233ed077ca6be7a3f708baee6f98b17df69f7e1a07d1dc2e4 | uniswap ['v4'] | AAPL/SPY | liq $342,697 base 461.5307 quote 243.197 | vol24 $448,423
+  0xa2347ba69167e5602f74640ffbf737ee7cdd825e4726d3462564fc6533070147 | uniswap ['v4'] | AAPL/USDG | liq $262,398 base 271.6137 quote 170972 | vol24 $150,212
+  0x8bb3514e2204E1cDF3Ac149EFEe7Ff04D91B719f | uniswap ['v3'] | AAPL/WETH | liq $218,433 base 421.3167 quote 28.5406 | vol24 $1,358,623
+  0x19D55ABa3E5d2C389B7011c634725136dFDcaE33 | up ['v3'] | AAPL/USDG | liq $178,517 base 230.2779 quote 101015 | vol24 $492,591
+  0xb299893eaf009c9325b788a84c1dd85501a24f78228e4a94769be52326f0919b | uniswap ['v4'] | PENPE/AAPL | liq $126,390 base 26298395 quote 187.7976 | vol24 $139,823
+  0x783C9bbB765047CFdD2b84b92b2Ca9F11D34b7Ed | uniswap ['v3'] | AAPL/USDG | liq $122,843 base 88.4944 quote 93048 | vol24 $19,368
+  0x7458bf9fb741da112910cd1ff786d5ee95bcb729fc3dcda258e8bc0956f3d5ef | uniswap ['v4'] | AAPL/ETH | liq $85,379 base 185.103 quote 8.5883 | vol24 $98,929
+  0x6f7368F0dd18a4E1db631095363d109E6aDe9293 | ramses ['v3'] | AAPL/USDG | liq $52,333 base 58.3026 quote 32712 | vol24 $134,251
+  0xF9BB10A8277b44D30D5A4338a73E1c30d8E659D5 | alandale None | AAPL/USDG | liq $37,277 base 65.97 quote 15072 | vol24 $169,709
+== GT TSLA: 20 pools (page1)
+  0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e | uniswap-v4-robinhood | TSLA / USDG 0.3% | reserve $947,606 | vol24 $292,439
+  0xa821b3724b451b22476c5347471b2a96d185b86af8760f226273e34ab4b2b8a0 | uniswap-v4-robinhood | SPY / TSLA 0.05% | reserve $407,482 | vol24 $555,173
+  0xf4acdaeeb7022862a763c9b1b885e11191c889e3 | uniswap-v3-robinhood | TSLA / USDG 0.3% | reserve $637,337 | vol24 $255,333
+  0xa953ca88ff430e9487c60ca34d757414f4efda07 | uniswap-v3-robinhood | TSLA / WETH 0.3% | reserve $375,637 | vol24 $309,964
+  0xa1771923045e0dade6578f8c99de248d5a6029b97fb928328f9e767674e7663a | pons-v2-dex | OPTIMUS / TSLA | reserve $173,966 | vol24 $193,863
+  0x77bf6d7d6f18c2c0ca0673f95af96a8812a3cb86 | up-v3 | TSLA / USDG 0.3% | reserve $38,539 | vol24 $407,125
+  0xd5effce87036cd858146c0c15fa825c231a9de1843200ca108e431e431331e8e | uniswap-v4-robinhood | TSLA / USDG | reserve $198,929 | vol24 $68,642
+  0x42b961e421c08741fe9b25dda1d1090d42c7f782a0d73e099b4248d67357a612 | bankr-robinhood | FTR / TSLA | reserve $147,558 | vol24 $50,346
+  0xed80cb489e051246f95fbe9e507d04120faac8742e4c20eae69d6738d7b36d6f | uniswap-v4-robinhood | TSLA / WETH 0.18% | reserve $81,041 | vol24 $83,760
+  0x2202c667c036b29394d6bf839d6889984987f85ef8892fee323e068953dfcfc2 | bankr-robinhood | RIZO / TSLA | reserve $141,587 | vol24 $21,631
+  0xc4f0172d6ac8dd294dd1137d047d5e1893760236 | uniswap-v3-robinhood | TSLA / USDG 0.05% | reserve $25,352 | vol24 $91,037
+  0x141be60316aeb3aa7c0e0d8e4fbdc0aa78105e6e462cfc03b8a0f0c59f0bf3f8 | bankr-robinhood | DOGGIE / TSLA | reserve $131,963 | vol24 $11,161
+== DS TSLA: 30 pairs
+  0x8517f8071ae5b831b738052f12125e8e3d6c158b78728aa44ce3b25e5104d32e | uniswap ['v4'] | TSLA/USDG | liq $840,793 base 528.8324 quote 640320 | vol24 $292,670
+  0xf4ACdAEEB7022862A763C9B1B885e11191c889E3 | uniswap ['v3'] | TSLA/USDG | liq $637,876 base 444.02828 quote 469666 | vol24 $255,147
+  0xa821b3724b451b22476c5347471b2a96d185b86af8760f226273e34ab4b2b8a0 | uniswap ['v4'] | TSLA/SPY | liq $386,658 base 299.3483 quote 355.009366 | vol24 $557,494
+  0xA953CA88ff430e9487c60cA34d757414f4efdA07 | uniswap ['v3'] | TSLA/WETH | liq $376,497 base 666.1977 quote 46.1947 | vol24 $306,707
+  0xd5effce87036cd858146c0c15fa825c231a9de1843200ca108e431e431331e8e | uniswap ['v4'] | TSLA/USDG | liq $182,211 base 104.2487 quote 142721 | vol24 $68,655
+  0xa1771923045e0dade6578f8c99de248d5a6029b97fb928328f9e767674e7663a | uniswap ['v4'] | OPTIMUS/TSLA | liq $176,708 base 22766030 quote 233.07192 | vol24 $193,969
+  0x42b961e421c08741fe9b25dda1d1090d42c7f782a0d73e099b4248d67357a612 | uniswap ['v4'] | FTR/TSLA | liq $155,166 base 262691786 quote 175.235 | vol24 $50,493
+  0x141be60316aeb3aa7c0e0d8e4fbdc0aa78105e6e462cfc03b8a0f0c59f0bf3f8 | uniswap ['v4'] | DOGGIE/TSLA | liq $127,429 base 336719049 quote 137.8873 | vol24 $16,601
+  0x7bba397eba6a5031c60df68ab0885f5de37fce30e9607bedf53c90880a5fce26 | uniswap ['v4'] | TSLR/TSLA | liq $91,385 base 35217112225 quote 92.4888 | vol24 $11,653
+  0xed80cb489e051246f95fbe9e507d04120faac8742e4c20eae69d6738d7b36d6f | uniswap ['v4'] | TSLA/ETH | liq $79,290 base 108.2435 quote 14.2385 | vol24 $83,752
+  0x9b6604eeffbad3b216199d63cad1b46d9665c1429207e1c442531fb7263d28a2 | uniswap ['v4'] | LONGDOG/TSLA | liq $73,233 base 557652177 quote 67.7766 | vol24 $4,958
+  0x2202c667c036b29394d6bf839d6889984987f85ef8892fee323e068953dfcfc2 | uniswap ['v4'] | RIZO/TSLA | liq $71,248 base 513297529 quote 65.9472 | vol24 $21,640
+== GT USDG: 20 pools (page1)
+  0x52e65b17fb6e5ba00ed806f37afcd2daa50271ca | uniswap-v3-robinhood | USDG / WETH 0.01% | reserve $19,126,002 | vol24 $390,959,555
+  0xbac3aa3b91584a53a579b3c999a56756e954e59247e497bad1d25a4334bde551 | uniswap-v4-robinhood | WETH / USDG | reserve $30,426,168 | vol24 $78,890,215
+  0x486435a1f76cd58193f854c6e6213cd05fd58d637865d02065ff558b387fa6ea | uniswap-v4-robinhood | PONS / USDG | reserve $8,988,489 | vol24 $11,647,842
+  0x69bfaf19c9f377bb306a89aed9f6b07e2c1a8d9a | uniswap-v3-robinhood | USDG / WETH 0.05% | reserve $4,742,336 | vol24 $18,323,116
+  0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3 | uniswap-v3-robinhood | NVDA / USDG 0.05% | reserve $5,696,238 | vol24 $14,194,685
+  0x5875d407a42965b0e768c8925cea290e06fa50603ef34fc99eb92a1050e6ae36 | uniswap-v4-robinhood | META / USDG 0.3% | reserve $4,782,026 | vol24 $9,730,587
+  0x4be9657ec9002e528f4f17a5c43edc525a07f888f7b180c2afbf75e096c4f38a | uniswap-v4-robinhood | PONS / USDG 0.3% | reserve $6,749,827 | vol24 $5,252,663
+  0xf2a0be59ab76b96f957bd5e5b967f2b75e8db269 | ramses-v3-robinhood | PONS / USDG 0.3% | reserve $1,502,729 | vol24 $22,263,378
+  0xc61284332117c3fb23a2a56cceffd07f7af60029 | uniswap-v3-robinhood | SPCX / USDG 0.05% | reserve $2,581,706 | vol24 $10,412,113
+  0x090f2f033c16fe92e28f0204435590548aedc3f0 | pancakeswap-v3-robinhood | U / USDG 0.01% | reserve $5,954,756 | vol24 $1,702,131
+  0x7aebd80541bfaaf23dbb6e99ce13d4d31c1a84c91414f971eadbff7db5f85995 | uniswap-v4-robinhood | AI / USDG 0.23% | reserve $1,762,825 | vol24 $4,299,635
+  0x16679e2ac1a798865ecf1c1639e67693ddb1c220 | up-v3 | WETH / USDG 0.05% | reserve $588,865 | vol24 $11,506,333
+== DS USDG: 30 pairs
+  0x486435a1f76cd58193f854c6e6213cd05fd58d637865d02065ff558b387fa6ea | uniswap ['v4'] | PONS/USDG | liq $8,549,987 base 9280364 quote 2675914 | vol24 $11,691,040
+  0x4be9657ec9002e528f4f17a5c43edc525a07f888f7b180c2afbf75e096c4f38a | uniswap ['v4'] | PONS/USDG | liq $2,826,057 base 2663835 quote 1140877 | vol24 $5,265,003
+  0xf2A0bE59AB76b96f957bd5E5b967F2B75e8dB269 | ramses ['v3'] | PONS/USDG | liq $1,503,201 base 1487482 quote 564396 | vol24 $22,312,219
+  0x7aebd80541bfaaf23dbb6e99ce13d4d31c1a84c91414f971eadbff7db5f85995 | uniswap ['v4'] | AI/USDG | liq $1,251,285 base 3770726 quote 364909 | vol24 $4,303,965
+  0x46525dc119850396470f132c4a989d7192cb692139db891b5a4cdcd684c11b17 | uniswap ['v4'] | MEME/USDG | liq $1,220,472 base 22360189 quote 463377 | vol24 $3,158,451
+  0xea9f200e13055b82f175f44f592c4c13dd8c9d9320a66487d3c5cd90d68550ef | uniswap ['v4'] | ORBIO/USDG | liq $732,037 base 6528759 quote 337015 | vol24 $1,114,758
+  0x778a632fdd85577efe9cfce4a2c9ac91b9decdb24c351f9b56e25d38fbe587b4 | uniswap ['v4'] | SHROOM/USDG | liq $561,439 base 16161119 quote 305932 | vol24 $1,024,266
+  0x93cc54eb4e1928e841cb8b2e488bd82e8d97d56e0aab16cf078ef71c576dcded | uniswap ['v4'] | musebook/USDG | liq $456,471 base 688869680 quote 315585 | vol24 $5,116,387
+  0xfec7b1efe77aa60887986db5bcbfff39ca40b56d964bb8ce3d9dd0d9baaca4d4 | uniswap ['v4'] | BONER/USDG | liq $431,169 base 5077905 quote 190328 | vol24 $419,511
+  0x6d56f66e52e63e8be558d708a987426314bb4de92bc9b43a44effee1f2abf317 | uniswap ['v4'] | UBIK/USDG | liq $349,389 base 2761614 quote 289141 | vol24 $493,636
+  0xf6c9f0a8bf94ecda6751465a3097bc4c69914421126d2cbc3df723e36b8cf47b | uniswap ['v4'] | PRINTER/USDG | liq $272,339 base 32658955 quote 112822 | vol24 $29,770
+  0x4e3c581d3043cfc06bfd425011cc3f590f2db319cd9f2103927f5a978194914d | uniswap ['v4'] | Agrippa/USDG | liq $215,997 base 416705493 quote 194125 | vol24 $3,580,913

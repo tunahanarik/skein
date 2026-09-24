@@ -1,0 +1,149 @@
+[
+ {
+  "name": "gt_NVDA_pools_p1.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC/pools?page=1",
+  "status": 200,
+  "sec": 0.64,
+  "bytes": 30326,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:01 GMT",
+   "Cache-Control": "max-age=30, public, must-revalidate, s-maxage=60",
+   "cf-cache-status": "MISS"
+  },
+  "fetched_utc": "2026-09-24T05:53:00Z"
+ },
+ {
+  "name": "ds_NVDA_tokenpairs.json",
+  "url": "https://api.dexscreener.com/token-pairs/v1/robinhood/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+  "status": 200,
+  "sec": 0.22,
+  "bytes": 25283,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:04 GMT",
+   "cf-cache-status": "HIT",
+   "Age": "28",
+   "Cache-Control": "public, max-age=30"
+  },
+  "fetched_utc": "2026-09-24T05:53:03Z"
+ },
+ {
+  "name": "gt_AAPL_pools_p1.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9/pools?page=1",
+  "status": 200,
+  "sec": 0.45,
+  "bytes": 30060,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:07 GMT",
+   "Cache-Control": "max-age=30, public, must-revalidate, s-maxage=60",
+   "cf-cache-status": "MISS"
+  },
+  "fetched_utc": "2026-09-24T05:53:06Z"
+ },
+ {
+  "name": "ds_AAPL_tokenpairs.json",
+  "url": "https://api.dexscreener.com/token-pairs/v1/robinhood/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
+  "status": 200,
+  "sec": 0.19,
+  "bytes": 26240,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:10 GMT",
+   "cf-cache-status": "HIT",
+   "Age": "10",
+   "Cache-Control": "public, max-age=30"
+  },
+  "fetched_utc": "2026-09-24T05:53:08Z"
+ },
+ {
+  "name": "gt_TSLA_pools_p1.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0x322F0929c4625eD5bAd873c95208D54E1c003b2d/pools?page=1",
+  "status": 200,
+  "sec": 0.49,
+  "bytes": 29930,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:13 GMT",
+   "Cache-Control": "max-age=30, public, must-revalidate, s-maxage=60",
+   "cf-cache-status": "MISS"
+  },
+  "fetched_utc": "2026-09-24T05:53:11Z"
+ },
+ {
+  "name": "ds_TSLA_tokenpairs.json",
+  "url": "https://api.dexscreener.com/token-pairs/v1/robinhood/0x322F0929c4625eD5bAd873c95208D54E1c003b2d",
+  "status": 200,
+  "sec": 0.17,
+  "bytes": 28615,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:15 GMT",
+   "cf-cache-status": "HIT",
+   "Age": "19",
+   "Cache-Control": "public, max-age=30"
+  },
+  "fetched_utc": "2026-09-24T05:53:14Z"
+ },
+ {
+  "name": "gt_USDG_pools_p1.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168/pools?page=1",
+  "status": 200,
+  "sec": 0.45,
+  "bytes": 30743,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:18 GMT",
+   "Cache-Control": "max-age=30, public, must-revalidate, s-maxage=60",
+   "cf-cache-status": "MISS"
+  },
+  "fetched_utc": "2026-09-24T05:53:17Z"
+ },
+ {
+  "name": "ds_USDG_tokenpairs.json",
+  "url": "https://api.dexscreener.com/token-pairs/v1/robinhood/0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+  "status": 200,
+  "sec": 0.29,
+  "bytes": 42668,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:21 GMT",
+   "cf-cache-status": "HIT",
+   "Cache-Control": "public, max-age=30"
+  },
+  "fetched_utc": "2026-09-24T05:53:20Z"
+ },
+ {
+  "name": "ds_NVDA_latest_tokens.json",
+  "url": "https://api.dexscreener.com/latest/dex/tokens/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+  "status": 200,
+  "sec": 0.16,
+  "bytes": 25340,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:24 GMT",
+   "cf-cache-status": "HIT",
+   "Age": "9",
+   "Cache-Control": "public, max-age=30"
+  },
+  "fetched_utc": "2026-09-24T05:53:22Z"
+ },
+ {
+  "name": "gt_NVDA_token.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
+  "status": 200,
+  "sec": 0.32,
+  "bytes": 1023,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:27 GMT",
+   "Cache-Control": "max-age=30, public, must-revalidate, s-maxage=60",
+   "cf-cache-status": "MISS"
+  },
+  "fetched_utc": "2026-09-24T05:53:25Z"
+ },
+ {
+  "name": "gt_NVDA_pools_p2.json",
+  "url": "https://api.geckoterminal.com/api/v2/networks/robinhood/tokens/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC/pools?page=2",
+  "status": 429,
+  "sec": 0.15,
+  "bytes": 272,
+  "headers": {
+   "Date": "Thu, 24 Sep 2026 05:53:29 GMT",
+   "Retry-After": "0",
+   "Cache-Control": "private, max-age=0, no-store, no-cache, must-revalidate, post-check=0, pre-check=0"
+  },
+  "fetched_utc": "2026-09-24T05:53:28Z"
+ }
+]

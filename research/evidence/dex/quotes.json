@@ -1,0 +1,143 @@
+{
+ "block": 71136554,
+ "v3": [
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_USDG": 1000,
+   "out_NVDA": 4.441525422196402,
+   "exec_px": 225.14787262108808,
+   "mid": 225.03402491096415,
+   "cost_vs_mid_pct": 0.050565749877440336,
+   "impact_ex_fee_pct": 0.0005660328938894565,
+   "ticksCrossed": 1,
+   "gasEstimate": 109385
+  },
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_USDG": 10000,
+   "out_NVDA": 44.41299169268474,
+   "exec_px": 225.15934232025847,
+   "mid": 225.03402491096415,
+   "cost_vs_mid_pct": 0.055657210579374006,
+   "impact_ex_fee_pct": 0.005660040599675398,
+   "ticksCrossed": 1,
+   "gasEstimate": 118374
+  },
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_USDG": 100000,
+   "out_NVDA": 443.9040080830081,
+   "exec_px": 225.27392900066008,
+   "mid": 225.03402491096415,
+   "cost_vs_mid_pct": 0.10649438697153402,
+   "impact_ex_fee_pct": 0.05652264829567599,
+   "ticksCrossed": 2,
+   "gasEstimate": 148709
+  },
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_NVDA": 5,
+   "out_USDG": 1124.600377,
+   "exec_px": 224.9200754,
+   "cost_vs_mid_pct": 0.050636569740603043,
+   "ticksCrossed": 1,
+   "gasEstimate": 101504
+  },
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_NVDA": 50,
+   "out_USDG": 11245.358913,
+   "exec_px": 224.90717826,
+   "cost_vs_mid_pct": 0.056367765280973536,
+   "ticksCrossed": 2,
+   "gasEstimate": 139612
+  },
+  {
+   "pool": "0xd4eb21209c4d6093f80b5b84f5c45cc093ea14a3",
+   "fee": 500,
+   "in_NVDA": 500,
+   "out_USDG": 112382.686838,
+   "exec_px": 224.765373676,
+   "cost_vs_mid_pct": 0.119382495633924,
+   "ticksCrossed": 3,
+   "gasEstimate": 165144
+  },
+  {
+   "pool": "0x62ab521f71431f78ac374cdbadc6cda3c8916b6c",
+   "fee": 500,
+   "in_WETH": 1,
+   "out_NVDA": 11.932171107975192,
+   "cost_vs_mid_pct": 0.07187391238301366,
+   "ticksCrossed": 1,
+   "gasEstimate": 119145
+  },
+  {
+   "pool": "0x62ab521f71431f78ac374cdbadc6cda3c8916b6c",
+   "fee": 500,
+   "in_WETH": 10,
+   "out_NVDA": 119.0948596447331,
+   "cost_vs_mid_pct": 0.2618547515495395,
+   "ticksCrossed": 3,
+   "gasEstimate": 198821
+  },
+  {
+   "pool": "0x62ab521f71431f78ac374cdbadc6cda3c8916b6c",
+   "fee": 500,
+   "in_WETH": 50,
+   "out_NVDA": 591.7109398400936,
+   "cost_vs_mid_pct": 0.8921932669184951,
+   "ticksCrossed": 16,
+   "gasEstimate": 486984
+  }
+ ],
+ "v4": [
+  {
+   "pool": "v4 hookless 0.3% 0x3bb34a",
+   "in_USDG": 1000,
+   "out_NVDA": 4.420566470542654,
+   "exec_px": 226.2153519608186,
+   "mid": 225.3943166230904,
+   "cost_vs_mid_pct": 0.36294412850920166,
+   "gasEstimate": 43256
+  },
+  {
+   "pool": "v4 hookless 0.3% 0x3bb34a",
+   "in_USDG": 10000,
+   "out_NVDA": 44.15365387575038,
+   "exec_px": 226.4818225042095,
+   "mid": 225.3943166230904,
+   "cost_vs_mid_pct": 0.4801735826277742,
+   "gasEstimate": 64118
+  },
+  {
+   "pool": "v4 hookless 0.3% 0x3bb34a",
+   "in_USDG": 100000,
+   "out_NVDA": 436.38478653326905,
+   "exec_px": 229.15555969405045,
+   "mid": 225.3943166230904,
+   "cost_vs_mid_pct": 1.6413492546206387,
+   "gasEstimate": 115311
+  },
+  {
+   "pool": "v4 hooked dyn-fee 0x7990aa",
+   "in_USDG": 1000,
+   "out_NVDA": 4.436456254881106,
+   "exec_px": 225.40513025452998,
+   "mid": 225.196885109476,
+   "cost_vs_mid_pct": 0.0923870476323363,
+   "gasEstimate": 59859
+  }
+ ],
+ "raw_errors": [],
+ "mid": {
+  "v3_0.05%_USDG_per_NVDA": 225.03402491096415,
+  "v3_WETH_0.05%_NVDA_per_WETH": 11.940753394607905,
+  "v4_0.3%_USDG_per_NVDA": 225.3943166230904,
+  "v4_hooked_USDG_per_NVDA": 225.196885109476
+ }
+}

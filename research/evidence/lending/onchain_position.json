@@ -1,0 +1,10 @@
+{
+ "block": 71136715,
+ "supplyShares": "0",
+ "borrowShares": "44083879865327131897",
+ "collateral": "49112006655007",
+ "borrowAssetsApprox": "44561083813180",
+ "NVDA_oraclePaused": "0x0000000000000000000000000000000000000000000000000000000000000000",
+ "NVDA_newUIMultiplier": "1000775159164630595",
+ "NVDA_effectiveAt": "1788998430"
+}

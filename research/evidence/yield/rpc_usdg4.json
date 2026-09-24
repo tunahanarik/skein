@@ -1,0 +1,209 @@
+{
+ "fetchedAt": "2026-09-24T05:51:36.627Z",
+ "out": [
+  {
+   "label": "admin.defaultAdmin",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x84ef8ffc"
+    },
+    "latest"
+   ],
+   "result": "0x000000000000000000000000cfa0388f5ddf905fdc08c45c716c15dc10a14c6f"
+  },
+  {
+   "label": "admin.defaultAdminDelay",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0xcc8463c8"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000002a30"
+  },
+  {
+   "label": "globalTransferSettings",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x5b9d419e"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000000000000000000000000000000000000699cea000000000000000000000000000000000000000000000000000000000000015180000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "supplyControl",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x4a254dfe"
+    },
+    "latest"
+   ],
+   "result": "0x000000000000000000000000df5fff9cb88b3cab50572fae73e2eb08599d25d4"
+  },
+  {
+   "label": "facet paused()",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c5c975abb00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000058cab81e3d8468a0e90df8cbfacb34535e1de942"
+  },
+  {
+   "label": "facet isFrozen(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284ce583983600000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000058cab81e3d8468a0e90df8cbfacb34535e1de942"
+  },
+  {
+   "label": "facet isAddrBlocked(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c9e1bdd5b00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "facet freeze(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c8d1fdf2f00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000058cab81e3d8468a0e90df8cbfacb34535e1de942"
+  },
+  {
+   "label": "facet freeze(address[])",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c1d38fcda00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "facet blockAddresses(address[])",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c85d4787b00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "facet isAddrFrozen(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284ce703576900000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "facet wipeFrozenAddress(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284ce2f72f0300000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000058cab81e3d8468a0e90df8cbfacb34535e1de942"
+  },
+  {
+   "label": "facet transferWithAuthorization(address,address,uint256,uint256,uint256,bytes32,uint8,bytes32,bytes32)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284ce3ee160e00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x000000000000000000000000780d30b6a89bc9eef953a543aa288c3b05b01309"
+  },
+  {
+   "label": "facet permit(address,address,uint256,uint256,uint8,bytes32,bytes32)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284cd505accf00000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x000000000000000000000000780d30b6a89bc9eef953a543aa288c3b05b01309"
+  },
+  {
+   "label": "facet pause()",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284c8456cb5900000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x00000000000000000000000058cab81e3d8468a0e90df8cbfacb34535e1de942"
+  },
+  {
+   "label": "facet setIsFrozen(address,bool)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284cc30a656400000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+   "label": "facet isBlocked(address)",
+   "method": "eth_call",
+   "params": [
+    {
+     "to": "0x5fC5360D0400a0Fd4f2af552ADD042D716F1d168",
+     "data": "0x8376284cfbac395100000000000000000000000000000000000000000000000000000000"
+    },
+    "latest"
+   ],
+   "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  }
+ ]
+}

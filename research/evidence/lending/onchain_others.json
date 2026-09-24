@@ -1,0 +1,102 @@
+{
+ "block": 71134677,
+ "morphoVaultV2 Steakhouse USDG": {
+  "address": "0xBeEff033F34C046626B8D0A041844C5d1A5409dd",
+  "codeBytes": 21808,
+  "name()": "Steakhouse USDG",
+  "asset()": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+  "totalAssets()": "497868410185614",
+  "totalSupply()": "493960640219143301408222084",
+  "curator()": "0x9023fbd6a08c666491a2d1648737e400cf42d2fb",
+  "owner()": "0xca50d23f1c18c1dfaff5d3cae3aa4b9dc5c8db73",
+  "liquidityAdapter()": "0x44abc1d6ccff2696d98890b92e2157af242179c2",
+  "performanceFee()": "0",
+  "factory.isVaultV2": "0x0000000000000000000000000000000000000000000000000000000000000001"
+ },
+ "morphoVaultV2 Ethena x Steakhouse": {
+  "address": "0xbEeFF0fb1Dc19344A87b8479dAb60A2e16160737",
+  "codeBytes": 21808,
+  "name()": "Ethena x Steakhouse USDG",
+  "asset()": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+  "totalAssets()": "13576199359534",
+  "curator()": "0x9023fbd6a08c666491a2d1648737e400cf42d2fb",
+  "factory.isVaultV2": "0x0000000000000000000000000000000000000000000000000000000000000001"
+ },
+ "spark spUSDG vault": {
+  "address": "0xde770c84FE66E063336b31737cFE9790f18c4087",
+  "codeBytes": 163,
+  "name()": "Spark Savings USDG",
+  "symbol()": "spUSDG",
+  "asset()": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+  "totalAssets()": "14162244616452",
+  "totalSupply()": "14036987276491",
+  "vsr()": "1000000001090862085746321732",
+  "chi()": "1008922070244016758616597993",
+  "rho()": "1790227977",
+  "nowChi()": "1008923377751525949076807260",
+  "getImplementation()": "0x797c58c9779d46a437d8f57908d6d56371a55f02"
+ },
+ "spark ALM_PROXY": {
+  "address": "0xfD2fD4B046136B540A56C11c75ac679AE7d1dB24",
+  "codeBytes": 2260
+ },
+ "spark ALM_CONTROLLER": {
+  "address": "0xcf8d58A6eeF2a1cae2Ce69bC463b1178FB76bA1E",
+  "codeBytes": 14731
+ },
+ "spark EXECUTOR": {
+  "address": "0x826AEaeee9233fA8Ba199518dd8621A5962b1D02",
+  "codeBytes": 8113
+ },
+ "native credit vault (llama)": {
+  "address": "0x57B8f68ef57Af2dB70BC9aAc891836661CA4cB51",
+  "codeBytes": 20187,
+  "name()": "ERR execution reverted",
+  "asset()": "ERR execution reverted",
+  "totalAssets()": "ERR execution reverted",
+  "owner()": "0x0cb46d89ed4ae005160b3270fafe453c43bba664"
+ },
+ "flock credit vault (llama)": {
+  "address": "0xd42174d3Db28B0fA2BD25381c3521b18AE9dB490",
+  "codeBytes": 6401,
+  "name()": "Flock Credit Vault",
+  "asset()": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+  "totalAssets()": "71303089695",
+  "totalSupply()": "69265824615947682"
+ },
+ "ripe HQ (llama)": {
+  "address": "0xd4e82ae1de673bba3b53386a2d2c630ae6630940",
+  "codeBytes": 12979,
+  "greenToken()": "0x355bb7f0f6c730e4460d620420a300fa08ff82f3",
+  "ripeToken()": "0x4d3f37a965b21ab4122e92dd41d2693e742c883b"
+ },
+ "gage vault (llama)": {
+  "address": "0x3D979740785ABd8b7Dd5c2Ff7Bf100CBe86fcBDF",
+  "codeBytes": 21428,
+  "name()": "ERR execution reverted",
+  "owner()": "ERR execution reverted"
+ },
+ "spine vault (llama)": {
+  "address": "0x38cc0dae2c4305c16f3d702f9a0260599e14654f",
+  "codeBytes": 17600,
+  "name()": "Spine USDG Vault",
+  "asset()": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+  "totalAssets()": "40031160018"
+ },
+ "termmax FactoryV2 (llama)": {
+  "address": "0x03c4FCF963E5FBC0dC5851d2340624E70492acb9",
+  "codeBytes": 4514,
+  "owner()": "ERR execution reverted"
+ },
+ "layerbank core (llama)": {
+  "address": "0x7ED03A856D52172f9501aB0176f184baD287e546",
+  "codeBytes": 9628,
+  "allMarkets()": "ERR execution reverted",
+  "owner()": "ERR execution reverted"
+ },
+ "accountable factory (llama)": {
+  "address": "0xA4d6a4aD35fc632aEE1dC48A2aEc2aaa37B51F9f",
+  "codeBytes": 7150,
+  "owner()": "0x4b07aaa370189e5603df56c84f59c5a59181bfb1"
+ }
+}

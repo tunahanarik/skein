@@ -1,0 +1,74 @@
+{
+  "script": "network",
+  "startedAt": "2026-09-24T06:23:31.424Z",
+  "finishedAt": "2026-09-24T06:23:33.938Z",
+  "checks": [
+    {
+      "name": "rpc",
+      "status": "INFO",
+      "detail": "https://rpc.mainnet.chain.robinhood.com"
+    },
+    {
+      "name": "eth_chainId",
+      "status": "PASS",
+      "detail": "0x1237 = 4663",
+      "evidence": {
+        "rawId": "0x1237"
+      }
+    },
+    {
+      "name": "ArbSys.arbChainID",
+      "status": "PASS",
+      "detail": "4663"
+    },
+    {
+      "name": "latest block",
+      "status": "PASS",
+      "detail": "#71152997 age 0s",
+      "evidence": {
+        "number": "71152997",
+        "hash": "0xaf06d4239f1d0b4bc035563a7e79669e82ef354a08948ec5dd5822d4058dfc34",
+        "timestamp": "1790231012"
+      }
+    },
+    {
+      "name": "block time",
+      "status": "INFO",
+      "detail": "0.101 s/block over 1000 blocks",
+      "evidence": {
+        "from": "71151997",
+        "to": "71152997"
+      }
+    },
+    {
+      "name": "Multicall3 (canonical)",
+      "status": "PASS",
+      "detail": "0xcA11bde05977b3631167028862bE2a173976CA11 code 3808 bytes; aggregate3 supported",
+      "evidence": {
+        "address": "0xcA11bde05977b3631167028862bE2a173976CA11",
+        "codeBytes": 3808,
+        "aggregate3": true
+      }
+    },
+    {
+      "name": "Robinhood L2 Multicall (docs)",
+      "status": "PASS",
+      "detail": "0x2cAC2D899eCC914d704FeaAE33ac1bF36277DaD1 code 3339 bytes; aggregate3 NOT supported",
+      "evidence": {
+        "address": "0x2cAC2D899eCC914d704FeaAE33ac1bF36277DaD1",
+        "codeBytes": 3339,
+        "aggregate3": false
+      }
+    },
+    {
+      "name": "safe tag",
+      "status": "INFO",
+      "detail": "#71147399, 5598 blocks / 564 s behind latest"
+    },
+    {
+      "name": "finalized tag",
+      "status": "INFO",
+      "detail": "#71143459, 9538 blocks / 963 s behind latest"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "_note": "Candidates that are NOT in production config. Each needs an official address source and/or an onchain check before promotion to src/config/protocols.ts. Checked 2026-09-24. 'discovered_via' is never proof.",
+  "candidates": [
+    { "id": "arcadia-v2", "category": ["LEND"], "status": "LIKELY", "reason": "Factory 0xDa14Fdd72345c4d2511357214c5B89A919768e59 is in official docs and has code; the USDG pool 0xf37c0C5996503Fdd2b5CCCE36E659cD30393AE59 (88k USDG) and WETH pool 0x803ea69c7e87D1d6C86adeB40CB636cC0E6B98E2 were found via the DefiLlama adapter, not the docs.", "discovered_via": "DefiLlama", "next_step": "Find pool addresses in Arcadia docs or derive them from the factory onchain." },
+    { "id": "maple-syrupusdg", "category": ["YIELD"], "status": "VERIFIED_ASSET_NOT_VENUE", "reason": "syrupUSDG 0x40858070814a57FdF33a613ae84fE0a8b4a874f7 is verified (Maple docs + CCIP directory + onchain), but it is a bridged yield token: there is no deposit venue on 4663. APY comes from the Maple API for the Ethereum pool.", "discovered_via": "Morpho collateral", "next_step": "Decide whether 'hold a yield token' counts as an opportunity; confirm minting is impossible on 4663." },
+    { "id": "midas-mglo", "category": ["YIELD"], "status": "VERIFIED_ASSET_NOT_VENUE", "reason": "mGLO 0xFEd493F38c1aAcb4EA4e6A11F8b9287849EE0096 is in midas-apps/contracts addresses.ts and verified onchain. Minting/redemption is permissioned (KYC) per Midas generally; Midas API returned 403.", "discovered_via": "Morpho collateral", "next_step": "Confirm permissioning on 4663; APY must be computed from the custom feed 0x49D9Dd1Fa6EA3709aB8A5d5f16a1cf207eb91dd0 round history." },
+    { "id": "t3tris", "category": ["VAULT"], "status": "LIKELY", "reason": "Official API ecosystem.t3tris.finance/vaults lists 13 vaults on 4663; Kingfisher vault 0xd4d607239dcbdb5cc3a301266433810bb63c63bf reads $210.8k onchain. No APY field; 30% performance fee per DefiLlama.", "discovered_via": "DefiLlama", "next_step": "Confirm the API is the protocol's official one; compute APY from share price history." },
+    { "id": "d2-finance", "category": ["VAULT"], "status": "LIKELY", "reason": "GlobalMacro 0x3a87f340c7aa52694c3dd806ba13d1b2ebf48dd8 is ERC-4626 over USDG (~100k); address only from the DefiLlama adapter.", "discovered_via": "DefiLlama", "next_step": "Official address source." },
+    { "id": "stonkbrokers-smart-lp", "category": ["LP"], "status": "LIKELY", "reason": "Registry 0xE8749183Fbf6A657EB58B3a4D3E4B9Cc09560146 all() returns 179 vaults; adapter-only source.", "discovered_via": "DefiLlama", "next_step": "Official address source." },
+    { "id": "lighter", "category": ["TRADE"], "status": "VERIFIED_OFFCHAIN_VENUE", "reason": "Robinhood docs /chain/lighter-domains/ name contract 0x94bAB9693Ba2f6358507eFfcbd372b0660AFfF9d; keyless API api.rh.lighter.xyz lists NVDA/USDG (2054), AAPL (2049), TSLA (2055) spot books. Matching is offchain in Lighter's own rollup, so it is a TRADE venue but not an onchain pool on 4663.", "discovered_via": "Robinhood docs", "next_step": "Decide how to present offchain-matched venues; 60 req/min limit." },
+    { "id": "rialto", "category": ["TRADE"], "status": "VERIFIED_EXECUTION_ONLY", "reason": "Router registry 0x71a120CbBf3Ce7cD910a3c50fF77aFc62735687E has code (docs.rialto.xyz). Token search is keyless; quotes need a key (401). Discovery can say 'tradable on Rialto', nothing about depth.", "discovered_via": "Robinhood docs (propAMM)", "next_step": "API key for quotes." },
+    { "id": "arcus-perps", "category": ["TRADE"], "status": "UNVERIFIED", "reason": "DefiLlama only ($22M); no address checked.", "discovered_via": "DefiLlama" },
+    { "id": "meridian", "category": ["TRADE"], "status": "UNVERIFIED", "reason": "DefiLlama only; no address.", "discovered_via": "DefiLlama" },
+    { "id": "pare", "category": ["FIXED_YIELD"], "status": "UNVERIFIED", "reason": "DefiLlama lists a Stock Token yield-splitting protocol at 0x15d36b6a…5c4d (truncated in DefiLlama output); not read onchain.", "discovered_via": "DefiLlama" },
+    { "id": "flock-credit", "category": ["LEND"], "status": "UNVERIFIED", "reason": "Vault 0xd42174d3Db28B0fA2BD25381c3521b18AE9dB490 reads 'Flock Credit Vault', 71k USDG; no official address source.", "discovered_via": "DefiLlama" },
+    { "id": "spine-finance", "category": ["LEND"], "status": "UNVERIFIED", "reason": "Vault 0x38cc0dae2c4305c16f3d702f9a0260599e14654f 'Spine USDG Vault' 40k USDG, collateral PT-NVDA; no official address source.", "discovered_via": "DefiLlama" },
+    { "id": "native-credit-pool", "category": ["LEND"], "status": "UNVERIFIED", "reason": "0x57B8f68ef57Af2dB70BC9aAc891836661CA4cB51 has code; no official source.", "discovered_via": "DefiLlama" },
+    { "id": "ripe", "category": ["LEND", "YIELD"], "status": "UNVERIFIED", "reason": "HQ 0xd4e82ae1de673bba3b53386a2d2c630ae6630940 has code; stability pool addresses only from adapter.", "discovered_via": "DefiLlama" },
+    { "id": "gage", "category": ["LEND"], "status": "UNVERIFIED", "reason": "0x3D979740785ABd8b7Dd5c2Ff7Bf100CBe86fcBDF has code; adapter cites docs.gage.cash/protocol/addresses, not fetched.", "discovered_via": "DefiLlama" },
+    { "id": "termmax", "category": ["LEND", "FIXED_YIELD"], "status": "UNVERIFIED", "reason": "FactoryV2 0x03c4FCF963E5FBC0dC5851d2340624E70492acb9 has code; ~$11k.", "discovered_via": "DefiLlama" },
+    { "id": "snuggle-maxfi", "category": ["VAULT"], "status": "UNVERIFIED", "reason": "DefiLlama $7.1M; adapter vault 0x1195C074F898b7644bA732407619c9804dFE6DCE name() reverts; maxfi.tech/security lists Base only.", "discovered_via": "DefiLlama" },
+    { "id": "vfat", "category": ["LP"], "status": "NOT_A_VENUE", "reason": "Per-user Sickle smart wallets; only an aggregate TVL API.", "discovered_via": "DefiLlama" },
+    { "id": "fables", "category": ["LP", "TRADE"], "status": "LIKELY", "reason": "Hooks FablesRampETH 0x06a889870c8f83640d6816319f72e2aa579b6080 / FablesRWAETH 0xca89f079af00f752bfd3c345358dc38d4d73e080 are in the Uniswap hooklist and host the largest v4 ETH/USDG pool; registry 0x159a113e012593d9b3cc63ad45e30f0467e13ef3 activePools() = 37. No Fables docs read. Discoverable today as Uniswap v4 pools.", "discovered_via": "Uniswap hooklist" },
+    { "id": "wsteth-bridged", "category": ["YIELD"], "status": "LIKELY", "reason": "0x2dC99af320BC317c567f24eE95811dcbd5983DfD per Chainlink CCIP directory; Lido deployed-contracts does not mention Robinhood Chain; 37 wstETH supply.", "discovered_via": "CCIP directory" },
+    { "id": "pendle-usdg-market", "category": ["FIXED_YIELD"], "status": "VERIFIED_BUT_NOT_LISTED", "reason": "Market 0xc2b89e6eca583e2c232201ac557e9be58af55f4c (SY wraps USDG, expiry 2027-03-25) exists onchain and in /v1 metadata but isWhitelistedPro/Simple=false; absent from /v2/markets/all.", "discovered_via": "Pendle API", "next_step": "Show only if Pendle lists it." }
+  ],
+  "not_on_4663": {
+    "_checked": "official registries, 2026-09-24",
+    "aave-v3": "bgd-labs/aave-address-book has no Robinhood file",
+    "euler-v2": "euler-interfaces addresses/ has no 4663",
+    "dolomite": "deployments.json has no 4663",
+    "silo-v2": "no Robinhood entry",
+    "compound-iii": "no Robinhood entry",
+    "fluid": "no Robinhood entry",
+    "sparklend": "spark-address-registry Robinhood.sol has savings + liquidity layer only",
+    "paraswap": "API: 'Only chainId 1,10,56,… is supported' (2026-09-23)"
+  }
+}
