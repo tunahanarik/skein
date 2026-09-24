@@ -12,6 +12,11 @@ export interface RpcConfig {
   timeoutMs: number;
   /** Base backoff; rate-limit responses back off longer. */
   retryBaseMs: number;
+  /**
+   * Minimum spacing between eth_getLogs requests. The public RPC answers 429 after a burst of
+   * ~6 log queries and sustains about 1/s (measured 2026-09-24); keyed providers need none.
+   */
+  logMinIntervalMs?: number;
 }
 
 export class RpcConfigError extends Error {
@@ -23,6 +28,8 @@ export const RPC_DEFAULTS = {
   maxAttempts: 4,
   timeoutMs: 20_000,
   retryBaseMs: 600,
+  /** Public RPC only (see RpcConfig.logMinIntervalMs). */
+  publicLogMinIntervalMs: 1_000,
 } as const;
 
 /**
@@ -59,6 +66,7 @@ export function resolveRpcConfig(env: Record<string, string | undefined>, mode: 
     maxAttempts: num("RPC_MAX_ATTEMPTS", RPC_DEFAULTS.maxAttempts, 1, 10),
     timeoutMs: num("RPC_TIMEOUT_MS", RPC_DEFAULTS.timeoutMs, 1_000, 120_000),
     retryBaseMs: num("RPC_RETRY_BASE_MS", RPC_DEFAULTS.retryBaseMs, 0, 30_000),
+    logMinIntervalMs: num("RPC_LOG_MIN_INTERVAL_MS", isPublicRpc ? RPC_DEFAULTS.publicLogMinIntervalMs : 0, 0, 60_000),
   };
 }
 

@@ -86,3 +86,13 @@ Discovery keeps everything an adapter finds. The **default view** shows only opp
 - **Configuration:** `DEFAULT_ELIGIBILITY_POLICY.dustLiquidityUsdE18`.
 
 **P3-3: unlisted markets.** `PROTOCOL_UNLISTED` stays advisory. A market that is discovered from official factory logs, contract-verified, structurally valid, not dust, not paused and not expired stays in the default view (tested).
+
+## TRADE comparison (Phase 4)
+
+TRADE opportunities carry no yield metrics and are never ranked by APY (tested).
+- **Without a quote:** only objective market attributes: TVL, fee, state, verification. The route order is `BOTTLENECK_TVL_DESC`.
+- **With quotes:** routes are comparable only for the same input asset, output asset and input amount, by expected output (`src/trade/compare.ts`). Comparing quotes for different amounts throws.
+
+Eligibility reasons that matter for TRADE:
+- `LIQUIDITY_UNVERIFIED` (Phase 4, category rule, excluding): a TRADE market without a priced TVL, because non-dust cannot be shown.
+- `DUST_LIQUIDITY`, `INACTIVE` (no in-range liquidity), `ENTRY_STATE_UNKNOWN` (unreadable pool), `UNVERIFIED_ASSET`, `INSUFFICIENT_VERIFICATION` (factory origin not proven).

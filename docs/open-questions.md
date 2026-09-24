@@ -2,6 +2,29 @@
 
 Each item names what would resolve it.
 
+## Added in Phase 4 (decide before Phase 5)
+P4-1. **Uniswap v4.** A large part of Stock Token liquidity and swap flow is on v4 (e.g. NVDA/USDG v4 ≈ $1M; most NVDA v4 pools are hooked). Integrating it needs three things:
+- a hook policy: an allowlist; hooked pools run arbitrary code even in quote simulations
+- singleton TVL (ModifyLiquidity replay or StateView tick walk)
+- a way to handle about 15k `Initialize` events per popular token
+
+Which hooks, if any, are acceptable?
+
+P4-2. **Next non-Uniswap venue.**
+- Ramses CL has official docs, a QuoterV2 and a USDG/NVDA pool of ≈ 88k USDG + 574 NVDA.
+- Ekubo/STONX has a keyless quoter API, but it refuses equities for restricted jurisdictions by caller IP.
+- Which comes next, and does a jurisdiction-gated API fit the product?
+
+P4-3. **Offchain / keyed venues.** Lighter (offchain orderbook, 26 Stock Token books) and Rialto (quotes need a wallet-signed API key onboarding) cannot be integrated read-only today. Should they be listed as "also tradable on …" without depth?
+
+P4-4. **Dust vs routing.** A $83 pool (above the $50 dust line) produces a DIRECT route whose 1-unit quote has about 60 % price impact. Should routing edges use a higher minimum than DUST_LIQUIDITY, or an amount-aware filter once quotes are requested?
+
+P4-5. **24h volume.** Not reported: it needs Swap-log indexing (about 21k v3 swaps in 34 minutes observed) or a third-party source. Which one?
+
+P4-6. **Keyed RPC (restates #1).** The one-time pool-event index takes about 3–4 minutes on the public RPC because of rate limits and log timeouts, and per-process state reads take about 7 s. A keyed provider is needed for production anyway.
+
+P4-7. **Aggregator benchmark.** KyberSwap, the Sushi API and LI.FI give keyless quotes on 4663. Should one be used only as a read-only cross-check of our indicative quotes (never for execution)?
+
 ## Added in Phase 3 (decide before Phase 4)
 *P3-1, P3-2 and P3-3 were decided at the start of Phase 4; see opportunity-comparison.md "Phase 4 policy decisions".*
 

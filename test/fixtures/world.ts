@@ -150,6 +150,8 @@ export interface WorldState {
   /** Phase 3: event logs served by getLogs. */
   logs?: { address: string; eventName: string; blockNumber: bigint; logIndex: number; args: Record<string, unknown> }[];
   logsFail?: boolean;
+  /** Simulate the provider timing out topic OR-sets larger than this. */
+  logsTimeoutAbove?: number;
   /** Count of calls per function name (Phase 2 cache tests). */
   callCounts?: Map<string, number>;
 }
@@ -234,8 +236,16 @@ export class FakeChainReader implements ChainReader {
   async getLogs(q: LogQuery): Promise<DecodedLog[]> {
     this.logQueries++;
     if (this.world.rpcDown || this.world.logsFail) throw new Error("eth_getLogs failed");
+    const orSize = Math.max(0, ...Object.values(q.args ?? {}).map((v) => (Array.isArray(v) ? v.length : 1)));
+    if (this.world.logsTimeoutAbove !== undefined && orSize > this.world.logsTimeoutAbove) throw Object.assign(new Error("An unknown RPC error occurred."), { details: "log query timed out" });
     return (this.world.logs ?? [])
       .filter((l) => l.address.toLowerCase() === q.address.toLowerCase() && l.eventName === q.event.name && l.blockNumber >= q.fromBlock && l.blockNumber <= q.toBlock)
+      .filter((l) =>
+        Object.entries(q.args ?? {}).every(([k, want]) => {
+          const have = String(l.args[k]).toLowerCase();
+          return Array.isArray(want) ? want.some((w) => String(w).toLowerCase() === have) : String(want).toLowerCase() === have;
+        }),
+      )
       .map((l) => ({ address: l.address as Address, blockNumber: l.blockNumber, transactionHash: `0x${"cd".repeat(32)}` as Hex, logIndex: l.logIndex, args: l.args }));
   }
   async multicall(calls: readonly ContractCall[]): Promise<CallResult[]> {

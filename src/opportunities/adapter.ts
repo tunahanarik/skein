@@ -10,6 +10,7 @@ import type { ChainReader } from "../chain/reader.js";
 import type { FreshnessInfo, FreshnessStatus } from "../config/freshness.js";
 import type { Opportunity, OpportunityCategory } from "../model/opportunity.js";
 import type { Position } from "../model/position.js";
+import type { QuoteResult, TradeRoute } from "../model/trade.js";
 import type { Warning } from "../model/warnings.js";
 import type { PriceService } from "../pricing/priceService.js";
 import type { AssetRegistry } from "../registry/registry.js";
@@ -24,6 +25,8 @@ export interface AdapterCapabilities {
   singleOpportunity: boolean;
   /** Always false in this codebase: read-only. */
   execution: false;
+  /** Phase 4: can produce read-only INDICATIVE quotes for routes made only of its own markets. */
+  quotes?: boolean;
 }
 
 export interface AdapterContext {
@@ -68,6 +71,8 @@ export interface OpportunityAdapter {
   getAssetOpportunities?(assetKey: string, ctx: AdapterContext): Promise<AdapterResult<Opportunity[]>>;
   getOpportunity?(id: string, ctx: AdapterContext): Promise<AdapterResult<Opportunity | null>>;
   getUserPositions?(wallet: Address, ctx: AdapterContext): Promise<AdapterResult<Position[]>>;
+  /** Read-only indicative quote (no calldata). Only for routes whose markets all belong to this adapter. */
+  quoteRoute?(route: TradeRoute, amountInRaw: bigint, ctx: AdapterContext): Promise<QuoteResult>;
 }
 
 export function worstFreshness(list: readonly FreshnessInfo[], fallback: FreshnessInfo): FreshnessInfo {

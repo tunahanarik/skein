@@ -10,7 +10,8 @@
 | 1 | **Portfolio Engine + Asset Registry + Price Service** (no opportunities, no UI) | done; see [portfolio-engine.md](portfolio-engine.md), [asset-registry.md](asset-registry.md), [pricing.md](pricing.md), [rpc.md](rpc.md) |
 | 2 | **Opportunity Engine + Morpho adapter** (read-only; no UI) | done; see [opportunity-engine.md](opportunity-engine.md), [protocol-adapters.md](protocol-adapters.md), [protocols/morpho-adapter.md](protocols/morpho-adapter.md), [opportunity-provenance.md](opportunity-provenance.md) |
 | 3 | **Pendle adapter + maturity-based opportunities + default eligibility** (read-only; no UI) | done; see [protocols/pendle-adapter.md](protocols/pendle-adapter.md), [pendle-semantics.md](pendle-semantics.md), [asset-relationships.md](asset-relationships.md), [opportunity-comparison.md](opportunity-comparison.md) |
-| 4+ | further adapters (Uniswap, Spark …), minimal comparison UI | not started; needs approval |
+| 4 | **DEX discovery + Uniswap v3 TRADE adapter** (markets, DIRECT/ONE_HOP routes, indicative quotes; read-only) | done; see [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md), [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md), [research/dex-ecosystem.md](research/dex-ecosystem.md) |
+| 5+ | execution, other DEXes (v4, Ramses …), UI | not started; needs approval |
 
 The items below are the original product flow. Steps 1–3 (wallet, asset detection, portfolio value) are what Phase 1 delivered, through the CLI. Steps 4–9 belong to later phases.
 
@@ -29,7 +30,7 @@ The items below are the original product flow. Steps 1–3 (wallet, asset detect
 
 | Category | Stock Tokens (e.g. NVDA) | USDG | WETH/ETH |
 |---|---|---|---|
-| TRADE | Uniswap v3/v4 pools (onchain), depth via quoter probes; Lighter/Rialto listed as "also tradable on" (no depth) | Uniswap pools | Uniswap pools |
+| TRADE | **Phase 4: Uniswap v3 pools** (verified, TVL, price, DIRECT + ONE_HOP routes, INDICATIVE quotes). v4 and other venues not yet (see research/dex-ecosystem.md) | Uniswap v3 (USDG is the main hub: 127 active USDG pools ≥ $50) | Uniswap v3 (WETH/USDG $18.9M) |
 | LEND | – (Stock Token *loan* markets exist but are empty) | Morpho listed markets; Arcadia later | Morpho (WETH loan markets, small) |
 | BORROW | show "borrow USDG against NVDA" (from the COLLATERAL side) | Morpho borrow APY | Morpho |
 | COLLATERAL | Morpho NVDA/AAPL/TSLA/GOOGL/SPY… markets: **unlisted, tiny; shown with warnings; double-multiplier oracles flagged** | USDe/syrupUSDG/mGLO/spUSDG → n/a (USDG is the loan side) | Morpho WETH collateral markets |

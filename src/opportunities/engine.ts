@@ -18,6 +18,9 @@ import { filterOpportunities, sortOpportunities, type OpportunityFilter, type So
 import { buildPortfolioOpportunity, type PortfolioOpportunity } from "./userContext.js";
 import { computeEligibility, passesEligibility } from "./eligibility.js";
 import { DEFAULT_ELIGIBILITY_POLICY, type EligibilityPolicy } from "../config/eligibility.js";
+import { QUOTE_TIMEOUT_MS } from "../config/freshness.js";
+import type { QuoteResult, TradeMarket, TradeRoute } from "../model/trade.js";
+import { buildTradeGraph, destinations, findRoutes, type EdgeRejection, type RouteSearch } from "../trade/graph.js";
 
 export interface EngineDeps {
   reader: ChainReader;
@@ -25,6 +28,8 @@ export interface EngineDeps {
   prices: PriceService;
   now?: () => Date;
   eligibilityPolicy?: EligibilityPolicy;
+  /** Override of QUOTE_TIMEOUT_MS (tests). */
+  quoteTimeoutMs?: number;
 }
 
 export interface AdapterRunSummary {
@@ -196,7 +201,54 @@ export class OpportunityEngine {
    * For every canonical asset the portfolio holds, the opportunities where it is the primary
    * asset, with user-aware context. One discovery run is shared across all held assets.
    */
-  async getPortfolioOpportunities(portfolio: Portfolio, query: OpportunityQuery = {}): Promise<EngineResult<{ assetKey: string; items: PortfolioOpportunity[] }[]>> {
+  // ---- trade (Phase 4): generic over any adapter that publishes TRADE opportunities ----
+
+  /** Every market behind a TRADE opportunity, from all adapters (full discovery, not only eligible). */
+  async getTradeMarkets(ctx?: AdapterContext): Promise<EngineResult<TradeMarket[]>> {
+    const t0 = performance.now();
+    const r = await this.getOpportunities({ eligibility: "ALL", filter: { categories: ["TRADE"] } }, ctx);
+    const seen = new Map<string, TradeMarket>();
+    for (const o of r.data) if (o.trade && !seen.has(o.trade.market.id)) seen.set(o.trade.market.id, o.trade.market);
+    return { ...r, data: [...seen.values()].sort((a, b) => a.id.localeCompare(b.id)), timingsMs: { total: elapsed(t0) } };
+  }
+
+  /** DIRECT and ONE_HOP routes between two registry keys, built from verified markets only. */
+  async getTradeRoutes(inputKey: string, outputKey: string, ctx?: AdapterContext): Promise<EngineResult<RouteSearch & { edges: number; rejected: EdgeRejection[]; graphMs: number }>> {
+    const c = ctx ?? (await this.context());
+    const markets = await this.getTradeMarkets(c);
+    const tg = performance.now();
+    const graph = buildTradeGraph(markets.data);
+    const routes = findRoutes(graph, inputKey, outputKey);
+    return { ...markets, data: { ...routes, edges: graph.markets.size, rejected: graph.rejected, graphMs: elapsed(tg) } };
+  }
+
+  /**
+   * INDICATIVE quote for one route and an explicit input amount. Routed to the single adapter that
+   * owns every market of the route; multi-venue routes are not quoted. Bounded by QUOTE_TIMEOUT_MS.
+   */
+  async getTradeQuote(route: TradeRoute, amountInRaw: bigint, ctx?: AdapterContext): Promise<QuoteResult> {
+    if (amountInRaw <= 0n) return { ok: false, reason: "amount must be positive", retryable: false };
+    if (route.properties.protocols.length !== 1) return { ok: false, reason: "routes across several venues are not quoted", retryable: false };
+    const a = this.adapters.find((x) => x.protocol.id === route.properties.protocols[0]);
+    if (!a || !a.capabilities.quotes || !a.quoteRoute) return { ok: false, reason: `${route.properties.protocols[0]} does not provide quotes`, retryable: false };
+    const c = ctx ?? (await this.context());
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        a.quoteRoute(route, amountInRaw, c),
+        new Promise<QuoteResult>((resolve) => {
+          const limit = this.deps.quoteTimeoutMs ?? QUOTE_TIMEOUT_MS;
+          timer = setTimeout(() => resolve({ ok: false, reason: `quote timed out after ${limit} ms`, retryable: true }), limit);
+        }),
+      ]);
+    } catch (e) {
+      return { ok: false, reason: `quote failed: ${(e as Error).message?.split("\n")[0] ?? "error"}`, retryable: true };
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async getPortfolioOpportunities(portfolio: Portfolio, query: OpportunityQuery = {}): Promise<EngineResult<{ assetKey: string; items: PortfolioOpportunity[]; tradeDestinations: { direct: string[]; oneHop: string[] } }[]>> {
     const t0 = performance.now();
     const ctx = await this.context();
     const { sort: _sort, ...rest } = query;
@@ -208,11 +260,15 @@ export class OpportunityEngine {
     const borrowAssets = borrowKeys.map((k) => ctx.registry.assets.find((a) => a.key === k)).filter((a): a is NonNullable<typeof a> => !!a && a.canonical);
     const priced = borrowAssets.length ? await ctx.prices.priceAssets(borrowAssets.map((asset) => ({ asset })), { blockNumber: ctx.blockNumber }) : null;
 
+    // Trade destinations from the generic graph (eligible TRADE markets only). No quotes: an
+    // amount-specific quote requires an explicit amount, never the whole balance.
+    const graph = buildTradeGraph(all.data.flatMap((o) => (o.trade ? [o.trade.market] : [])));
     const groups = held.map((row) => {
       let items = all.data.filter((o) => o.primaryAsset.key === row.asset.key);
       if (query.sort) items = sortOpportunities(items, query.sort).sorted;
       return {
         assetKey: row.asset.key,
+        tradeDestinations: destinations(graph, row.asset.key),
         items: items.map((o) => {
           const b = o.borrowAssets[0];
           const q = b ? priced?.quotes.get(b.key) : undefined;

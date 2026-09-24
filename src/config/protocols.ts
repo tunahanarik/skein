@@ -92,7 +92,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
     deploymentSource: "https://github.com/Uniswap/contracts/blob/main/deployments/json/4663.json",
     docs: "https://developers.uniswap.org/",
     dataSources: [
-      { kind: "ONCHAIN", url: "V3Factory.getPool / PoolManager Initialize logs / StateView / QuoterV2 / V4Quoter", covers4663: true },
+      { kind: "ONCHAIN", url: "v3 factory PoolCreated logs + pool views + factory.getPool round trip (Phase 4 adapter)", covers4663: true },
+      { kind: "ONCHAIN", url: "QuoterV2.quoteExactInputSingle via eth_call (INDICATIVE quotes, Phase 4)", covers4663: true },
+      { kind: "ONCHAIN", url: "v2 PairCreated / v4 PoolManager Initialize + StateView (researched; not integrated in Phase 4)", covers4663: true },
     ],
     contracts: {
       v2Factory: "0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f",

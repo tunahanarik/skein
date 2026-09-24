@@ -1,7 +1,7 @@
 {
   "script": "pendle",
-  "startedAt": "2026-09-24T08:44:49.841Z",
-  "finishedAt": "2026-09-24T08:44:52.792Z",
+  "startedAt": "2026-09-24T10:27:52.398Z",
+  "finishedAt": "2026-09-24T10:27:54.110Z",
   "checks": [
     {
       "name": "pendle api chains",
@@ -13,13 +13,13 @@
       "status": "PASS",
       "detail": "9 listed markets on 4663",
       "evidence": {
-        "fetchedAt": "2026-09-24T08:44:51.752Z"
+        "fetchedAt": "2026-09-24T10:27:53.466Z"
       }
     },
     {
       "name": "market NVDA (Robinhood) 0x206a5cd0…",
       "status": "PASS",
-      "detail": "expiry 2026-10-15, implied 7.29%, liquidity $152,797, SY wraps canonical Stock Token NVDA",
+      "detail": "expiry 2026-10-15, implied 7.29%, liquidity $152,880, SY wraps canonical Stock Token NVDA",
       "evidence": {
         "market": "0x206a5cd00e9ffabb8ca564076b64799a78df19b9",
         "sy": "0x82cC738064816eD7441E3c4D917503Ca5388dFE9",
@@ -29,35 +29,35 @@
         "underlying": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
         "canonicalStockToken": "NVDA",
         "api": {
-          "liquidity": 152797.06308073844,
-          "totalTvl": 179012.8425684691,
-          "tradingVolume": 17233.554516315522,
+          "liquidity": 152880.29787686543,
+          "totalTvl": 179110.40986312466,
+          "tradingVolume": 4449.361808051622,
           "underlyingApy": 0,
-          "swapFeeApy": 0.0030587863915254587,
+          "swapFeeApy": 0.0030587493743436944,
           "pendleApy": 0,
           "ytFloatingApy": -1,
-          "impliedApy": 0.07288749472854539,
+          "impliedApy": 0.07288749472854605,
           "feeRate": 0.0013465349584396158,
           "yieldRange": {
             "min": 0,
             "max": 0.07999999999999997
           },
-          "aggregatedApy": 0.06572579153882502,
-          "maxBoostedApy": 0.06572579153882502,
+          "aggregatedApy": 0.06572587567172224,
+          "maxBoostedApy": 0.06572587567172224,
           "totalPt": 591.6700642647121,
           "totalSy": 96.03917429266522,
           "totalSupply": 219.60789498297214,
           "totalActiveSupply": 219.60789498297214,
           "ytRoi": -1,
-          "ptRoi": 0.003985456297964651
+          "ptRoi": 0.003971614494945763
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market sNET (NetNet) 0x23c68474…",
       "status": "PASS",
-      "detail": "expiry 2026-09-17 (EXPIRED), implied 0.00%, liquidity $5,404",
+      "detail": "expiry 2026-09-17 (EXPIRED), implied 0.00%, liquidity $5,544",
       "evidence": {
         "market": "0x23c68474e3cd533a2f952a0fb998f1867e57d27f",
         "sy": "0x5d446A2bE952F4F9bA241b382a73ad3B1819aAF5",
@@ -67,7 +67,7 @@
         "underlying": "0x53176cADd446700fa6b89f840357AC586D7e33Db",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 5403.544883614603,
+          "liquidity": 5543.612877721867,
           "totalTvl": 1369853.9497353737,
           "tradingVolume": 0,
           "underlyingApy": 209.77165571484355,
@@ -89,13 +89,13 @@
           "ytRoi": -1,
           "ptRoi": 2.800545226833151e-7
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market SHROOM (Pons) 0x25f24153…",
       "status": "PASS",
-      "detail": "expiry 2026-10-08, implied 35.00%, liquidity $694",
+      "detail": "expiry 2026-10-08, implied 35.00%, liquidity $724",
       "evidence": {
         "market": "0x25f241538bc3de8f7130706827b3f6946db51f5d",
         "sy": "0xE24A28fe8ECD859DB4280D1291783a10017d6fc4",
@@ -105,35 +105,35 @@
         "underlying": "0xab093dEF657F15dF31b33922A95e047aDd645B29",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 693.7834096213892,
-          "totalTvl": 693.7834096213892,
+          "liquidity": 723.6342321863963,
+          "totalTvl": 723.6342321863963,
           "tradingVolume": 0,
-          "underlyingApy": 0.11922389837007571,
+          "underlyingApy": 0.11212137415359251,
           "swapFeeApy": 0,
-          "pendleApy": 2.876045661037351,
-          "ytFloatingApy": -0.9999999999945381,
-          "impliedApy": 0.350000000000001,
+          "pendleApy": 2.7172511709496208,
+          "ytFloatingApy": -0.9999999999990884,
+          "impliedApy": 0.35000000000000053,
           "feeRate": 0.006020140494095383,
           "yieldRange": {
             "min": 4.3e-17,
             "max": 0.9999999999999998
           },
-          "aggregatedApy": 3.0921876315121617,
-          "maxBoostedApy": 7.50998702931507,
+          "aggregatedApy": 2.929276842375362,
+          "maxBoostedApy": 7.102702535338045,
           "totalPt": 19062.078010669826,
           "totalSy": 26033.997640932637,
           "totalSupply": 22276.940857331647,
           "totalActiveSupply": 22276.940857331647,
-          "ytRoi": -0.6204696343948721,
-          "ptRoi": 0.011274467661710919
+          "ytRoi": -0.6430898690409621,
+          "ptRoi": 0.011214995903025216
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market SHROOM (Pons) 0x49e5d9de…",
       "status": "PASS",
-      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $769,742",
+      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $794,755",
       "evidence": {
         "market": "0x49e5d9de386b5ff5cc344748977a412d07191256",
         "sy": "0xE24A28fe8ECD859DB4280D1291783a10017d6fc4",
@@ -143,7 +143,7 @@
         "underlying": "0xab093dEF657F15dF31b33922A95e047aDd645B29",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 769741.6974237164,
+          "liquidity": 794754.5328948223,
           "totalTvl": 809433.181722007,
           "tradingVolume": 58978.18223102585,
           "underlyingApy": 0.11876848777269398,
@@ -165,13 +165,13 @@
           "ytRoi": -1,
           "ptRoi": 4.7864030072730657e-8
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market sNUKE (NUKES.FUN) 0x8547b391…",
       "status": "PASS",
-      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $5,996",
+      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $6,148",
       "evidence": {
         "market": "0x8547b391a65deb89c41a4c3b2eb1502d0bbc566a",
         "sy": "0x9E9093A12b343C0f4d519Ab093BEF989b1936F73",
@@ -181,7 +181,7 @@
         "underlying": "0xaE8fC9288685516d2Eca717056ca69303B348752",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 5995.632683625639,
+          "liquidity": 6147.5020267997315,
           "totalTvl": 8901.189212865072,
           "tradingVolume": 0,
           "underlyingApy": 22.074771522334828,
@@ -203,13 +203,13 @@
           "ytRoi": -1,
           "ptRoi": 1.1948318423549154e-7
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market PFE (Robinhood) 0x892defbf…",
       "status": "PASS",
-      "detail": "expiry 2026-12-10, implied 6.11%, liquidity $83,817, SY wraps canonical Stock Token PFE",
+      "detail": "expiry 2026-12-10, implied 6.11%, liquidity $83,822, SY wraps canonical Stock Token PFE",
       "evidence": {
         "market": "0x892defbf510d9baa96dbd2a51b13e879a857a79b",
         "sy": "0x8c7454D4d64aBd04fbf5F5ffe0Dbcd5E3ABcEcf6",
@@ -219,35 +219,35 @@
         "underlying": "0x7066A64c24e4206CD62E83bf198c1E7EB361F51e",
         "canonicalStockToken": "PFE",
         "api": {
-          "liquidity": 83816.96781234973,
-          "totalTvl": 84846.72993694413,
+          "liquidity": 83821.66388124393,
+          "totalTvl": 84851.48957662297,
           "tradingVolume": 22.80463517498381,
           "underlyingApy": 0,
-          "swapFeeApy": 0.0010159354422420996,
+          "swapFeeApy": 0.001015929196375831,
           "pendleApy": 0,
           "ytFloatingApy": -1,
-          "impliedApy": 0.06111399657054584,
+          "impliedApy": 0.06111399657054539,
           "feeRate": 0.0011531737895293936,
           "yieldRange": {
             "min": 0,
             "max": 0.11999999999999998
           },
-          "aggregatedApy": 0.032705837834222436,
-          "maxBoostedApy": 0.032705837834222436,
+          "aggregatedApy": 0.0327060089505628,
+          "maxBoostedApy": 0.0327060089505628,
           "totalPt": 1571.7841814279448,
           "totalSy": 1441.3388402095766,
           "totalSupply": 1367.5344507808454,
           "totalActiveSupply": 1367.5344507808454,
           "ytRoi": -1,
-          "ptRoi": 0.012532621877673122
+          "ptRoi": 0.012520851663659682
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market sNET (NetNet) 0xab009394…",
       "status": "PASS",
-      "detail": "expiry 2026-10-01, implied 11015.59%, liquidity $490,283",
+      "detail": "expiry 2026-10-01, implied 11015.59%, liquidity $505,733",
       "evidence": {
         "market": "0xab0093949fefa432bfb1a0ba8943ee4aebc898a8",
         "sy": "0x5d446A2bE952F4F9bA241b382a73ad3B1819aAF5",
@@ -257,35 +257,35 @@
         "underlying": "0x53176cADd446700fa6b89f840357AC586D7e33Db",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 490282.68675519695,
-          "totalTvl": 619554.433346538,
-          "tradingVolume": 176868.46218113852,
+          "liquidity": 505733.24351092894,
+          "totalTvl": 639167.3963217232,
+          "tradingVolume": 168696.08299353765,
           "underlyingApy": 193.5750048520217,
-          "swapFeeApy": 0.09294439362498541,
-          "pendleApy": 0.0761451410198412,
-          "ytFloatingApy": 4232.353079460489,
-          "impliedApy": 110.15587152637443,
+          "swapFeeApy": 0.0908721687076639,
+          "pendleApy": 0.07274387826770275,
+          "ytFloatingApy": 4389.810330998596,
+          "impliedApy": 110.15587152637389,
           "feeRate": 0.04998999999999998,
           "yieldRange": {
             "min": 65,
             "max": 294.99999999999994
           },
-          "aggregatedApy": 169.20305941163505,
-          "maxBoostedApy": 169.3172771231648,
+          "aggregatedApy": 169.18159210014898,
+          "maxBoostedApy": 169.29070791755052,
           "totalPt": 257.0875913364261,
           "totalSy": 158.58982603375625,
           "totalSupply": 209.09610081799525,
           "totalActiveSupply": 209.09610081799525,
-          "ytRoi": 0.16394848365718295,
-          "ptRoi": 0.08942016389718654
+          "ytRoi": 0.16280872833515803,
+          "ptRoi": 0.08841489141122527
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market SGOV (Robinhood) 0xd6e26e95…",
       "status": "PASS",
-      "detail": "expiry 2026-11-19, implied 3.22%, liquidity $22,767, SY wraps canonical Stock Token SGOV",
+      "detail": "expiry 2026-11-19, implied 3.22%, liquidity $22,768, SY wraps canonical Stock Token SGOV",
       "evidence": {
         "market": "0xd6e26e957b3207a5c618213d928647ec84150ca0",
         "sy": "0x06fC2568fa3C8A9862D8f35bc6758355b3A32F51",
@@ -295,35 +295,35 @@
         "underlying": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
         "canonicalStockToken": "SGOV",
         "api": {
-          "liquidity": 22766.907825008526,
-          "totalTvl": 22798.91361927067,
+          "liquidity": 22768.073440014134,
+          "totalTvl": 22800.081024428087,
           "tradingVolume": 3740.732703288063,
           "underlyingApy": 0,
-          "swapFeeApy": 0.0025930328922427748,
-          "pendleApy": 0.0868638807123699,
+          "swapFeeApy": 0.0025093579423087764,
+          "pendleApy": 0.010394804110863166,
           "ytFloatingApy": -1,
-          "impliedApy": 0.032157584440476006,
+          "impliedApy": 0.03215758444047556,
           "feeRate": 0.0006332274739893062,
           "yieldRange": {
             "min": 0.009999999999999993,
             "max": 0.09999999999999999
           },
-          "aggregatedApy": 0.09753796779556419,
-          "maxBoostedApy": 0.22783378886411904,
+          "aggregatedApy": 0.02098525377194227,
+          "maxBoostedApy": 0.03657745993823702,
           "totalPt": 57.17324898760777,
           "totalSy": 168.66052807620105,
           "totalSupply": 88.82700682176986,
           "totalActiveSupply": 88.82700682176986,
           "ytRoi": -1,
-          "ptRoi": 0.0048361696607526206
+          "ptRoi": 0.004829937077805546
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     },
     {
       "name": "market microduck (Pons) 0xdd34d947…",
       "status": "PASS",
-      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $900",
+      "detail": "expiry 2026-09-24 (EXPIRED), implied 0.00%, liquidity $854",
       "evidence": {
         "market": "0xdd34d9471667107f9b45e2204add3dd4da54e5a6",
         "sy": "0xf001572d32df8eF80850A2c90fB66F313fa82176",
@@ -333,7 +333,7 @@
         "underlying": "0xD5f1afEA47b1A9eab414D2ee740cF1d6d039E725",
         "canonicalStockToken": null,
         "api": {
-          "liquidity": 899.5872979412845,
+          "liquidity": 854.0735260870515,
           "totalTvl": 1607.797819244154,
           "tradingVolume": 471.03503024793935,
           "underlyingApy": 0.09526528516360874,
@@ -355,7 +355,7 @@
           "ytRoi": -1,
           "ptRoi": 8.049360245010462e-8
         },
-        "block": "71236855"
+        "block": "71298021"
       }
     }
   ]

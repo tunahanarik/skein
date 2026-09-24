@@ -17,6 +17,7 @@ import type { DataSource } from "./provenance.js";
 import type { VerificationStatus } from "./verification.js";
 import type { Warning } from "./warnings.js";
 import type { AssetRelationship } from "./assetRelationship.js";
+import type { TradeMarket, TradeRoute } from "./trade.js";
 
 export const OPPORTUNITY_CATEGORIES = ["TRADE", "LEND", "BORROW", "COLLATERAL", "LP", "VAULT", "FIXED_YIELD", "YIELD"] as const;
 export type OpportunityCategory = (typeof OPPORTUNITY_CATEGORIES)[number];
@@ -213,7 +214,9 @@ export type EligibilityReason =
   | "ZERO_LIQUIDITY"
   // Phase 4 (policy P3-1 / P3-2)
   | "UNRESOLVED_YIELD_SEMANTICS"
-  | "DUST_LIQUIDITY";
+  | "DUST_LIQUIDITY"
+  // Phase 4: a TRADE market whose size cannot be priced (dust cannot be ruled out)
+  | "LIQUIDITY_UNVERIFIED";
 
 export interface Eligibility {
   /** Passes every excluding rule of the active policy. */
@@ -350,6 +353,23 @@ export type OpportunityDetails =
       protocolListed: boolean | null;
     }
   | {
+      /** Phase 4. Venue payload for a Uniswap v3 pool TRADE opportunity. */
+      kind: "UNISWAP_V3_POOL";
+      pool: Address;
+      token0: AssetRef;
+      token1: AssetRef;
+      feePpm: number;
+      tickSpacing: number;
+      sqrtPriceX96: bigint | null;
+      tick: number | null;
+      /** In-range liquidity L (not a USD amount). */
+      liquidity: bigint | null;
+      identityChecks: { check: string; ok: boolean | null; detail: string }[];
+      /** PoolCreated block; null when found by the factory getPool sweep. */
+      createdAtBlock: bigint | null;
+      discoveredVia: "EVENT" | "FACTORY_GETPOOL";
+    }
+  | {
       kind: "MORPHO_VAULT_V2";
       vault: Address;
       name: string;
@@ -390,6 +410,11 @@ export interface Opportunity {
   relationships: AssetRelationship[];
   /** Filled by the Opportunity Engine from generic rules; adapters leave it null. */
   eligibility: Eligibility | null;
+  /**
+   * TRADE opportunities only (Phase 4): the market and the DIRECT route from `primaryAsset`.
+   * Generic trade model (src/model/trade.ts); venue payload stays in `details`.
+   */
+  trade?: { market: TradeMarket; route: TradeRoute } | null;
   contracts: ContractRef[];
   risk: OpportunityRisk;
   details: OpportunityDetails;

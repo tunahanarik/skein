@@ -6,7 +6,7 @@ Checked 2026-09-24 (blocks 71,129,856–71,140,265). Evidence: `research/evidenc
 
 ### Venues
 - **Uniswap v2/v3/v4** (Uniswap Labs, chain-specific addresses) is where most of the Stock Token liquidity sits.
-- v3 forks with their own factories: Ramses CL, Up v3, Alandale, Sushi v3, PancakeSwap v3/Infinity and others. They emit the *same* v3 Swap topic, so pools must be admitted by factory, never by topic0.
+- v3 forks with their own factories: Ramses CL, Up v3, Alandale, Sushi v3, PancakeSwap v3 and others (Phase 4 correction: PancakeSwap Infinity is NOT deployed on 4663 per its official chain config; see dex-ecosystem.md). They emit the *same* v3 Swap topic, so pools must be admitted by factory, never by topic0.
 - **Lighter:** Robinhood docs [/chain/lighter-domains](https://docs.robinhood.com/chain/lighter-domains/) name contract `0x94bAB9693Ba2f6358507eFfcbd372b0660AFfF9d`. It is an orderbook with a keyless API (`api.rh.lighter.xyz`) and spot books for NVDA/USDG (id 2054), AAPL (2049) and TSLA (2055). Matching happens **offchain** in Lighter's rollup.
 - **Rialto:** a propAMM. Router registry `0x71a120CbBf3Ce7cD910a3c50fF77aFc62735687E`. Token search is keyless; quotes need an API key.
 - **Aggregators:** LI.FI routes Stock Tokens keylessly (75 quotes per 2 h). A 10,000 USDG→NVDA quote used the intent-based `lifiIntentsDex` with a 0.25 % fee. 0x, 1inch and the Uniswap Trading API need keys.

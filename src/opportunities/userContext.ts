@@ -54,6 +54,18 @@ export type PortfolioOpportunityContext =
       referenceYield: YieldMetric | null;
       caveat: string;
     }
+  | {
+      /**
+       * Phase 4: a DIRECT market where the held asset can be traded. Deliberately no quote: an
+       * amount-specific estimate needs an explicit amount (engine.getTradeQuote), never the balance.
+       */
+      kind: "TRADE";
+      held: AmountWithUsd;
+      to: AmountWithUsd["asset"];
+      marketId: string;
+      routeKind: "DIRECT";
+      note: string;
+    }
   | { kind: "NONE"; reason: string };
 
 
@@ -124,6 +136,21 @@ export function buildPortfolioOpportunity(o: Opportunity, row: PortfolioAsset, b
       opportunity: o,
       holding,
       context: { kind: "ENTER_POSITION", enterWith: amount(o.primaryAsset, row.rawBalance, heldPrice), entry: o.entry, lifecycle: o.lifecycle, referenceYield: reference, caveat: ENTER_CAVEAT[o.category] ?? "" },
+    };
+  }
+  if (o.category === "TRADE") {
+    if (!o.trade || o.trade.route.input.key !== row.asset.key) return { opportunity: o, holding, context: { kind: "NONE", reason: "trade input is not the held asset" } };
+    return {
+      opportunity: o,
+      holding,
+      context: {
+        kind: "TRADE",
+        held: amount(o.primaryAsset, row.rawBalance, heldPrice),
+        to: o.trade.route.output,
+        marketId: o.trade.market.id,
+        routeKind: "DIRECT",
+        note: "Market only. No amount is quoted automatically; request an indicative quote with an explicit amount.",
+      },
     };
   }
   if (o.category === "LEND" || o.category === "VAULT") {

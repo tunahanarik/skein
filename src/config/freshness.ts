@@ -111,6 +111,22 @@ export const CACHE_TTL_MS = {
    * extended incrementally from the last scanned block, so a short TTL is cheap.
    */
   PROTOCOL_MARKET_LIST: 10 * 60_000,
+  /**
+   * Phase 4 trade caches. Pool identity (tokens, fee, factory origin) is immutable per pool;
+   * the pool list grows by creation events and is rescanned incrementally.
+   */
+  POOL_LIST: 10 * 60_000,
+  POOL_IDENTITY: 24 * 60 * 60_000,
+  /** Pool state (price, liquidity, balances): read at the context block; this only bounds reuse. */
+  POOL_STATE: 15_000,
+  /**
+   * Secondary pools (a canonical token paired with a NON-registry token; never in the default
+   * view, never a routing edge, never quoted): their state is re-read at most this often and
+   * labelled with the block it came from. Measured: ~1,950 of 2,412 indexed pools (2026-09-24).
+   */
+  POOL_STATE_SECONDARY: 5 * 60_000,
+  /** Indicative quotes: very short-lived; see docs/trade-routing.md for the measured swap rate. */
+  QUOTE: 5_000,
   /** Longest we will serve a last-good protocol state after a failed refresh (marked degraded). */
   PROTOCOL_STATE_STALE_FALLBACK: 6 * 60 * 60_000,
 } as const;
@@ -139,6 +155,8 @@ export const PROTOCOL_RATE_CONFLICT_PCT = 1;
  * Service. The API uses its own prices and an earlier index; observed gap 0.3 % (2026-09-24).
  */
 export const PROTOCOL_LIQUIDITY_CONFLICT_PCT = 5;
+/** A read-only quote call that takes longer than this is abandoned (retryable failure). */
+export const QUOTE_TIMEOUT_MS = 8_000;
 /** Beyond this, an oracle price is reported as deviating from our independent price. */
 export const ORACLE_DEVIATION_WARNING_PCT = 2;
 

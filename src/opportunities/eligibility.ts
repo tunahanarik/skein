@@ -25,6 +25,9 @@ export function eligibilityReasons(o: Opportunity, policy: EligibilityPolicy = D
   // Venue size: the larger of TVL and available liquidity, when at least one is priced.
   const sizes = [o.tvl?.value.usd?.e18, liq?.usd?.e18].filter((v): v is bigint => v !== undefined && v !== null);
   if (sizes.length && sizes.reduce((a, b) => (a > b ? a : b)) < policy.dustLiquidityUsdE18) r.add("DUST_LIQUIDITY");
+  // Category rule: a trade venue's size is its market TVL (both sides priced); one priced
+  // reserve is not enough to show it is not dust.
+  if (o.category === "TRADE" && !o.tvl?.value.usd) r.add("LIQUIDITY_UNVERIFIED");
   if (headlineMetric(o)?.semantics?.status === "UNRESOLVED") r.add("UNRESOLVED_YIELD_SEMANTICS");
   return [...r];
 }

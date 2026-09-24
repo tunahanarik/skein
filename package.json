@@ -25,7 +25,10 @@
     "registry:check": "tsx scripts/registry-snapshot.ts --check",
     "portfolio": "tsx scripts/portfolio.ts",
     "validate:opportunities": "tsx scripts/validate-opportunities.ts",
-    "opportunities": "tsx scripts/opportunities.ts"
+    "opportunities": "tsx scripts/opportunities.ts",
+    "trade:inspect": "tsx scripts/trade-inspect.ts",
+    "uniswap:index": "tsx scripts/uniswap-index.ts",
+    "validate:uniswap": "tsx scripts/validate-uniswap.ts"
   },
   "dependencies": {
     "viem": "2.56.8",

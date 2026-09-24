@@ -9,7 +9,8 @@ OpportunityEngine ── context(): registry + latest block (every onchain read 
    │  run(adapter)  ← failure isolation: a throwing adapter becomes status UNKNOWN + ADAPTER_FAILED
    ├── MorphoAdapter            (Phase 2 reference adapter)
    ├── PendleAdapter            (Phase 3: maturity-based markets)
-   └── <future adapters>        (Uniswap, Spark … — no engine change needed)
+   ├── UniswapAdapter           (Phase 4: TRADE markets, v3; indicative quotes)
+   └── <future adapters>        (Spark, other DEXes … — no engine change needed)
    │  merge → de-duplicate ids (DUPLICATE_OPPORTUNITY_ID) → eligibility (generic policy) → filter → sort
    ▼
 EngineResult<T> { data, status COMPLETE|PARTIAL|UNKNOWN, adapters[], warnings[], blockNumber, generatedAt, timingsMs, excluded{total, byReason}, notComparable? }
@@ -24,6 +25,16 @@ The engine contains **no protocol logic**. It never reads `Opportunity.details`.
 | `getAssetOpportunities(assetKey, query?)` | opportunities whose **primary asset** is `assetKey` (`4663:<address>`, never a symbol) |
 | `getUserPositions(wallet)` | existing positions (separate from opportunities) |
 | `getPortfolioOpportunities(portfolio, query?)` | for each canonical asset held: its opportunities plus user-aware context |
+
+Phase 4 trade methods. All are generic and read only `Opportunity.trade`, never `details`:
+
+| Method | Returns |
+|---|---|
+| `getTradeMarkets()` | every `TradeMarket` behind a TRADE opportunity, from all adapters (full discovery) |
+| `getTradeRoutes(inKey, outKey)` | DIRECT and ONE_HOP routes from the generic graph, plus graph stats and edge rejections |
+| `getTradeQuote(route, amountRaw)` | an INDICATIVE quote from the single venue owning the route, bounded by `QUOTE_TIMEOUT_MS` |
+
+`getPortfolioOpportunities` adds a TRADE context per market and `tradeDestinations { direct, oneHop }` per held asset. It never quotes.
 
 `query` = `{ filter?, sort?, eligibility?: "ELIGIBLE_ONLY" (default) | "ALL", includeReasons? }`. See [opportunity-comparison.md](opportunity-comparison.md) for the eligibility policy.
 
@@ -103,6 +114,9 @@ Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denomi
 | protocol API down, last-good state ≤ 6 h | stale state is served, PARTIAL, `STALE_PROTOCOL_DATA` |
 | protocol API down, no cache | the adapter fails; the engine returns that adapter as UNKNOWN (`ADAPTER_FAILED`) and other adapters continue |
 | Morpho COMPLETE + Pendle PARTIAL/UNKNOWN | overall PARTIAL; Morpho results unaffected (tested) |
+| Uniswap failed, Morpho + Pendle healthy | PARTIAL; their results preserved (tested) |
+| only one adapter healthy | PARTIAL; that adapter's opportunities returned (tested) |
+| one unreadable pool | only that market is UNREADABLE / excluded; the adapter is PARTIAL |
 | every adapter failed | UNKNOWN |
 
 ## Performance, Phase 3 (live, public RPC, 2026-09-24)

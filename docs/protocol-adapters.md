@@ -38,6 +38,14 @@ interface OpportunityAdapter {
     Leave `eligibility: null`: the engine computes it.
 11. **(Phase 3) Only advertise implemented capabilities.** Pendle declares `userPositions: true` because balances and rates are fully interpretable onchain.
 12. **(Phase 3) Sanitize token metadata.** Chain-read symbols go through `sanitizeSymbol` (`src/lib/sanitize.ts`), and API strings through `sanitizeLabel`.
+13. **(Phase 4) TRADE adapters** publish `Opportunity.trade = { market, route }` using the generic trade model (`src/model/trade.ts`). Rules:
+    - One opportunity per direction.
+    - `yields` stays empty.
+    - DEX prices are `DEX_MARKET_PRICE`; USD always comes from the Phase 1 Price Service.
+14. **(Phase 4) Quotes are optional.** Declare `capabilities.quotes` and implement `quoteRoute(route, amountRaw, ctx)` only when a read-only quoting method is verified on the deployment. Rules:
+    - Never build calldata.
+    - Never expose a minimum output.
+    - Refuse routes containing unverified or non-canonical markets.
 
 ## Adding a protocol
 1. Create `src/protocols/<name>/` with API/onchain readers, a pure `normalize.ts`, and `adapter.ts`.

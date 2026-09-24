@@ -37,6 +37,7 @@ export const DEFAULT_ELIGIBILITY_POLICY: EligibilityPolicy = {
     // Phase 4 policy decisions (user-approved):
     "UNRESOLVED_YIELD_SEMANTICS", // P3-1: e.g. Stock Token YT whose Pendle −100% may omit multiplier growth
     "DUST_LIQUIDITY", // P3-2: venue too small to be actionable
+    "LIQUIDITY_UNVERIFIED", // Phase 4: TRADE market with no priced size (non-dust cannot be shown)
   ],
   // A display hint, not a safety threshold: under $10k a single mid-size entry moves the market.
   lowLiquidityUsdE18: 10_000n * 10n ** 18n,

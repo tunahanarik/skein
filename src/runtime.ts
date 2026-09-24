@@ -12,6 +12,8 @@ import { getPortfolio, type PortfolioOptions } from "./portfolio/engine.js";
 import { OpportunityEngine } from "./opportunities/engine.js";
 import { MorphoAdapter } from "./protocols/morpho/adapter.js";
 import { PendleAdapter } from "./protocols/pendle/adapter.js";
+import { UniswapAdapter } from "./protocols/uniswap/adapter.js";
+import { FilePoolListStore } from "./protocols/uniswap/poolStore.js";
 import { PriceService } from "./pricing/priceService.js";
 import { loadAssetRegistry, type AssetRegistry } from "./registry/registry.js";
 import { DEFAULT_SNAPSHOT_PATH, readSnapshotFile, type RegistrySnapshot } from "./registry/snapshot.js";
@@ -28,7 +30,10 @@ export interface Runtime {
   opportunities: OpportunityEngine;
 }
 
-export function createRuntime(env: Record<string, string | undefined> = process.env, opts: { snapshotPath?: string; verifyOnchain?: boolean } = {}): Runtime {
+/** Discovered-pool cache (factory events), re-verified onchain on load. Not committed. */
+export const UNISWAP_POOL_CACHE_PATH = ".cache/uniswap-v3-pools-4663.json";
+
+export function createRuntime(env: Record<string, string | undefined> = process.env, opts: { snapshotPath?: string; verifyOnchain?: boolean; poolCachePath?: string } = {}): Runtime {
   const rpc = resolveRpcConfig(env, runtimeMode(env));
   const reader = new ViemChainReader(rpc);
   const http = new HttpClient();
@@ -54,6 +59,6 @@ export function createRuntime(env: Record<string, string | undefined> = process.
     baseline,
     getRegistry,
     getPortfolio: (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o),
-    opportunities: new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http)], { reader, getRegistry, prices }),
+    opportunities: new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) })], { reader, getRegistry, prices }),
   };
 }

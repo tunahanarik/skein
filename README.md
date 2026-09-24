@@ -2,7 +2,7 @@
 
 Read-only DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?"
 
-**Status: Phase 3 done: Pendle adapter (fixed yield / yield / LP, maturity-aware) + default eligibility**, on top of the Phase 2 Opportunity Engine + Morpho adapter and the Phase 1 Portfolio Engine, Asset Registry and Price Service. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
+**Status: Phase 4 done: DEX discovery + Uniswap v3 TRADE adapter** (verified pools, DIRECT and ONE_HOP routes, read-only INDICATIVE quotes), on top of Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). Still read-only: no swaps, approvals, signatures or transactions. There is no UI (developer CLIs only) and no execution. The code cannot sign anything. See [docs/mvp.md](docs/mvp.md).
 
 ## Layout
 ```
@@ -15,6 +15,8 @@ src/portfolio/            balance reader + Portfolio Engine
 src/opportunities/        Opportunity Engine, adapter interface, filters/sorting, user-aware context
 src/protocols/morpho/     Morpho adapter (API client, onchain reads, normalization, oracle check, vaults, positions)
 src/protocols/pendle/     Pendle adapter (onchain discovery via factory logs, identity checks, API client, PT/YT/LP normalization, positions)
+src/protocols/uniswap/    Uniswap v3 adapter (resumable pool-event index + factory sweep, pool verification, state/TVL, QuoterV2 quotes)
+src/trade/                generic trade graph, DIRECT/ONE_HOP routing, quote comparison (venue-independent)
 src/model/                Opportunity, RiskMetadata, provenance (DataSource / Sourced<T>), verification states, warning codes
 src/lib/                  exact decimal math, Stock Token balance + valuation, rates, freshness, validation, trusted links
 src/sources/              zod schemas for the Robinhood Stock Token API and the Chainlink directory
@@ -32,7 +34,7 @@ test/unit, test/integration  offline tests (fixture world in test/fixtures)
 pnpm install
 pnpm test                       # unit + integration tests (offline)
 pnpm typecheck
-pnpm validate                   # all live checks: Phase 0–3 (read-only)
+pnpm validate                   # all live checks: Phase 0–4 (read-only)
 pnpm validate:portfolio         # Phase 1 live checks only
 pnpm portfolio --address 0x…    # portfolio CLI (--json, --include-zero, --token 0x…)
 pnpm registry:check             # diff live Stock Token registry vs committed snapshot
@@ -42,6 +44,11 @@ pnpm opportunities [--asset NVDA|0x…] [--address 0x…] [--json]   # opportuni
 pnpm validate:opportunities     # Phase 2 live checks only
 pnpm validate:pendle            # Phase 3 live checks (Pendle adapter + combined engine)
 pnpm validate:pendle:research   # Phase 0 Pendle research checks
+pnpm opportunities --asset NVDA --category TRADE        # where can NVDA be traded
+pnpm opportunities --asset NVDA --to USDG [--amount 1]  # routes (+ INDICATIVE quotes with an explicit amount)
+pnpm trade:inspect --from NVDA --to USDG [--amount 1]   # developer view of candidate markets and routes
+pnpm uniswap:index              # finish the one-time Uniswap pool-event index (.cache/, not committed)
+pnpm validate:uniswap           # Phase 4 live checks (Uniswap + combined three-protocol view)
 ```
 
 Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider. The public RPC is rate-limited and officially not for production. No private key is ever needed.

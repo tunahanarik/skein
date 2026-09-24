@@ -8,6 +8,9 @@
  *   options: --json  --category LEND|FIXED_YIELD|YIELD|LP|…  --protocol morpho|pendle  --listed-only
  *            --min-liquidity 1000 (USD)  --min-tvl 1000 (USD)  --maturity-after 2026-10-01  --maturity-before 2027-01-01
  *            --sort SUPPLY_APY:DESC | IMPLIED_APY:DESC | BORROW_APY:ASC | TVL | LIQUIDITY | MATURITY  --limit 20
+ *   trade (Phase 4): --category TRADE  --protocol uniswap
+ *            --asset NVDA --to USDG                 DIRECT and ONE_HOP routes (no amount)
+ *            --asset NVDA --to USDG --amount 1      + an INDICATIVE quote per route (explicit amount only)
  *   eligibility (Phase 3): the default view shows only opportunities passing the default policy.
  *            --include-expired  --include-conflicted  --include-unverified   re-admit one exclusion reason
  *            --all | --debug                                                 everything discovered (debug view)
@@ -37,6 +40,8 @@ interface Args {
   maturityAfter?: string;
   maturityBefore?: string;
   include: EligibilityReason[];
+  to?: string;
+  amount?: string;
 }
 
 function parseArgs(argv: string[]): Args {
@@ -60,6 +65,8 @@ function parseArgs(argv: string[]): Args {
     else if (k === "--min-liquidity") a.minLiquidity = next();
     else if (k === "--sort") a.sort = next().toUpperCase();
     else if (k === "--limit") a.limit = Number(next()) || 25;
+    else if (k === "--to") a.to = next();
+    else if (k === "--amount") a.amount = next();
   }
   return a;
 }
@@ -89,6 +96,35 @@ function parseDateS(s: string, flag: string): bigint {
   return BigInt(t / 1000);
 }
 
+/** Resolve a CLI symbol or address to ONE canonical registry asset; ambiguity is an error. */
+function resolveCanonical(registry: Awaited<ReturnType<ReturnType<typeof createRuntime>["getRegistry"]>>, input: string, json: boolean) {
+  if (/^0x/i.test(input)) {
+    const addr = parseAddress(input);
+    const a = registry.get(4663, addr);
+    if (!a || !a.canonical) throw new ValidationError(`${addr} is not a canonical registry asset`);
+    return a;
+  }
+  const hits = registry.canonicalBySymbol(input);
+  if (hits.length !== 1) throw new ValidationError(`symbol "${input}" matches ${hits.length} canonical assets; pass the contract address`);
+  if (!json) console.log(`(symbol ${input} resolved to canonical ${hits[0]!.address})`);
+  return hits[0]!;
+}
+
+function printTrade(o: Opportunity): void {
+  const m = o.trade?.market;
+  if (!m) return;
+  if (m.price) {
+    const p = o.primaryAsset.key === m.price.base.key ? m.price : m.priceInverse;
+    if (p) console.log(pad("Pool price") + `1 ${p.base.symbol} = ${formatFixed18(p.value.value)} ${p.quote.symbol}  [DEX_MARKET_PRICE, onchain slot0; not the portfolio price]`);
+  }
+  if (m.fee) console.log(pad("Fee tier") + `${(m.fee.value.ppm ?? 0) / 10_000}%  [onchain]`);
+  console.log(pad("Pool TVL") + `${usd(m.liquidity.tvl?.value.display)}  [balances × Phase 1 prices]`);
+  for (const r of m.liquidity.reserves) console.log(pad("  reserve") + `${r.value.amount?.display} ${r.value.asset.symbol} (${usd(r.value.usd?.display)})`);
+  if (m.liquidity.activeLiquidity) console.log(pad("Active liquidity L") + `${m.liquidity.activeLiquidity.value}  (in-range, not USD)`);
+  console.log(pad("Route") + `${o.trade!.route.kind}: ${o.primaryAsset.symbol} → ${o.outputAssets[0]?.symbol}  · state ${m.state} · origin ${m.originVerified ? "factory-verified" : "NOT verified"}`);
+  console.log(pad("24h volume") + "not reported (needs Swap-log indexing; not verified in Phase 4)");
+}
+
 function printOpportunity(o: Opportunity): void {
   console.log(`\n  ${o.protocol.name.toUpperCase()}  ${o.category}  ${o.title}`);
   console.log(pad("id") + o.id);
@@ -104,13 +140,14 @@ function printOpportunity(o: Opportunity): void {
   if (o.eligibility && !o.eligibility.eligibleForDefaultDisplay) console.log(pad("NOT in default view") + o.eligibility.excludedBy.join(", "));
   if (o.eligibility?.advisories.length) console.log(pad("Advisories") + o.eligibility.advisories.join(", "));
   for (const y of o.yields) console.log(pad(y.type + (y.side === "PAY" ? " (cost)" : "")) + `${formatPercent(y.value)}  [${y.label}; ${y.origin === "SUPPLIED" ? "protocol-supplied" : "computed"}, ${y.source.provider}, ${age(y.freshness.ageSeconds)}]`);
+  if (o.category === "TRADE") printTrade(o);
   if (o.liquidation) {
     console.log(pad("LLTV") + `${formatPercent(o.liquidation.lltv.value, 1)}  [onchain]`);
     if (o.liquidation.liquidationIncentiveFactor) console.log(pad("Liq. incentive") + `${formatFixed18(o.liquidation.liquidationIncentiveFactor.value)}×  [computed from LLTV]`);
   }
-  if (o.availableLiquidity) console.log(pad(o.liquidityKind === "POOL_LIQUIDITY" ? "Pool liquidity" : "Available liquidity") + `${o.availableLiquidity.value.amount?.display ?? "?"} ${o.availableLiquidity.value.asset.symbol} (${usd(o.availableLiquidity.value.usd?.display)})`);
+  if (o.availableLiquidity && o.category !== "TRADE") console.log(pad(o.liquidityKind === "POOL_LIQUIDITY" ? "Pool liquidity" : "Available liquidity") + `${o.availableLiquidity.value.amount?.display ?? "?"} ${o.availableLiquidity.value.asset.symbol} (${usd(o.availableLiquidity.value.usd?.display)})`);
   if (o.utilization) console.log(pad("Utilization") + formatPercent(o.utilization.value));
-  if (o.tvl) console.log(pad(o.category === "COLLATERAL" ? "Collateral posted" : "TVL") + `${o.tvl.value.amount?.display ?? "?"} ${o.tvl.value.asset.symbol} (${usd(o.tvl.value.usd?.display)}) [${o.tvl.source.provider}]`);
+  if (o.tvl && o.category !== "TRADE") console.log(pad(o.category === "COLLATERAL" ? "Collateral posted" : "TVL") + `${o.tvl.value.amount?.display ?? "?"} ${o.tvl.value.asset.symbol} (${usd(o.tvl.value.usd?.display)}) [${o.tvl.source.provider}]`);
   if (o.risk.oracle) console.log(pad("Oracle") + `${o.risk.oracle.address} ${o.risk.oracle.reportedType ?? ""} · check: ${o.risk.oracle.multiplierCheck}`);
   console.log(pad("Listed by protocol") + (o.risk.protocolListed.known ? String(o.risk.protocolListed.value) : "unknown"));
   console.log(pad("Verification") + `${o.verificationStatus} · freshness ${o.freshness.status} (${age(o.freshness.ageSeconds)})`);
@@ -129,6 +166,8 @@ function printPortfolioOpportunity(p: PortfolioOpportunity): void {
     } else console.log(pad("Protocol max borrow") + `unavailable (${c.unavailableReason})`);
   } else if (c.kind === "SUPPLY") {
     console.log(pad("You could supply") + `${c.suppliable.amount?.display} ${c.suppliable.asset.symbol} (${usd(c.suppliable.usd?.display)})`);
+  } else if (c.kind === "TRADE") {
+    console.log(pad("You hold") + `${c.held.amount?.display} ${c.held.asset.symbol} (${usd(c.held.usd?.display)}) → tradable to ${c.to.symbol} (${c.routeKind}); ${c.note}`);
   } else if (c.kind === "ENTER_POSITION") {
     console.log(pad("You could enter with") + `${c.enterWith.amount?.display} ${c.enterWith.asset.symbol} (${usd(c.enterWith.usd?.display)}) — ${c.caveat}`);
   }
@@ -187,6 +226,39 @@ try {
         assetKey = hits[0]!.key;
         if (!args.json) console.log(`(symbol ${args.asset} resolved to canonical ${hits[0]!.address})`);
       }
+    }
+    if (args.to) {
+      if (!args.asset) throw new ValidationError("--to needs --asset");
+      const from = resolveCanonical(registry, args.asset, args.json);
+      const to = resolveCanonical(registry, args.to, args.json);
+      const routes = await rt.opportunities.getTradeRoutes(from.key, to.key);
+      let amountRaw: bigint | null = null;
+      if (args.amount !== undefined) {
+        if (!/^\d+(\.\d+)?$/.test(args.amount)) throw new ValidationError("--amount must be a positive decimal number");
+        amountRaw = parseUnits(args.amount, from.decimals);
+        if (amountRaw <= 0n) throw new ValidationError("--amount must be positive");
+      }
+      const all = [...routes.data.direct, ...routes.data.oneHop];
+      const quotes = amountRaw === null ? [] : await Promise.all(all.map((r) => rt.opportunities.getTradeQuote(r, amountRaw!)));
+      if (args.json) {
+        console.log(JSON.stringify({ routes: routes.data, quotes }, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2));
+      } else {
+        console.log(`ROUTES ${from.symbol} → ${to.symbol}  block ${routes.blockNumber}  status ${routes.status}  (${routes.data.direct.length} direct, ${routes.data.oneHop.length} one-hop; order: ${routes.data.ordering}; ${routes.data.edges} verified edges, graph ${routes.data.graphMs} ms)`);
+        all.forEach((r, i) => {
+          const tvl = r.properties.bottleneckTvlUsd ? usd(r.properties.bottleneckTvlUsd.display) : "unknown";
+          console.log(`\n  ${r.kind}  ${[r.input, ...r.intermediates, r.output].map((a) => a.symbol).join(" → ")}  via ${r.hops.map((h) => h.marketId.split(":").pop()!.slice(0, 10) + "… (" + (h.fee?.ppm ?? "?") + " ppm)").join(", ")}`);
+          console.log(pad("bottleneck TVL") + `${tvl} · combined fee ${r.properties.combinedFeePpm ?? "?"} ppm · all verified ${r.properties.allMarketsVerified} · all canonical ${r.properties.allAssetsCanonical}`);
+          const q = quotes[i];
+          if (q?.ok) {
+            const qq = q.quote;
+            console.log(pad("INDICATIVE QUOTE") + `${qq.input.display} ${qq.input.asset.symbol} → ${qq.expectedOutput.display} ${qq.expectedOutput.asset.symbol}  (not guaranteed; no minimum output)`);
+            console.log(pad("  effective price") + `${formatFixed18(qq.effectivePrice)} ${qq.expectedOutput.asset.symbol}/${qq.input.asset.symbol} · price impact ${qq.priceImpact === null ? "n/a" : formatPercent(qq.priceImpact, 4)} (fees excluded) · block ${qq.blockNumber}`);
+            for (const f of qq.fees ?? []) console.log(pad(`  fee hop ${f.hop + 1}`) + `${f.amount.display} ${f.asset.symbol}`);
+          } else if (q) console.log(pad("quote") + `unavailable: ${q.reason}`);
+        });
+        if (!all.length) console.log("  no verified route (direct or one hop via USDG/WETH)");
+      }
+      process.exit(0);
     }
     const res = assetKey ? await rt.opportunities.getAssetOpportunities(assetKey, { filter, sort, ...eligibility }) : await rt.opportunities.getOpportunities({ filter, sort, ...eligibility });
     if (args.json) console.log(JSON.stringify(res, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2));

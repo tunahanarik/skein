@@ -42,6 +42,14 @@ export interface LogQuery {
   event: AbiEvent;
   fromBlock: bigint;
   toBlock: bigint;
+  /** Indexed-argument filter (topics). An array value means "any of" (OR). */
+  args?: Record<string, unknown>;
+  /**
+   * Do not bisect the block range on range/timeout errors; throw instead. For callers that split
+   * differently (e.g. by topic set), because a timed-out wide topic OR-set is not fixed by halving
+   * the range — each half re-scans the same set (measured 2026-09-24).
+   */
+  noRangeSplit?: boolean;
 }
 
 export interface DecodedLog {
@@ -54,10 +62,23 @@ export interface DecodedLog {
 
 /** Deepest range bisection for eth_getLogs (2^16 sub-ranges) before giving up. */
 export const MAX_LOG_SPLIT_DEPTH = 16;
+/** Hard budget of eth_getLogs sub-requests for ONE getLogs call; beyond it the call fails. */
+export const MAX_LOG_SUBREQUESTS = 512;
 
-/** Provider errors that mean "range/result set too large", which bisection can fix. */
+/** Full error text including the provider's details (viem puts them in `details` and later lines). */
+function errorText(e: unknown): string {
+  const err = e as { message?: string; details?: string; detail?: string; cause?: unknown };
+  const own = `${err?.message ?? ""} ${err?.details ?? ""} ${err?.detail ?? ""}`;
+  return err?.cause && err.cause !== e ? `${own} ${errorText(err.cause)}` : own;
+}
+
+/**
+ * Provider errors that mean "range/result set too large", which bisection can fix. Includes
+ * Robinhood Chain's "logs matched by query exceeds limit of 10000" and "log query timed out"
+ * (observed 2026-09-24 for wide ranges or large topic OR-sets).
+ */
 export function isLogRangeError(e: unknown): boolean {
-  return /more than \d+ results|query returned more than|block range|range (is )?too (large|wide)|limit exceeded|too many (logs|results)|10000/i.test((e as Error)?.message ?? "");
+  return /more than \d+ results|query returned more than|block range|range (is )?too (large|wide)|limit exceeded|exceeds limit|too many (logs|results)|log query timed out/i.test(errorText(e));
 }
 
 export interface ChainReader {
@@ -79,15 +100,18 @@ export interface ChainReader {
 
 export class RpcRequestError extends Error {
   override readonly name = "RpcRequestError";
-  constructor(message: string, readonly outcome: RpcOutcome) {
-    super(message);
+  constructor(message: string, readonly outcome: RpcOutcome, cause?: unknown) {
+    super(message, cause === undefined ? undefined : { cause });
   }
 }
 
 export function classifyRpcError(e: unknown): RpcOutcome {
   const err = e as { name?: string; status?: number; message?: string; cause?: unknown };
-  const text = `${err?.name ?? ""} ${err?.message ?? ""} ${String((err?.cause as { message?: string })?.message ?? "")}`;
-  if (err?.status === 429 || /\b429\b|too many requests|rate limit/i.test(text)) return "RATE_LIMITED";
+  // Full text incl. provider details and causes: viem wraps HTTP 429 as "unknown RPC error"
+  // with "Too Many Requests" only in its details (observed 2026-09-24).
+  const text = `${err?.name ?? ""} ${errorText(e)}`;
+  const causeStatus = (err?.cause as { status?: number } | undefined)?.status;
+  if (err?.status === 429 || causeStatus === 429 || /\b429\b|too many requests|rate limit/i.test(text)) return "RATE_LIMITED";
   if (/timeout|timed out|TimeoutError|aborted/i.test(text)) return "TIMEOUT";
   return "ERROR";
 }
@@ -97,7 +121,15 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export class ViemChainReader implements ChainReader {
   readonly chainId = ROBINHOOD_CHAIN_ID;
   private readonly client: PublicClient;
+  /**
+   * eth_getLogs goes through an UNBATCHED client: a heavy log query inside a JSON-RPC batch can
+   * make the provider answer with a non-standard error body that viem cannot parse
+   * ("Cannot read properties of undefined (reading 'error')", observed 2026-09-24). Log responses
+   * are large, so batching them gains nothing.
+   */
+  private readonly logClient: PublicClient;
   private readonly healthState: RpcHealth;
+  private lastLogRequestAt = 0;
 
   /** `client` is injectable for tests; production builds it from `config`. */
   constructor(
@@ -110,6 +142,7 @@ export class ViemChainReader implements ChainReader {
       // Retries are handled here (not by viem) so every attempt is visible to RpcHealth.
       transport: http(config.url, { batch: { batchSize: 10, wait: 20 }, retryCount: 0, timeout: config.timeoutMs }),
     });
+    this.logClient = client ?? createPublicClient({ chain: robinhoodChain, transport: http(config.url, { retryCount: 0, timeout: config.timeoutMs }) });
   }
 
   health(): RpcHealthSnapshot {
@@ -136,7 +169,8 @@ export class ViemChainReader implements ChainReader {
       }
     }
     const outcome = classifyRpcError(lastErr);
-    throw new RpcRequestError(`${label} failed: ${(lastErr as Error)?.message?.split("\n")[0] ?? "unknown"}`, outcome);
+    // The original error stays attached as `cause` (callers such as getLogs classify on its details).
+    throw new RpcRequestError(`${label} failed: ${(lastErr as Error)?.message?.split("\n")[0] ?? "unknown"}`, outcome, lastErr);
   }
 
   async assertChainId(): Promise<void> {
@@ -164,11 +198,17 @@ export class ViemChainReader implements ChainReader {
   }
 
   async getLogs(q: LogQuery): Promise<DecodedLog[]> {
+    let budget = MAX_LOG_SUBREQUESTS;
     const run = async (from: bigint, to: bigint, depth: number): Promise<DecodedLog[]> => {
+      if (--budget < 0) throw new RpcRequestError(`eth_getLogs ${q.event.name}: more than ${MAX_LOG_SUBREQUESTS} sub-requests; aborting (no partial list)`, "ERROR");
+      // Pace log queries (rate limits apply per request, not per call site).
+      const gap = (this.config.logMinIntervalMs ?? 0) - (Date.now() - this.lastLogRequestAt);
+      if (gap > 0) await sleep(gap);
+      this.lastLogRequestAt = Date.now();
       try {
         const logs = await this.withRetry(
           `eth_getLogs ${q.event.name} [${from}..${to}]`,
-          () => this.client.getLogs({ address: q.address, event: q.event, fromBlock: from, toBlock: to, strict: true } as never),
+          () => this.logClient.getLogs({ address: q.address, event: q.event, ...(q.args ? { args: q.args } : {}), fromBlock: from, toBlock: to, strict: true } as never),
           (e) => !isLogRangeError(e) && classifyRpcError(e) !== "ERROR",
         );
         return (logs as unknown as { address: Address; blockNumber: bigint; transactionHash: Hex; logIndex: number; args: Record<string, unknown> }[]).map((l) => ({
@@ -179,7 +219,7 @@ export class ViemChainReader implements ChainReader {
           args: l.args,
         }));
       } catch (e) {
-        if (to > from && depth < MAX_LOG_SPLIT_DEPTH && isLogRangeError(e)) {
+        if (!q.noRangeSplit && to > from && depth < MAX_LOG_SPLIT_DEPTH && isLogRangeError(e)) {
           const mid = from + (to - from) / 2n;
           return [...(await run(from, mid, depth + 1)), ...(await run(mid + 1n, to, depth + 1))];
         }

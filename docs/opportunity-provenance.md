@@ -33,6 +33,16 @@ Pendle examples (Phase 3):
 | pool liquidity | `COMPUTED` from `_storage`, RouterStatic rates, `SY.exchangeRate` and `SY.previewRedeem`, priced by the Phase 1 Price Service |
 | relationships | each edge carries the onchain call that proves it (see asset-relationships.md) |
 
+Uniswap examples (Phase 4):
+
+| Value | Source |
+|---|---|
+| pool identity | `ONCHAIN` `PoolCreated` event + pool views + `factory.getPool` round trip (identity block) |
+| DEX price | `ONCHAIN` `slot0().sqrtPriceX96`, `origin: COMPUTED`, formula `sqrtPriceX96² / 2^192 × 10^(dec0 − dec1)`, kind `DEX_MARKET_PRICE` |
+| reserves | `ONCHAIN` `token.balanceOf(pool)`, USD via the Price Service |
+| TVL | `COMPUTED` Σ reserves × Phase 1 price; null if a side is unpriced |
+| quote | `ONCHAIN` `QuoterV2.quoteExactInputSingle` via eth_call at the block; `INDICATIVE_QUOTE` |
+
 ## Opportunity-level status
 - `verificationStatus` = the weakest of: asset identities (canonical → VERIFIED_ONCHAIN, else UNVERIFIED), onchain totals, and yield metrics.
   - It becomes **CONFLICT** on any identity conflict (Morpho params, Pendle PT/YT/SY/expiry) or a double-applied multiplier oracle.
@@ -54,6 +64,10 @@ A missing source timestamp → **UNKNOWN**. For example, Morpho vault APYs have 
 |---|---|---|
 | PROTOCOL_MARKET_CONFIG | 1 h (Morpho: process-lifetime per verified market, since params are immutable) | slow configuration (Pendle identity) |
 | PROTOCOL_MARKET_LIST | 10 min | Pendle market list from factory logs; incremental rescans |
+| POOL_LIST | 10 min | Uniswap pool list from factory logs; incremental; persisted to `.cache/` |
+| POOL_IDENTITY | 24 h | immutable per v3 pool; re-read each process |
+| POOL_STATE | 15 s | one snapshot per block |
+| QUOTE | 5 s | per (route, amount, block) |
 | PROTOCOL_MARKET_STATE | 60 s | fast state |
 | PROTOCOL_STATE_STALE_FALLBACK | 6 h | last-good state after a failed refresh, flagged PARTIAL |
 
@@ -68,3 +82,6 @@ Failures are never cached.
 | PROTOCOL_RATE_CONFLICT_PCT | 1 % relative | API rate vs the same rate onchain (Pendle impliedApy). Observed 5e-6. |
 | PROTOCOL_LIQUIDITY_CONFLICT_PCT | 5 % | API pool USD vs onchain pool value priced by us. Observed 0.01–0.3 %. |
 | eligibility `lowLiquidityUsdE18` | $10,000 | `src/config/eligibility.ts`; advisory only |
+| eligibility `dustLiquidityUsdE18` | $50 | DUST_LIQUIDITY (excluding) and the minimum routing-edge TVL |
+| MARKET_PRICE_DIVERGENCE_PCT | 2 % | DEX spot vs portfolio price → warning; neither declared correct |
+| QUOTE_TIMEOUT_MS | 8 s | a slower quote is a retryable failure |

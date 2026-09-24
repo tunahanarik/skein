@@ -73,6 +73,16 @@ Pendle was added as an ordinary adapter. The engine gained only generic concepts
 
 `ChainReader` gained `getLogs` (range bisection) for onchain discovery. See [protocols/pendle-adapter.md](protocols/pendle-adapter.md).
 
+## Phase 4 status
+Uniswap v3 was added as the first TRADE adapter, through the same interface. The generic additions are:
+- the trade model: TradeMarket / TradeRoute / TradeQuote (`src/model/trade.ts`)
+- a venue-independent trade graph and router (`src/trade/`)
+- engine trade methods
+- the TRADE portfolio context
+- the eligibility reasons DUST_LIQUIDITY, UNRESOLVED_YIELD_SEMANTICS and LIQUIDITY_UNVERIFIED
+
+`ChainReader.getLogs` gained topic filters, an unbatched log client and a sub-request budget. See [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md) and [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md).
+
 ## Protocol adapter system
 
 ```
@@ -81,7 +91,7 @@ src/protocols/
                     (interface: src/opportunities/adapter.ts)
   pendle/           IMPLEMENTED (Phase 3): factory CreateNewMarket logs → onchain identity/state + API /v1/{chain}/markets/{addr} → FIXED_YIELD, YIELD, LP; positions
   spark/            onchain vsr/totalAssets → YIELD (savings)
-  uniswap/          getPool (v3), curated v4 pool registry + StateView → TRADE, LP
+  uniswap/          IMPLEMENTED (Phase 4): v3 factory PoolCreated logs → verified pools → TRADE; QuoterV2 indicative quotes (v2/v4 researched, not integrated)
   beefy/            API cow-vaults/vaults + apy → LP/VAULT
   steer/            API getAprs + onchain getTotalAmounts → LP/VAULT
   merkl/            not an adapter: enriches Opportunity.yield.rewards by (protocol, venue)
