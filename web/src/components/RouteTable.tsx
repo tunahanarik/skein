@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import { code } from "../text";
 import { ExplorerLink, ProtocolLink, UsabilityBadge } from "./common";
 import { rowKeys } from "./keyboard";
+import { canSwap, SwapDialog } from "./SwapDialog";
 
 /** Venue of a market from its id (`4663:<protocol>:<venueKind>:<pool>`). */
 export function venueOf(marketId: string): string {
@@ -16,6 +17,7 @@ export function venueOf(marketId: string): string {
 export function RouteTable({ cards }: { cards: Card[] }) {
   const { t } = useI18n();
   const [open, setOpen] = useState<string | null>(null);
+  const [swapping, setSwapping] = useState<Card | null>(null);
   const quoted = cards.some((c) => c.trade?.quote);
   const hasVol = cards.some((c) => c.trade?.route.markets.some((m) => m.volume24h));
   // Route volume shown as the smallest hop volume (the bottleneck), when every hop has one.
@@ -89,7 +91,22 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                   <td>
                     <UsabilityBadge status={c.usability.status} />
                   </td>
-                  <td className="faint">{isOpen ? "▾" : "▸"}</td>
+                  <td className="faint" style={{ whiteSpace: "nowrap" }}>
+                    {canSwap(c) && (
+                      <button
+                        className="btn small primary"
+                        style={{ marginInlineEnd: 6 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSwapping(c);
+                        }}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
+                        {t("swap.button")}
+                      </button>
+                    )}
+                    {isOpen ? "▾" : "▸"}
+                  </td>
                 </tr>
                 {isOpen && (
                   <tr>
@@ -113,6 +130,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                             {t("route.quotedFor", { b: q.blockNumber, f: code(t, "fresh", q.freshness), x: `${amount(q.input.display)} ${q.input.asset.symbol}` })}
                           </div>
                         )}
+                        {q && !canSwap(c) && <div className="faint">{t("swap.venueOnly")}</div>}
                         {c.protocolApp && <ProtocolLink name={c.protocol.name} url={c.protocolApp.url} />}
                         {tr.route.markets.some((m) => m.volume24h) && <div className="faint">{t("route.volumeSource")}</div>}
                         <div className="faint">
@@ -131,6 +149,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
           })}
         </tbody>
       </table>
+      {swapping && <SwapDialog card={swapping} onClose={() => setSwapping(null)} />}
     </div>
   );
 }

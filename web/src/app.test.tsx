@@ -149,3 +149,93 @@ describe("shell", () => {
     await waitFor(() => expect(calls.some((c) => c.startsWith("/api/portfolio/"))).toBe(true));
   });
 });
+
+describe("wallet connect and swap", () => {
+  const USER = "0x00000000000000000000000000000000000000aa";
+
+  /** A fake EIP-6963 wallet that records every request and answers the calls the swap flow makes. */
+  async function fakeWallet() {
+    const { decodeFunctionData, encodeFunctionResult } = await import("viem");
+    const { erc20Abi, quoterAbi, SWAP_ROUTER, QUOTER_V2 } = await import("./swap/uniswap");
+    const reqs: { method: string; params?: unknown[] }[] = [];
+    let allowance = 0n;
+    const provider = {
+      async request(a: { method: string; params?: unknown[] }) {
+        reqs.push(a);
+        switch (a.method) {
+          case "eth_requestAccounts":
+          case "eth_accounts":
+            return [USER];
+          case "eth_chainId":
+            return "0x1237";
+          case "eth_call": {
+            const { to, data } = a.params![0] as { to: string; data: `0x${string}` };
+            if (to.toLowerCase() === QUOTER_V2) return encodeFunctionResult({ abi: quoterAbi, functionName: "quoteExactInput", result: [123_000_000n, [], [], 0n] });
+            if (to.toLowerCase() === SWAP_ROUTER) return "0x";
+            const fn = decodeFunctionData({ abi: erc20Abi, data }).functionName;
+            return encodeFunctionResult({ abi: erc20Abi, functionName: fn as "balanceOf", result: fn === "allowance" ? allowance : 10n ** 24n });
+          }
+          case "eth_sendTransaction": {
+            const tx = a.params![0] as { to: string };
+            if (tx.to.toLowerCase() !== SWAP_ROUTER) allowance = 10n ** 30n; // the approval
+            return `0x${String(reqs.length).padStart(64, "0")}`;
+          }
+          case "eth_getTransactionReceipt":
+            return { status: "0x1" };
+          default:
+            throw new Error(`unexpected ${a.method}`);
+        }
+      },
+      on() {},
+      removeListener() {},
+    };
+    const announce = () =>
+      window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: Object.freeze({ info: { uuid: "u-1", name: "Test Wallet", icon: "data:image/png;base64,AA==", rdns: "test.wallet" }, provider }) }));
+    window.addEventListener("eip6963:requestProvider", announce);
+    return { reqs, cleanup: () => window.removeEventListener("eip6963:requestProvider", announce) };
+  }
+
+  it("connects a discovered wallet, approves the exact amount, then swaps with a minimum output", async () => {
+    const w = await fakeWallet();
+    try {
+      await mountAt("/asset/NVDA");
+      fireEvent.click(await screen.findByRole("button", { name: "Connect wallet" }));
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: /Test Wallet/ }));
+      });
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: "Compare routes" }));
+      });
+      const swapButtons = await screen.findAllByRole("button", { name: "Swap" });
+      await act(async () => {
+        fireEvent.click(swapButtons[0]!);
+      });
+      const dialog = await screen.findByRole("dialog");
+      const approve = await within(dialog).findByRole("button", { name: /^1\. Allow NVDA/ });
+      await act(async () => {
+        fireEvent.click(approve);
+      });
+      const swap = await within(dialog).findByRole("button", { name: "Swap" });
+      await act(async () => {
+        fireEvent.click(swap);
+      });
+      await within(dialog).findByText(/Swap confirmed/);
+
+      const sent = w.reqs.filter((r) => r.method === "eth_sendTransaction").map((r) => r.params![0] as { to: string; data: string; value: string; from: string });
+      expect(sent).toHaveLength(2);
+      const { SWAP_ROUTER } = await import("./swap/uniswap");
+      expect(sent[0]!.data.slice(0, 10)).toBe("0x095ea7b3"); // approve
+      expect(sent[1]!.to.toLowerCase()).toBe(SWAP_ROUTER);
+      expect(sent.every((t) => t.value === "0x0" && t.from.toLowerCase() === USER)).toBe(true);
+      // Only allowlisted wallet methods; never message signing.
+      expect(w.reqs.some((r) => /sign/i.test(r.method))).toBe(false);
+      // The address is not stored or put in the URL.
+      expect(location.href.toLowerCase()).not.toContain(USER.slice(2));
+      expect(JSON.stringify({ ...localStorage }).toLowerCase()).not.toContain(USER.slice(2));
+    } finally {
+      w.cleanup();
+    }
+  });
+});

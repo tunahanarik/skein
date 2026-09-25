@@ -42,8 +42,8 @@ export function WalletEntry({ compact }: { compact?: boolean }) {
         </button>
       </form>
       <div className="row">
-        <button className="btn primary" disabled={w.connecting || !w.hasInjected} onClick={() => void w.connect()}>
-          {w.connecting ? t("walletEntry.waiting") : w.hasInjected ? t("walletEntry.use") : t("walletEntry.none")}
+        <button className="btn primary" disabled={w.connecting} onClick={w.openPicker}>
+          {w.connecting ? t("walletEntry.waiting") : t("walletEntry.use")}
         </button>
         {w.address && w.source === "connected" && (
           <a className="btn" {...linkProps("/wallet")}>

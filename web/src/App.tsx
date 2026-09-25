@@ -10,6 +10,7 @@ import { WalletPage } from "./pages/Wallet";
 import { linkProps, useRoute } from "./router";
 import { AlertsProvider } from "./alerts";
 import { FiredBanner } from "./components/AlertForm";
+import { WalletPicker } from "./components/WalletPicker";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
@@ -70,16 +71,23 @@ function Header() {
           </a>
         </nav>
         <span className="spacer" />
-        {w.address ? (
-          <a className="btn small" {...linkProps("/wallet")} title={t("shell.viewing")}>
-            {shortAddr(w.address)}
-          </a>
-        ) : null}
         <ThemeToggle />
         <LanguagePicker />
-        <span className="readonly-pill" title={t("shell.readOnlyTitle")}>
-          {t("shell.readOnly")}
-        </span>
+        {w.address && w.source === "connected" ? (
+          <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+            <a className="btn small" {...linkProps("/wallet")} title={w.wallet ? `${w.wallet.name} · ${t("shell.viewing")}` : t("shell.viewing")}>
+              {w.wallet?.icon && <img src={w.wallet.icon} alt="" width={16} height={16} />}
+              {shortAddr(w.address)}
+            </a>
+            <button className="btn small" onClick={w.clear} title={t("shell.disconnect")} aria-label={t("shell.disconnect")}>
+              ⏏
+            </button>
+          </span>
+        ) : (
+          <button className="btn small primary" onClick={w.openPicker} title={t("shell.readOnlyTitle")}>
+            {t("shell.connect")}
+          </button>
+        )}
       </div>
     </header>
   );
@@ -142,6 +150,7 @@ export function App() {
             </div>
           </main>
           <Footer />
+          <WalletPicker />
         </AlertsProvider>
       </WalletProvider>
     </I18nProvider>
