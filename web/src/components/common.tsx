@@ -71,6 +71,8 @@ export function ProtocolLink({ name, url }: { name: string; url: string }) {
 }
 
 const failedLogos = new Set<string>();
+/** Bumped when the server's logo sources change, so browsers drop logos cached under the old ones. */
+const LOGO_VERSION = 2;
 
 /** Token logo served by our own API (canonical assets only); falls back to a monogram. */
 export function Avatar({ symbol, address, size }: { symbol: string; address?: string | null; size?: "lg" }) {
@@ -83,7 +85,7 @@ export function Avatar({ symbol, address, size }: { symbol: string; address?: st
     return (
       <img
         className={`${cls} logo`}
-        src={`/api/logo/${address.toLowerCase()}`}
+        src={`/api/logo/${address.toLowerCase()}?v=${LOGO_VERSION}`}
         alt=""
         loading="lazy"
         decoding="async"

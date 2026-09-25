@@ -29,6 +29,7 @@
     "trade:inspect": "tsx scripts/trade-inspect.ts",
     "uniswap:index": "tsx scripts/uniswap-index.ts",
     "validate:uniswap": "tsx scripts/validate-uniswap.ts",
+    "validate:pairs": "tsx scripts/validate-pairs.ts",
     "asset": "tsx scripts/asset.ts",
     "portfolio:view": "tsx scripts/portfolio-view.ts",
     "coverage": "tsx scripts/coverage.ts",

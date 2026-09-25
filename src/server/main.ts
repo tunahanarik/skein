@@ -32,7 +32,7 @@ const intelligence = new AssetIntelligenceService({
   onSnapshot: (opps, takenAt) => rates.record(opps, takenAt),
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
-const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos" }), rates });
+const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos", bundledDir: "data/logos" }), rates });
 const webDist = env.WEB_DIST ?? "web/dist";
 const serveStatic = createStatic(webDist);
 
