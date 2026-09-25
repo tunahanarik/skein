@@ -1,6 +1,6 @@
 # defi-router (working name)
 
-DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?" The server is read-only; Uniswap v3 swaps can be made from the web app, built in the browser and signed in the user's own wallet ([docs/swaps.md](docs/swaps.md)).
+DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?" The server is read-only; Uniswap v3 swaps can be made from the web app, built in the browser and signed in the user's own wallet ([docs/swaps.md](docs/swaps.md)); cross-chain bridging through LI.FI ([docs/bridge.md](docs/bridge.md)).
 
 Protocols read today: Uniswap v3 and v4 (hookless), Ramses CL, Morpho, Pendle, Spark Savings, Beefy CLM and Steer. See [docs/protocols/coverage-expansion.md](docs/protocols/coverage-expansion.md).
 

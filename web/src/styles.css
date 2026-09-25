@@ -308,3 +308,9 @@ table.compare td { vertical-align: top; width: 40%; }
 .seg button.on { background: var(--accent); color: var(--on-accent); }
 .linkish { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
 .btn img { vertical-align: -3px; margin-inline-end: 6px; border-radius: 4px; }
+
+/* ---- Bridge ---- */
+.bridge { display: grid; gap: 14px; }
+.bridge-side { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+.bridge-quote { grid-template-columns: auto 1fr; }
+.bridge-quote > :nth-child(even) { text-align: end; }

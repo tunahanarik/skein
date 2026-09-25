@@ -3,6 +3,7 @@ import { shortAddr } from "./format";
 import { I18nProvider, LANGS, useI18n, type Lang } from "./i18n";
 import { AboutPage } from "./pages/About";
 import { AssetPage } from "./pages/Asset";
+import { BridgePage } from "./pages/Bridge";
 import { ComparePage } from "./pages/Compare";
 import { CoveragePage } from "./pages/Coverage";
 import { HomePage } from "./pages/Home";
@@ -59,6 +60,9 @@ function Header() {
           </a>
           <a className={is("wallet")} {...linkProps("/wallet")}>
             {t("nav.wallet")}
+          </a>
+          <a className={is("bridge")} {...linkProps("/bridge")}>
+            {t("nav.bridge")}
           </a>
           <a className={is("coverage")} {...linkProps("/coverage")}>
             {t("nav.coverage")}
@@ -119,6 +123,8 @@ function Page() {
       return <AssetPage key={route.ref} assetRef={route.ref} />;
     case "wallet":
       return <WalletPage />;
+    case "bridge":
+      return <BridgePage />;
     case "coverage":
       return <CoveragePage />;
     case "about":

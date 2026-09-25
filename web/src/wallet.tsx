@@ -6,7 +6,7 @@
  * The page talks to the wallet through a method allowlist: address and chain reads, network
  * switching, eth_call, and eth_sendTransaction — which the wallet always shows to the user to
  * approve. No message or typed-data signing, no permits. Transactions are built and checked
- * in src/swap (Uniswap v3 swaps and the exact approval they need).
+ * in src/swap (Uniswap v3 swaps and the exact approval they need) and src/bridge (LI.FI).
  */
 import type { StringKey } from "./i18n";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -33,6 +33,7 @@ const ALLOWED_METHODS = new Set([
   "wallet_switchEthereumChain",
   "wallet_addEthereumChain",
   "eth_call",
+  "eth_getBalance",
   "eth_getTransactionReceipt",
   "eth_sendTransaction",
 ]);

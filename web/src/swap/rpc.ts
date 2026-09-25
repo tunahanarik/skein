@@ -21,6 +21,17 @@ export async function switchToRobinhood(p: Eip1193): Promise<void> {
   if ((await chainIdOf(p)) !== CHAIN_ID) throw new Error("wrong network");
 }
 
+/** Switch the wallet to any chain, adding it with the given parameters when unknown. */
+export async function switchChain(p: Eip1193, chainId: number, add: object | null): Promise<void> {
+  try {
+    await p.request({ method: "wallet_switchEthereumChain", params: [{ chainId: `0x${chainId.toString(16)}` }] });
+  } catch (e) {
+    if ((e as { code?: number }).code !== 4902 || !add) throw e;
+    await p.request({ method: "wallet_addEthereumChain", params: [add] });
+  }
+  if ((await chainIdOf(p)) !== chainId) throw new Error("wrong network");
+}
+
 async function call(p: Eip1193, to: Address, data: Hex, from?: Address): Promise<Hex> {
   return (await p.request({ method: "eth_call", params: [{ to, data, ...(from ? { from } : {}) }, "latest"] })) as Hex;
 }

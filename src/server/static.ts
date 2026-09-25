@@ -20,14 +20,17 @@ const TYPES: Record<string, string> = {
   ".txt": "text/plain; charset=utf-8",
 };
 
-/** No inline scripts, no third-party origins: the page talks only to its own API. */
+/**
+ * No inline scripts. The page talks to its own API, plus li.quest (LI.FI) for bridge quotes and
+ * status: called from the browser so the wallet address never passes through this server.
+ */
 export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://li.quest",
   "object-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",

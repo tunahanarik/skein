@@ -239,3 +239,94 @@ describe("wallet connect and swap", () => {
     }
   });
 });
+
+describe("bridge", () => {
+  it("quotes through LI.FI, approves the exact amount to the pinned diamond, sends, and tracks until done", async () => {
+    const { LIFI_DIAMONDS } = await import("./bridge/diamonds");
+    const USER = "0x00000000000000000000000000000000000000aa";
+    const USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+    const DIAMOND = LIFI_DIAMONDS[8453]!.diamond;
+    const lifi: string[] = [];
+    vi.stubGlobal("fetch", async (input: string) => {
+      const url = new URL(input, "http://localhost");
+      const json = (b: unknown) => new Response(JSON.stringify(b), { status: 200, headers: { "content-type": "application/json" } });
+      if (url.host === "li.quest") {
+        lifi.push(url.pathname + url.search);
+        const token = (chainId: number, address: string, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: "1", verificationStatus: "verified" });
+        if (url.pathname === "/v1/chains") return json({ chains: [8453, 4663].map((id) => ({ id, mainnet: true, chainType: "EVM", name: id === 8453 ? "Base" : "Robinhood Chain", coin: "ETH", diamondAddress: LIFI_DIAMONDS[id]!.diamond })) });
+        if (url.pathname === "/v1/tokens") {
+          const c = url.searchParams.get("chains")!;
+          return json({ tokens: { [c]: c === "8453" ? [token(8453, USDC, "USDC", 6)] : [token(4663, "0x0000000000000000000000000000000000000000", "ETH", 18), token(4663, "0x0A3B763d00000000000000000000000000000000", "USDG", 6)] } });
+        }
+        if (url.pathname === "/v1/quote") {
+          expect(url.searchParams.get("toAddress")).toBe(USER);
+          return json({
+            tool: "across",
+            toolDetails: { name: "AcrossV4" },
+            action: { fromChainId: 8453, toChainId: 4663, fromToken: token(8453, USDC, "USDC", 6), toToken: token(4663, "0x0000000000000000000000000000000000000000", "ETH", 18), fromAmount: url.searchParams.get("fromAmount"), fromAddress: USER, toAddress: USER },
+            estimate: { approvalAddress: DIAMOND, toAmount: "18000000000000000", toAmountMin: "17900000000000000", executionDuration: 2, feeCosts: [{ amountUSD: "0.16", included: true }], gasCosts: [{ amountUSD: "0.01" }] },
+            transactionRequest: { from: USER, to: DIAMOND, data: "0x4c279d6b", value: "0x0", chainId: 8453 },
+          });
+        }
+        if (url.pathname === "/v1/status") return json({ status: "DONE", substatus: "COMPLETED", receiving: { txHash: `0x${"b".repeat(64)}` } });
+      }
+      if (url.pathname === "/api/assets") return json({ assets: [] });
+      return json({});
+    });
+    const reqs: { method: string; params?: unknown[] }[] = [];
+    let allowance = 0n;
+    const provider = {
+      async request(a: { method: string; params?: unknown[] }) {
+        reqs.push(a);
+        if (a.method === "eth_requestAccounts") return [USER];
+        if (a.method === "eth_chainId") return "0x2105"; // Base
+        if (a.method === "eth_call") {
+          const data = (a.params![0] as { data: string }).data;
+          return `0x${(data.startsWith("0xdd62ed3e") ? allowance : 10n ** 12n).toString(16).padStart(64, "0")}`;
+        }
+        if (a.method === "eth_sendTransaction") {
+          if ((a.params![0] as { to: string }).to === USDC) allowance = 10n ** 30n;
+          return `0x${String(reqs.length).padStart(64, "0")}`;
+        }
+        if (a.method === "eth_getTransactionReceipt") return { status: "0x1" };
+        throw new Error(`unexpected ${a.method}`);
+      },
+      on() {},
+      removeListener() {},
+    };
+    const announce = () => window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: { info: { uuid: "u-2", name: "Test Wallet", icon: "data:image/png;base64,AA==", rdns: "test.wallet" }, provider } }));
+    window.addEventListener("eip6963:requestProvider", announce);
+    try {
+      history.pushState(null, "", "/bridge");
+      render(<App />);
+      await waitFor(() => expect((screen.getByLabelText("Token to send") as HTMLSelectElement).value).toBe(USDC));
+      // The look-alike USDG on Robinhood Chain is not offered (not in the canonical registry).
+      expect([...(screen.getByLabelText("Token to receive") as HTMLSelectElement).options].map((o) => o.text)).toEqual(["ETH"]);
+      fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "50" } });
+      fireEvent.click(screen.getAllByRole("button", { name: "Connect wallet" }).at(-1)!);
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: /Test Wallet/ }));
+      });
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: "Get quote" }));
+      });
+      await screen.findByText(/AcrossV4 · LI.FI/);
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: /^1\. Allow USDC/ }));
+      });
+      await act(async () => {
+        fireEvent.click(await screen.findByRole("button", { name: "Bridge Base → Robinhood Chain" }));
+      });
+      await screen.findByText(/Bridge complete/);
+      const sent = reqs.filter((r) => r.method === "eth_sendTransaction").map((r) => r.params![0] as { to: string; data: string; value: string });
+      expect(sent).toHaveLength(2);
+      expect(sent[0]!.to).toBe(USDC);
+      expect(sent[0]!.data).toBe(`0x095ea7b3${DIAMOND.slice(2).toLowerCase().padStart(64, "0")}${(50_000_000n).toString(16).padStart(64, "0")}`);
+      expect(sent[1]!.to).toBe(DIAMOND);
+      expect(lifi.filter((p) => p.startsWith("/v1/quote"))).toHaveLength(2); // quote, then re-quote before signing
+      expect(reqs.some((r) => /sign/i.test(r.method))).toBe(false);
+    } finally {
+      window.removeEventListener("eip6963:requestProvider", announce);
+    }
+  });
+});
