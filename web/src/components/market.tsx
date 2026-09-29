@@ -186,7 +186,7 @@ export function useTodayChange(key: string | null): number | null {
     if (!key) return;
     let live = true;
     if (!marketsCache || Date.now() - marketsCache.at > 60_000) {
-      marketsCache = { at: Date.now(), p: api.markets().then((m) => new Map(m.rows.map((r) => [r.key, r.changePct])), () => new Map()) };
+      marketsCache = { at: Date.now(), p: api.markets().then((m) => new Map((Array.isArray(m?.rows) ? m.rows : []).map((r) => [r.key, r.changePct])), () => new Map()) };
     }
     marketsCache.p.then((m) => live && setV(m.get(key) ?? null));
     return () => {
@@ -213,7 +213,8 @@ export function Ticker() {
     let live = true;
     // One request: price (Chainlink) and today's change vs the previous close, same as the Markets page.
     api.markets().then((m) => {
-      const r: Tick[] = TICKER.map((sym) => m.rows.find((x) => x.symbol === sym))
+      const rows = Array.isArray(m?.rows) ? m.rows : [];
+      const r: Tick[] = TICKER.map((sym) => rows.find((x) => x.symbol === sym))
         .filter((x): x is NonNullable<typeof x> => !!x)
         .map((x) => ({ symbol: x.symbol === "WETH" ? "ETH" : x.symbol, ref: x.symbol, usd: x.usd, change: x.changePct }));
       tickCache = { at: Date.now(), ticks: r };

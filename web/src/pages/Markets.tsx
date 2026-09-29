@@ -60,7 +60,7 @@ export function MarketsPage() {
   const [q, setQ] = useState("");
   const [f, setF] = useState<Filter>("all");
   const rows = useMemo(() => {
-    const all = res.data?.rows ?? [];
+    const all = Array.isArray(res.data?.rows) ? res.data!.rows : [];
     const s = q.trim().toLowerCase();
     return all
       .filter((r) => (f === "all" ? true : f === "saved" ? watch.has(r.key) : f === "etfs" ? r.type === "STOCK_TOKEN" && FUND.test(r.name) : r.type === "STOCK_TOKEN" && !FUND.test(r.name)))
