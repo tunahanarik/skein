@@ -3,14 +3,12 @@ import { api, type AssetListItem, type Intelligence } from "../api";
 import { AlertList } from "../components/AlertForm";
 import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
 import { useAggregator } from "../components/AggregatorSwap";
-import { AssetPicker, idleSuggestions, INTENT_LOOK, IntentCards, oppValue, usePortfolio, useTodayChange, WalletSummary } from "../components/market";
-import { ProtocolMark } from "../components/icons";
+import { AssetPicker, idleSuggestions, IntentCards, OpportunityRows, usePortfolio, useTodayChange, WalletSummary } from "../components/market";
 import { PriceChart } from "../components/PriceChart";
 import { pct, usd } from "../format";
 import { useI18n } from "../i18n";
 import { topOpportunities } from "../intents";
 import { useLive } from "../live";
-import { actionLabel } from "../text";
 import { linkProps, navigate } from "../router";
 import { useWallet } from "../wallet";
 import { useWatchlist } from "../watchlist";
@@ -94,28 +92,47 @@ function AssetStage({ sel, onPick, v }: { sel: AssetListItem | null; onPick: (a:
   );
 }
 
-/** The three best things to do with the asset, as large cards. */
-function TopCards({ v, assetRef }: { v: Intelligence; assetRef: string }) {
+/** Stock tokens that moved most today; picking one shows it in the stage above. */
+function TokenGrid({ list, onPick }: { list: AssetListItem[] | null; onPick: (a: AssetListItem) => void }) {
   const { t } = useI18n();
-  const rows = topOpportunities(v, 3);
-  if (!rows.length) return <div className="panel empty small">{t("home.noOpps")}</div>;
+  const res = useAsync((sig) => api.markets(sig), []);
+  const rows = (Array.isArray(res.data?.rows) ? res.data!.rows : [])
+    .filter((r) => r.type === "STOCK_TOKEN" && r.changePct !== null)
+    .sort((a, b) => Math.abs(b.changePct!) - Math.abs(a.changePct!))
+    .slice(0, 24);
+  if (!rows.length) return null;
   return (
-    <div className="top-cards">
-      {rows.map(({ intent, card }, i) => {
-        const { val, unit } = oppValue(t, intent, card);
-        const href = `/asset/${encodeURIComponent(assetRef)}?i=${intent}`;
-        return (
-          <a key={card.cardId} className="top-card" {...linkProps(href)}>
-            <ProtocolMark name={card.protocol.name} icon={INTENT_LOOK[intent].icon} tone={INTENT_LOOK[intent].tone} size={36} />
-            <span className="k">{actionLabel(t, card)}</span>
-            <span className="p">{card.protocol.name}</span>
-            <span className="v num">{val}</span>
-            <span className="u">{unit}</span>
-            <span className={`btn small${i === 0 ? " primary" : ""}`}>{t("home.inspect")}</span>
-          </a>
-        );
-      })}
-    </div>
+    <section className="section">
+      <div className="section-head">
+        <h2>{t("home.allTokens")}</h2>
+        <span className="spacer" />
+        <a className="small" {...linkProps("/markets")}>
+          {t("home.seeAll")}
+        </a>
+      </div>
+      <div className="tok-grid">
+        {rows.map((r) => (
+          <button
+            key={r.key}
+            className="tok-cell"
+            onClick={() => {
+              const a = list?.find((x) => x.key === r.key);
+              if (a) {
+                onPick(a);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+          >
+            <Avatar symbol={r.symbol} address={r.address} />
+            <span className="s">{r.symbol}</span>
+            <span className={`num ch ${r.changePct! >= 0 ? "up" : "down"}`}>
+              {r.changePct! >= 0 ? "+" : ""}
+              {pct(r.changePct!, 1)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -140,26 +157,31 @@ export function HomePage() {
   const ref = sel?.symbol ?? "";
 
   return (
-    <div className="home-col">
-      <AssetStage sel={sel} onPick={setSel} v={v ?? null} />
-
-      <section className="section">
-        <div className="section-head">
-          <h2>{t("home.canDoWith", { s: ref })}</h2>
-          <span className="spacer" />
-          {sel && (
-            <a className="small" {...linkProps(`/asset/${encodeURIComponent(ref)}`)}>
-              {t("home.allFor", { s: ref })}
-            </a>
-          )}
+    <div className="home-wide">
+      <div className="home-grid">
+        <div className="panel stage-panel">
+          <AssetStage sel={sel} onPick={setSel} v={v ?? null} />
         </div>
-        {v ? <TopCards v={v} assetRef={ref} /> : <div className="top-cards">{[0, 1, 2].map((i) => <div key={i} className="top-card"><Skeleton h={36} w={36} /><Skeleton h={14} w="70%" /><Skeleton h={28} w="50%" /></div>)}</div>}
-        {v && (
-          <div className="mini-intents">
-            <IntentCards v={v} agg={sel ? (agg?.get(sel.key) ?? null) : null} hrefFor={(k) => `/asset/${encodeURIComponent(ref)}?i=${k}`} />
+        <div className="panel can-panel">
+          <div className="section-head">
+            <h2>{t("home.canDoWith", { s: ref })}</h2>
+            <span className="spacer" />
+            {sel && (
+              <a className="small" {...linkProps(`/asset/${encodeURIComponent(ref)}`)}>
+                {t("home.allFor", { s: ref })}
+              </a>
+            )}
           </div>
-        )}
-      </section>
+          {v ? <OpportunityRows rows={topOpportunities(v, 6)} assetRef={ref} /> : <div style={{ display: "grid", gap: 14 }}><Skeleton h={40} /><Skeleton h={40} /><Skeleton h={40} /></div>}
+        </div>
+      </div>
+      {v && (
+        <div className="mini-intents">
+          <IntentCards v={v} agg={sel ? (agg?.get(sel.key) ?? null) : null} hrefFor={(k) => `/asset/${encodeURIComponent(ref)}?i=${k}`} />
+        </div>
+      )}
+
+      <TokenGrid list={list} onPick={setSel} />
 
       <section className="section">
         {portfolio ? (

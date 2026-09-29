@@ -636,4 +636,8 @@ export const ru: Record<StringKey, string> = {
   "swap.routeFound": "Маршрут найден",
   "home.canDoWith": "Что можно сделать с {s}",
   "home.inspect": "Смотреть",
+  "shell.searchAll": "Найдите актив или вставьте адрес…",
+  "shell.viewWallet": "Открыть этот кошелёк",
+  "home.allTokens": "Все токены акций",
+  "home.seeAll": "Все →",
 };

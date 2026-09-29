@@ -636,4 +636,8 @@ export const ar: Record<StringKey, string> = {
   "swap.routeFound": "تم العثور على مسار",
   "home.canDoWith": "ما يمكنك فعله مع {s}",
   "home.inspect": "عرض",
+  "shell.searchAll": "ابحث عن أصل أو الصق عنوانًا…",
+  "shell.viewWallet": "عرض هذه المحفظة",
+  "home.allTokens": "كل رموز الأسهم",
+  "home.seeAll": "عرض الكل ←",
 };

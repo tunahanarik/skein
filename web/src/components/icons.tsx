@@ -45,6 +45,8 @@ const P: Record<string, ReactNode> = {
     </>
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  home: <path d="M4 10.5l8-6.5 8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" />,
+  chart: <path d="M4 4v16h16M8 15l3.5-4 3 2.5L20 7" />,
 };
 
 export type IconName = keyof typeof P;

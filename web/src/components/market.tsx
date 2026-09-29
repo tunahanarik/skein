@@ -8,11 +8,9 @@ import { api, type AggregatorRow, type AssetListItem, type Card, type Intelligen
 import { amount, pct, pctE18, usd } from "../format";
 import { useI18n } from "../i18n";
 import { INTENT_CAT, intentsOf, type Intent, type IntentKey } from "../intents";
-import { linkProps, navigate } from "../router";
+import { linkProps } from "../router";
 import { actionLabel, contextLine } from "../text";
 import { BridgeForm } from "../pages/Bridge";
-import { useWallet } from "../wallet";
-import { useLive } from "../live";
 import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
 import { Badge, Icon, ProtocolMark, type IconName } from "./icons";
@@ -226,57 +224,6 @@ export function useTodayChange(key: string | null): number | null {
     };
   }, [key]);
   return v;
-}
-
-/* ---------------- ticker strip ---------------- */
-
-const TICKER = ["NVDA", "TSLA", "AAPL", "MSFT", "AMZN", "META", "GOOGL", "SPY", "WETH"];
-type Tick = { symbol: string; ref: string; usd: number | null; change: number | null };
-let tickCache: { at: number; ticks: Tick[] } | null = null;
-
-export function Ticker() {
-  useI18n(); // re-render on language change (number format follows the locale)
-  const list = useAssetList();
-  const [ticks, setTicks] = useState<Tick[] | null>(tickCache?.ticks ?? null);
-  const keys = useMemo(() => (list ? TICKER.map((s) => list.find((a) => a.symbol === s)).filter((a): a is AssetListItem => !!a).map((a) => a.key) : []), [list]);
-  const live = useLive({ prices: keys });
-  useEffect(() => {
-    if (!list || (tickCache && Date.now() - tickCache.at < 120_000)) return;
-    let live = true;
-    // One request: price (Chainlink) and today's change vs the previous close, same as the Markets page.
-    api.markets().then((m) => {
-      const rows = Array.isArray(m?.rows) ? m.rows : [];
-      const r: Tick[] = TICKER.map((sym) => rows.find((x) => x.symbol === sym))
-        .filter((x): x is NonNullable<typeof x> => !!x)
-        .map((x) => ({ symbol: x.symbol === "WETH" ? "ETH" : x.symbol, ref: x.symbol, usd: x.usd, change: x.changePct }));
-      tickCache = { at: Date.now(), ticks: r };
-      if (live) setTicks(r);
-    }, () => undefined);
-    return () => {
-      live = false;
-    };
-  }, [list]);
-  if (!ticks) return <div className="ticker" aria-hidden="true" />;
-  return (
-    <div className="ticker" aria-label="Prices">
-      <div className="shell">
-        {ticks
-          .filter((x) => x.usd !== null)
-          .map((x) => {
-            const k = list?.find((a) => a.symbol === x.ref)?.key;
-            const lp = k ? live.prices.get(k) : undefined;
-            const mv = k ? live.moves.get(k) : undefined;
-            const flash = mv && Date.now() - mv.at < 1500 ? (mv.dir > 0 ? " up" : " down") : "";
-            return (
-            <a key={x.symbol} {...linkProps(`/asset/${x.ref}`)}>
-              <span className="s">{x.symbol}</span> <span className={`num${flash}`}>{usd(lp ? lp.usd : String(x.usd))}</span>{" "}
-              {x.change !== null && <span className={`num ${x.change > 0 ? "up" : x.change < 0 ? "down" : ""}`}>{`${x.change > 0 ? "+" : ""}${pct(x.change, 2)}`}</span>}
-            </a>
-            );
-          })}
-      </div>
-    </div>
-  );
 }
 
 /* ---------------- wallet ---------------- */

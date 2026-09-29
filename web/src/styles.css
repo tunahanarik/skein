@@ -999,3 +999,74 @@ nav.main a:hover { background: transparent; color: var(--text); }
 .lang-pop button:hover, .lang-pop button:focus-visible { background: var(--surface-3); color: var(--text); outline: none; }
 .lang-pop button[aria-selected="true"] { color: var(--accent); }
 [dir="rtl"] .lang-pop { right: auto; left: 0; }
+
+/* =====================================================================
+ * APP SHELL — thin icon rail on the left, search bar on top, full-width
+ * content (a bottom tab bar on phones).
+ * ===================================================================== */
+.app { display: grid; grid-template-columns: 76px minmax(0, 1fr); min-height: 100vh; }
+.rail { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 18px 8px; background: var(--bg); border-right: 1px solid var(--border); z-index: 40; }
+.rail-brand { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; }
+.rail-brand:hover { background: var(--surface); }
+.rail-nav { display: grid; gap: 6px; }
+.rail-i { display: grid; justify-items: center; gap: 4px; width: 60px; padding: 9px 4px; border-radius: 12px; color: var(--text-3); background: transparent; border: 0; font: inherit; font-size: 10.5px; line-height: 1.2; cursor: pointer; text-decoration: none; text-align: center; }
+.rail-i:hover { color: var(--text); background: var(--surface); text-decoration: none; }
+.rail-i.on { color: var(--accent); background: var(--accent-soft); }
+.rail-foot { margin-top: auto; }
+.app-main { min-width: 0; display: flex; flex-direction: column; }
+.app-main main { flex: 1; }
+header.top { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 12px; padding: 14px 28px; height: auto; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 0; }
+.top-brand { display: none; }
+.gsearch { position: relative; flex: 1; max-width: 560px; display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: 12px; padding: 0 14px; color: var(--text-3); }
+.gsearch:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.gsearch input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; padding: 11px 0; outline: none; }
+.gs-pop { position: absolute; left: 0; right: 0; top: calc(100% + 8px); background: var(--surface-2); border-radius: 14px; padding: 6px; box-shadow: var(--shadow-pop); display: grid; gap: 2px; z-index: 60; }
+.gs-pop button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); font: inherit; padding: 8px 10px; border-radius: 10px; cursor: pointer; text-align: start; }
+.gs-pop button.on { background: var(--surface-3); }
+.gs-pop .s { font-weight: 600; }
+.gs-pop .n { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell.wide, footer.bottom .shell { max-width: 1680px; padding: 0 28px; }
+
+/* home, full width: stage + opportunity list side by side */
+.home-wide { padding-top: 8px; }
+.home-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.stage-panel { padding: 20px 22px; }
+.stage-panel .stage { padding-top: 0; }
+.can-panel { padding: 18px 20px; }
+.can-panel .section-head { margin-bottom: 4px; }
+.can-panel .opps { background: transparent; padding: 0; border-radius: 0; }
+.can-panel .opp { padding: 12px 2px; }
+.can-panel .opp:last-child { border-bottom: 0; }
+.mini-intents { margin-top: 16px; }
+.tok-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.tok-cell { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 0; border-radius: 12px; padding: 9px 12px; color: var(--text); font: inherit; cursor: pointer; min-width: 0; }
+.tok-cell:hover { background: var(--surface-2); }
+.tok-cell .avatar { width: 24px; height: 24px; }
+.tok-cell .s { font-weight: 600; font-size: 13px; }
+.tok-cell .ch { margin-left: auto; font-size: 12.5px; }
+@media (max-width: 1000px) { .home-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) {
+  .app { grid-template-columns: 1fr; }
+  .rail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: auto; flex-direction: row; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); border-right: 0; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter: blur(8px); }
+  .rail-brand, .rail-foot { display: none; }
+  .rail-nav { display: flex; gap: 2px; width: 100%; justify-content: space-around; }
+  .rail-i { width: auto; flex: 1; }
+  .app-main { padding-bottom: 72px; }
+  header.top { padding: 10px 14px; gap: 8px; }
+  .top-brand { display: inline-flex; }
+  .top-brand span { display: none; }
+  .shell.wide, footer.bottom .shell { padding: 0 14px; }
+  .lang-menu .lang .cur { display: none; }
+  .stage-panel, .can-panel { padding: 16px; }
+}
+.gsearch { min-width: 0; }
+.gsearch input { width: 100%; text-overflow: ellipsis; }
+header.top > .btn, header.top > .row { flex: none; }
+@media (max-width: 720px) {
+  header.top .btn.small { padding: 9px 12px; }
+  .lang-menu .lang { padding: 9px; }
+  .lang-menu .lang .chev { display: none; }
+  .can-panel .opp { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .can-panel .opp .badge, .can-panel .opp .go { display: none; }
+  .can-panel .section-head { flex-wrap: wrap; }
+}

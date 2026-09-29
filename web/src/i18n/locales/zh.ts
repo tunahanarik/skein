@@ -635,4 +635,8 @@ export const zh: Record<StringKey, string> = {
   "swap.routeFound": "已找到路径",
   "home.canDoWith": "你可以用 {s} 做什么",
   "home.inspect": "查看",
+  "shell.searchAll": "搜索资产或粘贴地址…",
+  "shell.viewWallet": "查看此钱包",
+  "home.allTokens": "全部股票代币",
+  "home.seeAll": "查看全部 →",
 };

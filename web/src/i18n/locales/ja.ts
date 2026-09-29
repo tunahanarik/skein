@@ -635,4 +635,8 @@ export const ja: Record<StringKey, string> = {
   "swap.routeFound": "ルートが見つかりました",
   "home.canDoWith": "{s} でできること",
   "home.inspect": "見る",
+  "shell.searchAll": "資産を検索、またはアドレスを貼り付け…",
+  "shell.viewWallet": "このウォレットを見る",
+  "home.allTokens": "すべての株式トークン",
+  "home.seeAll": "すべて見る →",
 };

@@ -612,4 +612,8 @@ export const ko: Record<StringKey, string> = {
   "swap.routeFound": "경로를 찾았습니다",
   "home.canDoWith": "{s}(으)로 할 수 있는 일",
   "home.inspect": "보기",
+  "shell.searchAll": "자산 검색 또는 주소 붙여넣기…",
+  "shell.viewWallet": "이 지갑 보기",
+  "home.allTokens": "모든 주식 토큰",
+  "home.seeAll": "전체 보기 →",
 };

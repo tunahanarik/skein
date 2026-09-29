@@ -638,6 +638,10 @@ export const en = {
   "swap.routeFound": "Route found",
   "home.canDoWith": "What you can do with {s}",
   "home.inspect": "View",
+  "shell.searchAll": "Search an asset or paste an address…",
+  "shell.viewWallet": "View this wallet",
+  "home.allTokens": "All stock tokens",
+  "home.seeAll": "See all →",
 };
 
 export type StringKey = keyof typeof en;
@@ -1253,4 +1257,8 @@ export const tr: Record<StringKey, string> = {
   "swap.routeFound": "Rota bulundu",
   "home.canDoWith": "{s} ile yapabileceklerin",
   "home.inspect": "İncele",
+  "shell.searchAll": "Varlık ara veya adres yapıştır…",
+  "shell.viewWallet": "Bu cüzdanı görüntüle",
+  "home.allTokens": "Tüm hisse tokenları",
+  "home.seeAll": "Tümünü gör →",
 };

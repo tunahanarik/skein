@@ -612,4 +612,8 @@ export const hi: Record<StringKey, string> = {
   "swap.routeFound": "रूट मिल गया",
   "home.canDoWith": "{s} के साथ आप क्या कर सकते हैं",
   "home.inspect": "देखें",
+  "shell.searchAll": "एसेट खोजें या पता पेस्ट करें…",
+  "shell.viewWallet": "यह वॉलेट देखें",
+  "home.allTokens": "सभी स्टॉक टोकन",
+  "home.seeAll": "सभी देखें →",
 };

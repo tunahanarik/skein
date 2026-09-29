@@ -636,4 +636,8 @@ export const pt: Record<StringKey, string> = {
   "swap.routeFound": "Rota encontrada",
   "home.canDoWith": "O que você pode fazer com {s}",
   "home.inspect": "Ver",
+  "shell.searchAll": "Busque um ativo ou cole um endereço…",
+  "shell.viewWallet": "Ver esta carteira",
+  "home.allTokens": "Todos os tokens de ações",
+  "home.seeAll": "Ver tudo →",
 };

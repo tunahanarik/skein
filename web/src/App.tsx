@@ -10,11 +10,13 @@ import { MarketsPage } from "./pages/Markets";
 import { Icon, Mark } from "./components/icons";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
-import { linkProps, useRoute } from "./router";
+import { linkProps, navigate, useRoute } from "./router";
 import { AlertsProvider } from "./alerts";
 import { FiredBanner } from "./components/AlertForm";
 import { WalletPicker } from "./components/WalletPicker";
-import { QuickProvider, Ticker, useQuick } from "./components/market";
+import { QuickProvider, useQuick } from "./components/market";
+import { Avatar, useAssetList } from "./components/common";
+import type { AssetListItem } from "./api";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
@@ -86,58 +88,148 @@ function ThemeToggle() {
   );
 }
 
-function Header() {
+/** Search one box for an asset (symbol, name or contract) or a wallet address to view. */
+function GlobalSearch() {
+  const { t } = useI18n();
+  const list = useAssetList();
+  const w = useWallet();
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+  const s = q.trim().toLowerCase();
+  const isAddr = /^0x[0-9a-f]{40}$/.test(s);
+  // Exact symbol, then symbol prefix, then name prefix, then a word of the name.
+  const rank = (a: AssetListItem) => {
+    const sym = a.symbol.toLowerCase();
+    const name = a.name.toLowerCase();
+    return sym === s || a.address.toLowerCase() === s ? 0 : sym.startsWith(s) ? 1 : name.startsWith(s) ? 2 : name.split(/[\s.,]+/).some((x) => x.startsWith(s)) ? 3 : 9;
+  };
+  const hits = !s || !list ? [] : list.filter((a) => rank(a) < 9).sort((a, b) => rank(a) - rank(b) || a.symbol.length - b.symbol.length || a.symbol.localeCompare(b.symbol)).slice(0, 8);
+  const walletRow = isAddr && !hits.length;
+  const go = (i: number) => {
+    const a = hits[i];
+    if (a) navigate(`/asset/${encodeURIComponent(a.symbol)}`);
+    else if (walletRow && w.usePasted(q.trim())) navigate("/wallet");
+    else return;
+    setQ("");
+    setOpen(false);
+  };
+  return (
+    <div className="gsearch" ref={ref}>
+      <Icon name="search" size={18} />
+      <input
+        placeholder={t("shell.searchAll")}
+        aria-label={t("search.label")}
+        value={q}
+        spellCheck={false}
+        autoComplete="off"
+        onChange={(e) => (setQ(e.target.value.slice(0, 100)), setOpen(true), setHi(0))}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") (e.preventDefault(), setHi((h) => Math.min(h + 1, Math.max(0, hits.length - 1))));
+          else if (e.key === "ArrowUp") (e.preventDefault(), setHi((h) => Math.max(0, h - 1)));
+          else if (e.key === "Enter") go(hi);
+          else if (e.key === "Escape") setOpen(false);
+        }}
+      />
+      {open && s && (
+        <div className="gs-pop" role="listbox">
+          {hits.map((a, i) => (
+            <button key={a.key} role="option" aria-selected={i === hi} className={i === hi ? "on" : undefined} onMouseEnter={() => setHi(i)} onClick={() => go(i)}>
+              <Avatar symbol={a.symbol} address={a.address} />
+              <span className="s">{a.symbol}</span>
+              <span className="n">{a.name.replace(/\s*•\s*Robinhood Token$/i, "")}</span>
+            </button>
+          ))}
+          {walletRow && (
+            <button role="option" aria-selected className="on" onClick={() => go(0)}>
+              <Icon name="wallet" size={18} />
+              <span className="s">{t("shell.viewWallet")}</span>
+              <span className="n mono">{shortAddr(q.trim())}</span>
+            </button>
+          )}
+          {!hits.length && !walletRow && <div className="muted small" style={{ padding: 10 }}>{t("markets.empty")}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Thin icon rail on the left (a bottom tab bar on phones). */
+function Rail() {
   const { t } = useI18n();
   const route = useRoute();
-  const w = useWallet();
   const quick = useQuick();
-  const is = (...n: string[]) => (n.includes(route.name) ? "active" : undefined);
   const from = route.name === "asset" ? route.ref : undefined;
+  const on = (...n: string[]) => (n.includes(route.name) ? " on" : "");
+  return (
+    <aside className="rail" aria-label="Main">
+      <a className="rail-brand" {...linkProps("/")} aria-label="Hoodmap">
+        <Mark size={24} />
+      </a>
+      <nav className="rail-nav">
+        <a className={`rail-i${on("home", "asset")}`} {...linkProps("/")} aria-current={on("home", "asset") ? "page" : undefined}>
+          <Icon name="home" size={21} />
+          <span>{t("nav.opps")}</span>
+        </a>
+        <a className={`rail-i${on("markets", "coverage")}`} {...linkProps("/markets")} aria-current={on("markets", "coverage") ? "page" : undefined}>
+          <Icon name="chart" size={21} />
+          <span>{t("nav.markets")}</span>
+        </a>
+        <a className={`rail-i${on("wallet")}`} {...linkProps("/wallet")} aria-current={on("wallet") ? "page" : undefined}>
+          <Icon name="wallet" size={21} />
+          <span>{t("nav.portfolio")}</span>
+        </a>
+        <button className="rail-i" onClick={() => quick.open("swap", from)}>
+          <Icon name="swap" size={21} />
+          <span>{t("quick.swap")}</span>
+        </button>
+        <button className={`rail-i${on("bridge")}`} onClick={() => quick.open("bridge")}>
+          <Icon name="bridge" size={21} />
+          <span>{t("quick.bridge")}</span>
+        </button>
+      </nav>
+      <div className="rail-foot">
+        <ThemeToggle />
+      </div>
+    </aside>
+  );
+}
+
+function Header() {
+  const { t } = useI18n();
+  const w = useWallet();
   return (
     <header className="top">
-      <div className="shell">
-        <a className="brand" {...linkProps("/")} aria-label="Hoodmap">
-          <Mark size={22} />
-          <span>hoodmap</span>
-        </a>
-        <nav className="main" aria-label="Main">
-          <a className={is("home", "asset")} {...linkProps("/")}>
-            {t("nav.opps")}
+      <a className="brand top-brand" {...linkProps("/")} aria-label="Hoodmap">
+        <Mark size={20} />
+        <span>hoodmap</span>
+      </a>
+      <GlobalSearch />
+      <span className="spacer" />
+      <LanguagePicker />
+      {w.address && w.source === "connected" ? (
+        <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
+          <a className="pill" {...linkProps("/wallet")} title={w.wallet ? `${w.wallet.name} · ${t("shell.viewing")}` : t("shell.viewing")}>
+            {w.wallet?.icon ? <img src={w.wallet.icon} alt="" width={16} height={16} /> : <Icon name="wallet" size={16} />}
+            {shortAddr(w.address)}
           </a>
-          <a className={is("markets", "coverage")} {...linkProps("/markets")}>
-            {t("nav.markets")}
-          </a>
-          <a className={is("wallet")} {...linkProps("/wallet")}>
-            {t("nav.portfolio")}
-          </a>
-        </nav>
-        <span className="spacer" />
-        <div className="quick-actions">
-          <button className="qa" onClick={() => quick.open("swap", from)}>
-            {t("quick.swap")}
+          <button className="icon-btn" onClick={w.clear} title={t("shell.disconnect")} aria-label={t("shell.disconnect")}>
+            <Icon name="logout" size={17} />
           </button>
-          <button className={`qa${route.name === "bridge" ? " on" : ""}`} onClick={() => quick.open("bridge")}>
-            {t("quick.bridge")}
-          </button>
-        </div>
-        <ThemeToggle />
-        <LanguagePicker />
-        {w.address && w.source === "connected" ? (
-          <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
-            <a className="pill" {...linkProps("/wallet")} title={w.wallet ? `${w.wallet.name} · ${t("shell.viewing")}` : t("shell.viewing")}>
-              {w.wallet?.icon ? <img src={w.wallet.icon} alt="" width={16} height={16} /> : <Icon name="wallet" size={16} />}
-              {shortAddr(w.address)}
-            </a>
-            <button className="icon-btn" onClick={w.clear} title={t("shell.disconnect")} aria-label={t("shell.disconnect")}>
-              <Icon name="logout" size={17} />
-            </button>
-          </span>
-        ) : (
-          <button className="btn small primary round" onClick={w.openPicker} title={t("shell.readOnlyTitle")}>
-            {t("shell.connect")}
-          </button>
-        )}
-      </div>
+        </span>
+      ) : (
+        <button className="btn small primary round" onClick={w.openPicker} title={t("shell.readOnlyTitle")}>
+          {t("shell.connect")}
+        </button>
+      )}
     </header>
   );
 }
@@ -208,16 +300,20 @@ export function App() {
       <WalletProvider>
         <AlertsProvider>
           <QuickProvider>
-          <Header />
-          <Ticker />
-          <main>
-            <div className="shell">
-              <FiredBanner />
-              <Page />
+            <div className="app">
+              <Rail />
+              <div className="app-main">
+                <Header />
+                <main>
+                  <div className="shell wide">
+                    <FiredBanner />
+                    <Page />
+                  </div>
+                </main>
+                <Footer />
+              </div>
             </div>
-          </main>
-          <Footer />
-          <WalletPicker />
+            <WalletPicker />
           </QuickProvider>
         </AlertsProvider>
       </WalletProvider>
