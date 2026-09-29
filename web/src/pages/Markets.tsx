@@ -75,7 +75,7 @@ export function MarketsPage() {
         <label className="mk-search">
           <Icon name="search" size={18} />
           <span className="sr-only">{t("search.label")}</span>
-          <input placeholder={t("markets.search", { n: res.data?.rows.length ?? 197 })} value={q} onChange={(e) => setQ(e.target.value)} />
+          <input placeholder={t("markets.search", { n: res.data?.rows?.length ?? 197 })} value={q} onChange={(e) => setQ(e.target.value)} />
         </label>
       </div>
       <div className="chips" role="radiogroup" aria-label={t("markets.title")}>
