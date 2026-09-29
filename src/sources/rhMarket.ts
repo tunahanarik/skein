@@ -49,3 +49,29 @@ export async function fetchShareHistory(symbol: string, range: ChartRange, f: ty
     .filter((b) => Number.isFinite(b.t) && Number(b.close) > 0)
     .sort((a, b) => a.t - b.t);
 }
+
+const quoteSchema = z.looseObject({
+  symbol: z.string(),
+  last_trade_price: z.string().nullable().optional(),
+  last_extended_hours_trade_price: z.string().nullable().optional(),
+  previous_close: z.string().nullable().optional(),
+  updated_at: z.string().nullable().optional(),
+});
+
+/** Latest share price and previous close for many symbols in one request (null entries dropped). */
+export async function fetchShareQuotes(symbols: string[], f: typeof fetch = fetch): Promise<Map<string, { last: number; prevClose: number; at: string | null }>> {
+  const ok = symbols.filter((s) => /^[A-Z][A-Z0-9.]{0,9}$/.test(s));
+  const out = new Map<string, { last: number; prevClose: number; at: string | null }>();
+  for (let i = 0; i < ok.length; i += 200) {
+    const res = await f(`https://api.robinhood.com/marketdata/quotes/?symbols=${ok.slice(i, i + 200).join(",")}`, { signal: AbortSignal.timeout(12_000), headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(`Robinhood quotes ${res.status}`);
+    const body = z.looseObject({ results: z.array(quoteSchema.nullable()) }).parse(await res.json());
+    for (const q of body.results) {
+      if (!q) continue;
+      const last = Number(q.last_extended_hours_trade_price ?? q.last_trade_price);
+      const prev = Number(q.previous_close);
+      if (last > 0 && prev > 0) out.set(q.symbol.toUpperCase(), { last, prevClose: prev, at: q.updated_at ?? null });
+    }
+  }
+  return out;
+}

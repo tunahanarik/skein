@@ -4,7 +4,7 @@ import { CardView } from "../components/CardView";
 import { OpportunityTable } from "../components/OpportunityTable";
 import { RouteTable } from "../components/RouteTable";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
-import { amount, usd } from "../format";
+import { amount, pct, usd } from "../format";
 import { useI18n } from "../i18n";
 import { AlertForm } from "../components/AlertForm";
 import { PriceChart } from "../components/PriceChart";
@@ -15,6 +15,7 @@ import { IntentCards, useQuick, usePortfolio } from "../components/market";
 import { INTENT_CAT, INTENTS, type IntentKey } from "../intents";
 import { useWallet } from "../wallet";
 import { LivePairs } from "../components/LivePairs";
+import { useTodayChange } from "../components/market";
 import { AggregatorPanel, useAggregator } from "../components/AggregatorSwap";
 import { useLive } from "../live";
 
@@ -143,6 +144,7 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
   const lp = a ? live.prices.get(a.key) : undefined;
   const mv = a ? live.moves.get(a.key) : undefined;
   const flash = mv && Date.now() - mv.at < 1500 ? (mv.dir > 0 ? " up" : " down") : "";
+  const today = useTodayChange(a?.key ?? null);
   return (
     <div className="asset-hero">
       <div className="main">
@@ -169,6 +171,12 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
             <div className="price-row">
               <span className={`price num${flash}`}>{lp ? usd(lp.usd) : v.price?.usd ? usd(v.price.usd) : t("asset.unpriced")}</span>
               {lp && <span className="live-dot on" title={t("live.price")} aria-label={t("live.price")} />}
+              {today !== null && (
+                <span className={`num ${today >= 0 ? "up" : "down"}`} style={{ fontSize: 15 }}>
+                  {today >= 0 ? "+" : ""}
+                  {pct(today, 2)} {t("asset.today")}
+                </span>
+              )}
               <span className="small muted">
                 {v.price?.usd
                   ? `${v.price.method === "ROBINHOOD_QUOTE_MID" ? t("asset.rhQuote") : t("asset.chainlink")} · ${ago(t, v.price.observedAt)} · ${code(t, "fresh", v.price.freshness)}`

@@ -10,6 +10,7 @@
  *   GET /api/assets/:ref/chart?range=1D|1W|1M|1Y      price chart (share data × multiplier, or Chainlink)
  *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
+ *   GET /api/markets                                  every canonical asset: price and today's change
  *   GET /api/aggregator                               Stock Token routes via LI.FI (background scan, vs Chainlink)
  *   GET /api/stream?pairs=NVDA&prices=TSLA,WETH        live pair and token prices (Server-Sent Events)
  *   GET /api/img?u=<url>                              bridge token / network logo (allowlisted hosts; proxied, sniffed)
@@ -132,6 +133,9 @@ export function createApi(deps: ApiDeps) {
     }
     if (p === "/api/coverage") {
       return { template: "/api/coverage", body: { rows: await deps.intelligence.getCoverage() }, cache: "public, max-age=15", expensive: true };
+    }
+    if (p === "/api/markets") {
+      return { template: "/api/markets", body: { rows: await deps.intelligence.getMarkets() }, cache: "public, max-age=30", expensive: false };
     }
     if (p === "/api/aggregator") {
       if (!deps.aggregator) throw new ApiError(404, "NO_AGGREGATOR", "aggregator coverage is not enabled on this server");

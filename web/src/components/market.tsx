@@ -14,10 +14,18 @@ import { useWallet } from "../wallet";
 import { useLive } from "../live";
 import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
+import { Badge, Icon, type IconName } from "./icons";
 import { AggregatorSwap } from "./AggregatorSwap";
 import { parseUnits } from "viem";
 
-const ICON: Record<IntentKey, string> = { EARN: "↗", FIXED: "◷", BORROW: "⌂", LIQUIDITY: "≈", TRADE: "⇄" };
+/** Icon and pastel family per intent. */
+export const INTENT_LOOK: Record<IntentKey, { icon: IconName; tone: "earn" | "fixed" | "borrow" | "lp" | "trade" }> = {
+  EARN: { icon: "earn", tone: "earn" },
+  FIXED: { icon: "lock", tone: "fixed" },
+  BORROW: { icon: "bank", tone: "borrow" },
+  LIQUIDITY: { icon: "drop", tone: "lp" },
+  TRADE: { icon: "swap", tone: "trade" },
+};
 
 /* ---------------- intent cards ---------------- */
 
@@ -43,12 +51,8 @@ export function IntentCards({ v, selected, onSelect, hrefFor, agg }: { v: Intell
         const off = i.key === "TRADE" ? i.count === 0 && !aggOk : i.usable.length === 0;
         const body = (
           <>
-            <span className="k">
-              <span className="ico" aria-hidden="true">
-                {ICON[i.key]}
-              </span>
-              {t(`intent.${i.key}`)}
-            </span>
+            <Badge icon={INTENT_LOOK[i.key].icon} tone={INTENT_LOOK[i.key].tone} />
+            <span className="k">{t(`intent.${i.key}`)}</span>
             <span className="v num">{val}</span>
             <span className="f">{foot}</span>
           </>
@@ -70,14 +74,6 @@ export function IntentCards({ v, selected, onSelect, hrefFor, agg }: { v: Intell
 
 /* ---------------- opportunity rows ---------------- */
 
-function ProtocolMark({ name }: { name: string }) {
-  const n = name.split(" + ")[0]!;
-  return (
-    <span className="pmark" aria-hidden="true" data-p={n.toLowerCase().replace(/[^a-z]/g, "")}>
-      {n.slice(0, 2)}
-    </span>
-  );
-}
 
 /** "Protocol · context", without repeating the protocol when the context already starts with it. */
 function subline(protocol: string, ctx: string): string {
@@ -95,7 +91,7 @@ export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey;
         const unit = intent === "BORROW" ? t("intent.unit.ltv") : card.headline?.basis === "FIXED" || intent === "FIXED" ? t("intent.unit.fixed") : t("intent.unit.apy");
         return (
           <a key={card.cardId} className="opp" {...linkProps(`/asset/${encodeURIComponent(assetRef)}?i=${intent}`)}>
-            <ProtocolMark name={card.protocol.name} />
+            <Badge icon={INTENT_LOOK[intent].icon} tone={INTENT_LOOK[intent].tone} size={38} />
             <span className="main">
               <span className="l">{actionLabel(t, card)}</span>
               <span className="c">{subline(card.protocol.name, contextLine(t, card))}</span>
@@ -106,7 +102,7 @@ export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey;
               <small>{unit}</small>
             </span>
             <span className="go" aria-hidden="true">
-              →
+              <Icon name="chevron" size={18} />
             </span>
           </a>
         );
@@ -180,6 +176,26 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
   );
 }
 
+/* ---------------- markets data (shared) ---------------- */
+
+let marketsCache: { at: number; p: Promise<Map<string, number | null>> } | null = null;
+/** Today's change (vs the previous close) of an asset, from /api/markets (cached for a minute). */
+export function useTodayChange(key: string | null): number | null {
+  const [v, setV] = useState<number | null>(null);
+  useEffect(() => {
+    if (!key) return;
+    let live = true;
+    if (!marketsCache || Date.now() - marketsCache.at > 60_000) {
+      marketsCache = { at: Date.now(), p: api.markets().then((m) => new Map(m.rows.map((r) => [r.key, r.changePct])), () => new Map()) };
+    }
+    marketsCache.p.then((m) => live && setV(m.get(key) ?? null));
+    return () => {
+      live = false;
+    };
+  }, [key]);
+  return v;
+}
+
 /* ---------------- ticker strip ---------------- */
 
 const TICKER = ["NVDA", "TSLA", "AAPL", "MSFT", "AMZN", "META", "GOOGL", "SPY", "WETH"];
@@ -195,18 +211,14 @@ export function Ticker() {
   useEffect(() => {
     if (!list || (tickCache && Date.now() - tickCache.at < 120_000)) return;
     let live = true;
-    const items = TICKER.map((s) => list.find((a) => a.symbol === s)).filter((a): a is AssetListItem => !!a);
-    Promise.all(
-      items.map((a) =>
-        api.chart(a.address, "1D").then(
-          (h) => ({ symbol: a.symbol === "WETH" ? "ETH" : a.symbol, ref: a.symbol, usd: h?.last ? Number(h.last) : null, change: h?.changePct ? Number(h.changePct) : null }),
-          () => ({ symbol: a.symbol, ref: a.symbol, usd: null, change: null }),
-        ),
-      ),
-    ).then((r) => {
+    // One request: price (Chainlink) and today's change vs the previous close, same as the Markets page.
+    api.markets().then((m) => {
+      const r: Tick[] = TICKER.map((sym) => m.rows.find((x) => x.symbol === sym))
+        .filter((x): x is NonNullable<typeof x> => !!x)
+        .map((x) => ({ symbol: x.symbol === "WETH" ? "ETH" : x.symbol, ref: x.symbol, usd: x.usd, change: x.changePct }));
       tickCache = { at: Date.now(), ticks: r };
       if (live) setTicks(r);
-    });
+    }, () => undefined);
     return () => {
       live = false;
     };

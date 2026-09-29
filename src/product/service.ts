@@ -72,8 +72,21 @@ export interface IntelligenceDeps {
   chartRounds?: ChainlinkRounds;
   /** Underlying share price history for Stock Token charts (Robinhood market data). */
   shareHistory?: (symbol: string, range: ChartRange) => Promise<ShareBar[]>;
+  /** Latest share price and previous close by ticker (Robinhood market data), for daily change. */
+  shareQuotes?: (symbols: string[]) => Promise<Map<string, { last: number; prevClose: number; at: string | null }>>;
   /** Called with every new engine snapshot (e.g. to record rate history). Errors are ignored. */
   onSnapshot?: (opps: readonly Opportunity[], takenAt: number) => void;
+}
+
+export interface MarketRow {
+  key: string;
+  symbol: string;
+  name: string;
+  type: string;
+  address: string;
+  usd: number | null;
+  /** Today's change in percent units, or null. */
+  changePct: number | null;
 }
 
 export interface PriceHistory {
@@ -592,6 +605,35 @@ export class AssetIntelligenceService {
     if (!feed) return null;
     const [dec] = await s.ctx.reader.multicall([{ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" }], { blockNumber: s.ctx.blockNumber });
     return dec?.status === "success" ? { key: asset.key, symbol: asset.symbol, proxy: feed.proxyAddress, decimals: Number(dec.result) } : null;
+  }
+
+  private readonly marketsCache = new TtlCache<MarketRow[]>(() => this.now().getTime());
+
+  /**
+   * Every canonical asset with its USD price (Chainlink / Phase 1) and today's change. Stock
+   * Tokens: the underlying share's change vs the previous close (Robinhood market data; the
+   * multiplier cancels out). ETH/USDG: the 1D Chainlink chart. Cached for a minute.
+   */
+  async getMarkets(): Promise<MarketRow[]> {
+    return this.marketsCache.getOrLoad("all", 60_000, async () => {
+      const s = await this.snapshot();
+      const assets = s.ctx.registry.canonical().filter((a) => a.address);
+      const prices = await this.usdPrices(assets.map((a) => a.key));
+      const quotes = this.deps.shareQuotes ? await this.deps.shareQuotes(assets.filter((a) => a.type === "STOCK_TOKEN").map((a) => a.stockMetadata?.rhSymbol ?? a.symbol)).catch(() => new Map()) : new Map();
+      const rows: MarketRow[] = [];
+      for (const a of assets) {
+        let change: number | null = null;
+        if (a.type === "STOCK_TOKEN") {
+          const q = quotes.get((a.stockMetadata?.rhSymbol ?? a.symbol).toUpperCase());
+          if (q) change = (q.last / q.prevClose - 1) * 100;
+        } else {
+          const c = await this.getPriceChart(a.key, "1D").catch(() => null);
+          change = c?.changePct != null ? Number(c.changePct) : null;
+        }
+        rows.push({ key: a.key, symbol: a.symbol, name: a.name, type: a.type, address: a.address!, usd: prices.get(a.key) ?? null, changePct: change });
+      }
+      return rows;
+    });
   }
 
   /** Chainlink/Phase 1 USD prices of canonical assets, as numbers (for classification only). */

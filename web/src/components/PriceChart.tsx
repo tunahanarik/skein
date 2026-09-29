@@ -103,21 +103,26 @@ export function PriceChart({ assetRef }: { assetRef: string }) {
     setHover(Math.max(0, Math.min(pts.length - 1, i)));
   };
   const sel = hover !== null ? pts[hover] : null;
-  const shown = sel ? sel.v : pts.at(-1)?.v;
   const selChange = sel && pts[0] ? ((sel.v - pts[0].v) / pts[0].v) * 100 : change;
 
   return (
     <div className="pchart" ref={box}>
       <div className="pc-head">
         <div className="pc-read" aria-live="polite">
-          {shown !== undefined && <span className="num pc-val">{usd(String(shown))}</span>}
+          {sel ? (
+            <>
+              <span className="num pc-val">{usd(String(sel.v))}</span>
+              <span className="muted small">{fmtFull(sel.t)}</span>
+            </>
+          ) : (
+            <span className="muted small">{t(`chart.period.${range}`)}</span>
+          )}
           {selChange !== null && (
-            <span className="num" style={{ color: selChange >= 0 ? "var(--ok)" : "var(--bad)" }}>
+            <span className="num small" style={{ color: selChange >= 0 ? "var(--ok)" : "var(--bad)" }}>
               {selChange >= 0 ? "+" : ""}
               {pct(selChange, 2)}
             </span>
           )}
-          <span className="muted small">{sel ? fmtFull(sel.t) : t(`chart.period.${range}`)}</span>
         </div>
         <div className="seg" role="radiogroup" aria-label={t("chart.range")}>
           {RANGES.map((r) => (
