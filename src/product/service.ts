@@ -14,6 +14,8 @@ import { CACHE_TTL_MS } from "../config/freshness.js";
 import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
+import { BUCKET_MS, CHART_TTL_MS, deviation, MAX_DEVIATION, RANGE_MS, resample, shareToToken, summarize, type ChainlinkRounds, type PriceChartData } from "./charts.js";
+import { RH_MARKET_BASE, RH_QUERY, type ChartRange, type ShareBar } from "../sources/rhMarket.js";
 import type { AssetRef, Opportunity, TokenAmount, UsdAmount } from "../model/opportunity.js";
 import type { TradeMarket, TradeRoute } from "../model/trade.js";
 import { isAuthoritative } from "../model/verification.js";
@@ -64,6 +66,10 @@ export interface IntelligenceDeps {
   prices?: PriceService;
   /** Third-party 24h pool volume (display only). */
   volumes?: VolumeSource;
+  /** Chainlink round history for charts (full feed history, incremental). */
+  chartRounds?: ChainlinkRounds;
+  /** Underlying share price history for Stock Token charts (Robinhood market data). */
+  shareHistory?: (symbol: string, range: ChartRange) => Promise<ShareBar[]>;
   /** Called with every new engine snapshot (e.g. to record rate history). Errors are ignored. */
   onSnapshot?: (opps: readonly Opportunity[], takenAt: number) => void;
 }
@@ -548,6 +554,52 @@ export class AssetIntelligenceService {
       // Exact change in 1e18 fixed point, then formatted.
       const change = first && last && first.answer > 0n ? { from: points[0]!.usd, to: points.at(-1)!.usd, pct: formatFixed(((last.answer - first.answer) * 10n ** 20n) / first.answer, 18) } : null;
       return { asset: ref, kind: "PORTFOLIO_PRICE", source: h ? { provider: "Chainlink", feed: h.feed.name, proxy: h.feed.proxyAddress } : null, points, change, generatedAt: this.now().toISOString() };
+    });
+  }
+
+  private readonly chartCache = new TtlCache<PriceChartData>(() => this.now().getTime());
+
+  /**
+   * Price chart for a range. Stock Tokens: the underlying share's bars × on-chain multiplier, if
+   * the latest bar agrees with the token's Chainlink price (else Chainlink). Others: Chainlink
+   * rounds resampled to even buckets.
+   */
+  async getPriceChart(assetInput: string, range: ChartRange): Promise<PriceChartData | null> {
+    const s = await this.snapshot();
+    const { ref } = this.resolveAsset(s.ctx.registry, assetInput);
+    if (!ref || !ref.canonical || !this.deps.prices) return null;
+    const asset = s.ctx.registry.get(s.ctx.chainId, ref.address)!;
+    return this.chartCache.getOrLoad(`${ref.key}:${range}`, CHART_TTL_MS[range], async () => {
+      const now = this.now().getTime();
+      const from = now - RANGE_MS[range];
+      const generatedAt = this.now().toISOString();
+      const p = (await priceCanonicalAssets(s.ctx, [ref.key])).priceOf(ref.key);
+      const price18 = p.price ? p.price.raw * 10n ** BigInt(18 - p.price.decimals) : null;
+      let note: string | null = null;
+      if (asset.type === "STOCK_TOKEN" && this.deps.shareHistory && p.multiplier && price18) {
+        const symbol = asset.stockMetadata?.rhSymbol ?? asset.symbol;
+        try {
+          const pts = shareToToken(await this.deps.shareHistory(symbol, range), p.multiplier);
+          const lastV = pts.at(-1)?.v;
+          if (lastV && deviation(lastV, price18) <= MAX_DEVIATION) {
+            // Share bars are already evenly spaced within trading sessions; the client spaces them by index.
+            // Share data starting well after the range start means a later listing.
+            const late = range !== "1D" && pts[0]!.t > from + 5 * 86_400_000 ? pts[0]!.t : null;
+            const sum = summarize(range, pts, 18, late);
+            const q = RH_QUERY[range];
+            return { ...sum, source: { provider: "ROBINHOOD_MARKET_DATA" as const, symbol, multiplier: formatFixed(p.multiplier, 18), url: `${RH_MARKET_BASE}/${symbol}/?interval=${q.interval}&span=${q.span}` }, note: null, generatedAt };
+          }
+          note = lastV ? "SHARE_PRICE_MISMATCH" : "SHARE_DATA_EMPTY";
+        } catch {
+          note = "SHARE_DATA_UNAVAILABLE";
+        }
+      }
+      const feed = await this.deps.prices!.feedFor(asset).catch(() => null);
+      if (!feed || !this.deps.chartRounds) return { range, points: [], first: null, last: null, high: null, low: null, changePct: null, since: null, source: { provider: "CHAINLINK" as const, feed: "", proxy: "" }, note: note ?? "NO_FEED", generatedAt };
+      const { decimals, rounds } = await this.deps.chartRounds.get(feed.proxyAddress, s.ctx.blockNumber);
+      const rs = resample(rounds, from, now, BUCKET_MS[range]);
+      const late = rounds.length && rounds[0]!.t > from ? rounds[0]!.t : null;
+      return { ...summarize(range, rs, decimals, late), source: { provider: "CHAINLINK" as const, feed: feed.name, proxy: feed.proxyAddress }, note, generatedAt };
     });
   }
 

@@ -15,6 +15,8 @@ import { createApi } from "./api.js";
 import { sendJson } from "./json.js";
 import { LogoStore } from "./logos.js";
 import { ImageProxy } from "./images.js";
+import { ChainlinkRounds } from "../product/charts.js";
+import { fetchShareHistory, type ChartRange } from "../sources/rhMarket.js";
 import { RateHistory } from "./rateHistory.js";
 import { GeckoTerminalVolumes } from "../sources/geckoterminal.js";
 import { readFileSync, existsSync } from "node:fs";
@@ -29,6 +31,8 @@ const intelligence = new AssetIntelligenceService({
   engine: rt.opportunities,
   getPortfolio: (w) => rt.getPortfolio(w),
   prices: rt.prices,
+  chartRounds: new ChainlinkRounds(rt.reader, { dir: ".cache/chainlink" }),
+  ...(env.DISABLE_SHARE_HISTORY === "1" ? {} : { shareHistory: (sym: string, range: ChartRange) => fetchShareHistory(sym, range) }),
   ...(env.DISABLE_THIRD_PARTY_VOLUME === "1" ? {} : { volumes: new GeckoTerminalVolumes(rt.http) }),
   onSnapshot: (opps, takenAt) => rates.record(opps, takenAt),
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),

@@ -638,3 +638,14 @@ table.data th { color: var(--text-3); }
 
 /* intent cards: lift on hover, inverted ring when selected */
 .intent.sel { box-shadow: 0 0 0 2px currentColor inset; }
+
+/* ---- price chart ---- */
+.pchart { margin-top: 10px; display: grid; gap: 6px; min-width: 0; }
+.pc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.pc-read { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-height: 26px; }
+.pc-val { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+.pc-plot { position: relative; }
+.pc-plot svg { display: block; cursor: crosshair; }
+.pc-axis { fill: var(--text-3); font-size: 11px; font-family: var(--font); }
+.pc-empty { position: absolute; inset: 0; display: grid; place-items: center; border: 1px dashed var(--border); border-radius: 12px; }
+.pc-foot { line-height: 1.5; }

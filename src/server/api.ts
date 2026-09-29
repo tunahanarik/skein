@@ -7,6 +7,7 @@
  *   GET /api/portfolio/:address?mode=                 PortfolioIntelligence (never cached, never logged)
  *   GET /api/coverage                                 coverage matrix
  *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
+ *   GET /api/assets/:ref/chart?range=1D|1W|1M|1Y      price chart (share data × multiplier, or Chainlink)
  *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
  *   GET /api/img?u=<url>                              bridge token / network logo (allowlisted hosts; proxied, sniffed)
@@ -123,6 +124,15 @@ export function createApi(deps: ApiDeps) {
     }
     if (p === "/api/coverage") {
       return { template: "/api/coverage", body: { rows: await deps.intelligence.getCoverage() }, cache: "public, max-age=15", expensive: true };
+    }
+    const cm = /^\/api\/assets\/([^/]{1,100})\/chart$/.exec(p);
+    if (cm) {
+      const range = (q.get("range") ?? "1D").toUpperCase();
+      if (!["1D", "1W", "1M", "1Y"].includes(range)) throw new ApiError(400, "BAD_RANGE", "range must be 1D, 1W, 1M or 1Y");
+      const key = resolveRef(await deps.getRegistry(), decodeURIComponent(cm[1]!), deps.chainId);
+      const c = await deps.intelligence.getPriceChart(key, range as "1D");
+      if (!c) throw new ApiError(404, "NO_CHART", "no chart for this asset");
+      return { template: "/api/assets/:ref/chart", body: c, cache: range === "1D" ? "public, max-age=30" : "public, max-age=120", expensive: false };
     }
     let m = /^\/api\/assets\/([^/]{1,100})\/history$/.exec(p);
     if (m) {

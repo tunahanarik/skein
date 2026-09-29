@@ -183,8 +183,8 @@ export function Ticker() {
     const items = TICKER.map((s) => list.find((a) => a.symbol === s)).filter((a): a is AssetListItem => !!a);
     Promise.all(
       items.map((a) =>
-        api.history(a.address).then(
-          (h) => ({ symbol: a.symbol === "WETH" ? "ETH" : a.symbol, ref: a.symbol, usd: h?.points?.length ? Number(h.points.at(-1)!.usd) : null, change: h?.change ? Number(h.change.pct) : null }),
+        api.chart(a.address, "1D").then(
+          (h) => ({ symbol: a.symbol === "WETH" ? "ETH" : a.symbol, ref: a.symbol, usd: h?.last ? Number(h.last) : null, change: h?.changePct ? Number(h.changePct) : null }),
           () => ({ symbol: a.symbol, ref: a.symbol, usd: null, change: null }),
         ),
       ),
