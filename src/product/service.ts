@@ -594,6 +594,27 @@ export class AssetIntelligenceService {
     return dec?.status === "success" ? { key: asset.key, symbol: asset.symbol, proxy: feed.proxyAddress, decimals: Number(dec.result) } : null;
   }
 
+  /** Chainlink/Phase 1 USD prices of canonical assets, as numbers (for classification only). */
+  async usdPrices(keys: string[]): Promise<Map<string, number>> {
+    const s = await this.snapshot();
+    const priced = await priceCanonicalAssets(s.ctx, keys);
+    const out = new Map<string, number>();
+    for (const k of keys) {
+      const p = priced.priceOf(k).price;
+      if (p) out.set(k, Number(formatFixed(p.raw, p.decimals)));
+    }
+    return out;
+  }
+
+  /** Canonical Stock Tokens (for the aggregator scan). */
+  async stockTokens(): Promise<{ key: string; symbol: string; address: `0x${string}`; decimals: number }[]> {
+    const s = await this.snapshot();
+    return s.ctx.registry
+      .canonical()
+      .filter((a) => a.type === "STOCK_TOKEN" && a.address)
+      .map((a) => ({ key: a.key, symbol: a.symbol, address: a.address!, decimals: a.decimals }));
+  }
+
   private readonly chartCache = new TtlCache<PriceChartData>(() => this.now().getTime());
 
   /**

@@ -10,6 +10,7 @@
  *   GET /api/assets/:ref/chart?range=1D|1W|1M|1Y      price chart (share data × multiplier, or Chainlink)
  *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
+ *   GET /api/aggregator                               Stock Token routes via LI.FI (background scan, vs Chainlink)
  *   GET /api/stream?pairs=NVDA&prices=TSLA,WETH        live pair and token prices (Server-Sent Events)
  *   GET /api/img?u=<url>                              bridge token / network logo (allowlisted hosts; proxied, sniffed)
  *
@@ -25,6 +26,7 @@ import type { ProductMode } from "../product/types.js";
 import type { LogoStore } from "./logos.js";
 import type { ImageProxy } from "./images.js";
 import type { LiveHub } from "./live.js";
+import type { AggregatorScanner } from "../product/aggregator.js";
 import type { RateHistory } from "./rateHistory.js";
 import { RateLimiter } from "./rateLimit.js";
 import { SECURITY_HEADERS, sendJson } from "./json.js";
@@ -43,6 +45,7 @@ export interface ApiDeps {
   logos?: LogoStore;
   images?: ImageProxy;
   live?: LiveHub;
+  aggregator?: AggregatorScanner;
   rates?: RateHistory;
 }
 
@@ -129,6 +132,10 @@ export function createApi(deps: ApiDeps) {
     }
     if (p === "/api/coverage") {
       return { template: "/api/coverage", body: { rows: await deps.intelligence.getCoverage() }, cache: "public, max-age=15", expensive: true };
+    }
+    if (p === "/api/aggregator") {
+      if (!deps.aggregator) throw new ApiError(404, "NO_AGGREGATOR", "aggregator coverage is not enabled on this server");
+      return { template: "/api/aggregator", body: { lastScanAt: deps.aggregator.lastScanAt, rows: deps.aggregator.all() }, cache: "public, max-age=60", expensive: false };
     }
     const cm = /^\/api\/assets\/([^/]{1,100})\/chart$/.exec(p);
     if (cm) {

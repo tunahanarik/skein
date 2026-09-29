@@ -133,7 +133,7 @@ describe("static web app", () => {
     expect(shell.status).toBe(200);
     expect(shell.headers.get("content-security-policy")).toBe(CSP);
     expect(CSP).toContain("script-src 'self'");
-    expect(CSP).toContain("connect-src 'self' https://li.quest;");
+    expect(CSP).toContain("connect-src 'self' https://li.quest https://aggregator-api.kyberswap.com;");
     const js = await get("/assets/app-abc.js");
     expect(js.headers.get("cache-control")).toMatch(/immutable/);
     expect((await get("/assets/missing.js")).status).toBe(404);

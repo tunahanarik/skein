@@ -3,7 +3,7 @@
  * picker, the ticker strip, the wallet summary and the quick swap / bridge panel.
  */
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, type AssetListItem, type Card, type Intelligence, type Portfolio } from "../api";
+import { api, type AggregatorRow, type AssetListItem, type Card, type Intelligence, type Portfolio } from "../api";
 import { amount, pct, pctE18, usd } from "../format";
 import { useI18n } from "../i18n";
 import { INTENT_CAT, intentsOf, type Intent, type IntentKey } from "../intents";
@@ -14,28 +14,33 @@ import { useWallet } from "../wallet";
 import { useLive } from "../live";
 import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
+import { AggregatorSwap } from "./AggregatorSwap";
+import { parseUnits } from "viem";
 
 const ICON: Record<IntentKey, string> = { EARN: "↗", FIXED: "◷", BORROW: "⌂", LIQUIDITY: "≈", TRADE: "⇄" };
 
 /* ---------------- intent cards ---------------- */
 
-export function intentValue(t: ReturnType<typeof useI18n>["t"], i: Intent): { v: string; foot: string } {
+export function intentValue(t: ReturnType<typeof useI18n>["t"], i: Intent, agg?: AggregatorRow | null): { v: string; foot: string } {
   const who = i.protocols.slice(0, 2).join(", ");
-  if (i.key === "TRADE") return { v: String(i.count), foot: i.count ? t("intent.foot.assets") : t("intent.foot.none") };
+  const aggOk = agg && (agg.cls === "GOOD" || agg.cls === "OK");
+  if (i.key === "TRADE" && !i.count && aggOk) return { v: t("intent.aggV"), foot: t("intent.foot.agg", { s: agg!.toolName ?? "LI.FI" }) };
+  if (i.key === "TRADE") return { v: String(i.count), foot: i.count ? (aggOk ? t("intent.foot.assetsAgg") : t("intent.foot.assets")) : t("intent.foot.none") };
   if (!i.usable.length) return { v: "—", foot: t("intent.foot.none") };
   if (i.key === "BORROW") return { v: i.best !== null ? pct(i.best, 0) : String(i.count), foot: `${t("intent.foot.ltv")} · ${who}` };
   return { v: i.best !== null ? pct(i.best, 1) : String(i.count), foot: i.count > 1 ? t("intent.foot.options", { n: i.count, p: who }) : who };
 }
 
 /** Five intent cards. With `selected`, they act as a filter (aria-pressed); otherwise as links. */
-export function IntentCards({ v, selected, onSelect, hrefFor }: { v: Intelligence; selected?: IntentKey | null; onSelect?: (k: IntentKey | null) => void; hrefFor?: (k: IntentKey) => string }) {
+export function IntentCards({ v, selected, onSelect, hrefFor, agg }: { v: Intelligence; selected?: IntentKey | null; onSelect?: (k: IntentKey | null) => void; hrefFor?: (k: IntentKey) => string; agg?: AggregatorRow | null }) {
   const { t } = useI18n();
   const intents = intentsOf(v);
   return (
     <div className="intents" role="group" aria-label={t("asset.canDo")}>
       {intents.map((i) => {
-        const { v: val, foot } = intentValue(t, i);
-        const off = i.key === "TRADE" ? i.count === 0 : i.usable.length === 0;
+        const { v: val, foot } = intentValue(t, i, agg);
+        const aggOk = !!agg && (agg.cls === "GOOD" || agg.cls === "OK");
+        const off = i.key === "TRADE" ? i.count === 0 && !aggOk : i.usable.length === 0;
         const body = (
           <>
             <span className="k">
@@ -129,7 +134,11 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
     const l = only ? (list ?? []).filter((a) => only.includes(a.symbol)) : (list ?? []);
-    return (s ? l.filter((a) => a.symbol.toLowerCase().includes(s) || a.name.toLowerCase().includes(s) || a.address.toLowerCase() === s) : l).slice(0, 60);
+    // Every asset (no cap): core assets first, then stock tokens A–Z.
+    const rank = (a: AssetListItem) => (a.type === "STOCK_TOKEN" ? 1 : 0);
+    return (s ? l.filter((a) => a.symbol.toLowerCase().includes(s) || a.name.toLowerCase().includes(s) || a.address.toLowerCase() === s) : l)
+      .slice()
+      .sort((a, b) => rank(a) - rank(b) || a.symbol.localeCompare(b.symbol));
   }, [list, q, only]);
   return (
     <div className="picker" ref={ref}>
@@ -143,6 +152,9 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
       {open && (
         <div className="picker-pop panel" id={`${id}-l`}>
           <input className="input" autoFocus placeholder={t("search.placeholder")} aria-label={t("search.label")} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setOpen(false)} />
+          <div className="faint small" style={{ padding: "6px 4px 0" }}>
+            {t("picker.count", { n: shown.length })}
+          </div>
           <div role="listbox" className="picker-list">
             {shown.map((a) => (
               <button
@@ -391,7 +403,8 @@ function QuickSwap({ from }: { from?: string }) {
     setState({ loading: false, card: null, none: false, err: null });
     api.asset(fromA.address, {}, ac.signal).then(
       (v) => {
-        const syms = [...new Set(v.tradeTargets.map((x) => x.symbol))];
+        // Uniswap v3 targets, plus USDG and WETH, which the aggregator (LI.FI) can route for any token.
+        const syms = [...new Set([...v.tradeTargets.map((x) => x.symbol), "USDG", "WETH"])].filter((x) => x !== fromA.symbol);
         const order = ["USDG", "WETH"];
         syms.sort((a, b) => (order.includes(a) ? order.indexOf(a) : 9) - (order.includes(b) ? order.indexOf(b) : 9) || a.localeCompare(b));
         setTargets(syms);
@@ -403,6 +416,15 @@ function QuickSwap({ from }: { from?: string }) {
   }, [fromA]);
 
   const valid = /^\d+(\.\d+)?$/.test(amt) && Number(amt) > 0;
+  const toA = list?.find((a) => a.symbol === to) ?? null;
+  const aggAmount = (() => {
+    if (!fromA || !valid) return null;
+    try {
+      return parseUnits(amt, fromA.decimals);
+    } catch {
+      return null;
+    }
+  })();
   async function quote() {
     if (!fromA || !to || !valid) return;
     setState({ loading: true, card: null, none: false, err: null });
@@ -411,8 +433,9 @@ function QuickSwap({ from }: { from?: string }) {
       const cards = v.categories.find((c) => c.category === "TRADE")?.subcategories.flatMap((s) => s.cards) ?? [];
       const card = cards.find(canSwap) ?? null;
       setState({ loading: false, card, none: !card, err: null });
-    } catch (e) {
-      setState({ loading: false, card: null, none: false, err: (e as Error).message });
+    } catch {
+      // Not a Uniswap v3 target (e.g. USDG added for the aggregator): use the aggregator.
+      setState({ loading: false, card: null, none: true, err: null });
     }
   }
 
@@ -438,15 +461,11 @@ function QuickSwap({ from }: { from?: string }) {
           {state.loading ? t("quote.quoting") : t("quick.getQuote")}
         </button>
       )}
-      {state.none && fromA && (
-        <div className="notice info small">
-          <span>
-            {t("quick.noDirect")}{" "}
-            <a {...linkProps(`/asset/${encodeURIComponent(fromA.symbol)}?i=TRADE`)} onClick={(e) => (e.preventDefault(), navigate(`/asset/${encodeURIComponent(fromA.symbol)}?i=TRADE`))}>
-              {t("quick.allRoutes")}
-            </a>
-          </span>
-        </div>
+      {state.none && fromA && toA && aggAmount !== null && (
+        <>
+          <div className="muted small">{t("agg.fallback")}</div>
+          <AggregatorSwap key={`${fromA.key}-${toA.key}-${amt}`} from={{ ...fromA, address: fromA.address as `0x${string}` }} to={{ ...toA, address: toA.address as `0x${string}` }} amountRaw={aggAmount} />
+        </>
       )}
       {state.err && <div className="notice bad small">{state.err}</div>}
       {state.card && <SwapBody key={state.card.cardId} card={state.card} />}

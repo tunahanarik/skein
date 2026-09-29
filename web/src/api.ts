@@ -2,6 +2,7 @@
 import type { AssetIntelligence, CoverageRow, PortfolioIntelligence } from "../../src/product/types.js";
 import type { PriceHistory } from "../../src/product/service.js";
 import type { PriceChartData } from "../../src/product/charts.js";
+import type { AggRow } from "../../src/product/aggregator.js";
 import type { AssetListItem, Wire } from "../../src/server/wire.js";
 
 export type Intelligence = Wire<AssetIntelligence>;
@@ -9,6 +10,7 @@ export type Portfolio = Wire<PortfolioIntelligence>;
 export type Coverage = Wire<CoverageRow>;
 export type History = Wire<PriceHistory>;
 export type Chart = Wire<PriceChartData>;
+export type AggregatorRow = Wire<AggRow>;
 export type Card = Intelligence["categories"][number]["subcategories"][number]["cards"][number];
 export type Sub = Intelligence["categories"][number]["subcategories"][number];
 export type { AssetListItem };
@@ -44,6 +46,7 @@ export const api = {
   },
   portfolio: (address: string, s?: AbortSignal) => get<Portfolio>(`/api/portfolio/${encodeURIComponent(address)}`, s),
   history: (ref: string, s?: AbortSignal) => get<History>(`/api/assets/${encodeURIComponent(ref)}/history`, s),
+  aggregator: (s?: AbortSignal) => get<{ lastScanAt: string | null; rows: AggregatorRow[] }>("/api/aggregator", s),
   chart: (ref: string, range: "1D" | "1W" | "1M" | "1Y", s?: AbortSignal) => get<Chart>(`/api/assets/${encodeURIComponent(ref)}/chart?range=${range}`, s),
   coverage: (s?: AbortSignal) => get<{ rows: Coverage[] }>("/api/coverage", s),
   health: (s?: AbortSignal) => get<{ chainId: number; readOnly: boolean; rpc: { status: string; latestBlock: string | null } }>("/api/health", s),

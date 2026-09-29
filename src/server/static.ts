@@ -21,8 +21,9 @@ const TYPES: Record<string, string> = {
 };
 
 /**
- * No inline scripts. The page talks to its own API, plus li.quest (LI.FI) for bridge quotes and
- * status: called from the browser so the wallet address never passes through this server.
+ * No inline scripts. The page talks to its own API, plus li.quest (LI.FI) and KyberSwap's
+ * aggregator API for bridge/swap quotes: called from the browser so the wallet address never
+ * passes through this server.
  */
 export const CSP = [
   "default-src 'self'",
@@ -30,7 +31,7 @@ export const CSP = [
   "style-src 'self'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self' https://li.quest",
+  "connect-src 'self' https://li.quest https://aggregator-api.kyberswap.com",
   "object-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",

@@ -16,6 +16,7 @@ import { sendJson } from "./json.js";
 import { LogoStore } from "./logos.js";
 import { ImageProxy } from "./images.js";
 import { LiveHub } from "./live.js";
+import { AggregatorScanner } from "../product/aggregator.js";
 import { ChainlinkRounds } from "../product/charts.js";
 import { fetchShareHistory, type ChartRange } from "../sources/rhMarket.js";
 import { RateHistory } from "./rateHistory.js";
@@ -39,7 +40,12 @@ const intelligence = new AssetIntelligenceService({
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
 const live = new LiveHub(rt.reader, { marketsFor: (k, n) => intelligence.liveMarkets(k, n), feedFor: (k) => intelligence.liveFeed(k) });
-const api = createApi({ live, intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos", bundledDir: "data/logos" }), images: new ImageProxy({ dir: ".cache/img" }), rates });
+const aggregator = new AggregatorScanner({ tokens: () => intelligence.stockTokens(), prices: (k) => intelligence.usdPrices(k), file: ".cache/aggregator.json" });
+if (env.DISABLE_AGGREGATOR !== "1") {
+  setTimeout(() => void aggregator.scan().catch(() => undefined), 20_000).unref();
+  setInterval(() => void aggregator.scan().catch(() => undefined), 30 * 60_000).unref();
+}
+const api = createApi({ live, aggregator, intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos", bundledDir: "data/logos" }), images: new ImageProxy({ dir: ".cache/img" }), rates });
 const webDist = env.WEB_DIST ?? "web/dist";
 const serveStatic = createStatic(webDist);
 

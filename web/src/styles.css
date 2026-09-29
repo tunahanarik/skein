@@ -680,3 +680,18 @@ table.data th { color: var(--text-3); }
 .lp-row .tvl { text-align: end; }
 .lp-foot { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 @media (max-width: 560px) { .lp-row { grid-template-columns: minmax(0, 1fr) auto; } .lp-row .tvl { display: none; } }
+
+/* ---- aggregator ---- */
+.agg { display: grid; gap: 10px; }
+.agg .kv { grid-template-columns: auto 1fr; }
+.agg .kv > :nth-child(even) { text-align: end; }
+.agg-panel { display: grid; gap: 12px; margin-top: 14px; }
+.agg-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.agg-head h3 { font-size: 15px; }
+.agg-amt { display: inline-flex; align-items: center; gap: 6px; }
+.agg-amt .input { width: 120px; }
+.src-badge { display: inline-block; font-size: 11.5px; font-weight: 500; border-radius: 99px; padding: 2px 9px; white-space: nowrap; }
+.src-badge.ok { color: var(--ok); background: var(--ok-soft); }
+.src-badge.warn { color: var(--warn); background: var(--warn-soft); }
+.src-badge.bad { color: var(--bad); background: var(--bad-soft); }
+.warnc { color: var(--warn); }

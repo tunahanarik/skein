@@ -15,6 +15,7 @@ import { IntentCards, useQuick, usePortfolio } from "../components/market";
 import { INTENT_CAT, INTENTS, type IntentKey } from "../intents";
 import { useWallet } from "../wallet";
 import { LivePairs } from "../components/LivePairs";
+import { AggregatorPanel, useAggregator } from "../components/AggregatorSwap";
 import { useLive } from "../live";
 
 type Cat = "TRADE" | "EARN" | "BORROW" | "LIQUIDITY";
@@ -29,6 +30,7 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
     return (INTENTS as string[]).includes(i ?? "") ? (i as IntentKey) : null;
   });
   const focus: Cat | null = intent ? INTENT_CAT[intent] : null;
+  const agg = useAggregator();
   useEffect(() => {
     if (!intent) return;
     const tm = setTimeout(() => document.getElementById("opps")?.scrollIntoView?.({ behavior: "smooth", block: "start" }), 250);
@@ -57,7 +59,7 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
       <AssetHeader v={v} name={meta?.name ?? null} assetRef={assetRef} />
       {v?.asset && <LivePairs assetKey={v.asset.key} symbol={v.asset.symbol} />}
       {v ? (
-        <IntentCards v={v} selected={intent} onSelect={setIntent} />
+        <IntentCards v={v} selected={intent} onSelect={setIntent} agg={v.asset ? (agg?.get(v.asset.key) ?? null) : null} />
       ) : (
         <div className="intents">
           {INTENTS.map((c) => (
@@ -269,6 +271,7 @@ function CategorySection({ cat, subs, v, assetRef, focused }: { cat: Cat; subs: 
         <span className="muted">{t(`catBlurb.${cat}`)}</span>
       </div>
       {cat === "TRADE" && v.asset && <QuotePanel v={v} assetRef={assetRef} />}
+      {cat === "TRADE" && v.asset && v.asset.registryType === "STOCK_TOKEN" && <AggregatorPanel asset={{ key: v.asset.key, address: v.asset.address, symbol: v.asset.symbol, decimals: v.asset.decimals }} />}
       {empty && <div className="panel empty small">{t("asset.nothingInCat", { s: v.asset?.symbol ?? "" })}</div>}
       {subs.map((s) => (s.subcategory === "TRADE" ? <TradeRoutes key="trade" sub={s} v={v} /> : <SubSection key={s.subcategory} sub={s} />))}
     </section>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, type AssetListItem } from "../api";
 import { AlertList } from "../components/AlertForm";
 import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
+import { useAggregator } from "../components/AggregatorSwap";
 import { AssetPicker, idleSuggestions, IntentCards, OpportunityRows, usePortfolio, WalletSummary } from "../components/market";
 import { usd } from "../format";
 import { useI18n } from "../i18n";
@@ -63,6 +64,7 @@ export function HomePage() {
   const watch = useWatchlist();
   const w = useWallet();
   const portfolio = usePortfolio(w.source === "connected" ? w.address : null);
+  const agg = useAggregator();
   const [sel, setSel] = useState<AssetListItem | null>(null);
   // Default asset: the largest holding of a connected wallet, else NVDA.
   useEffect(() => {
@@ -93,7 +95,7 @@ export function HomePage() {
         <p>{v ? t("home.sub", { n: ways, m: v.summary.protocols.length }) : t("home.subLoading")}</p>
       </section>
 
-      {v ? <IntentCards v={v} hrefFor={(k) => `/asset/${encodeURIComponent(ref)}?i=${k}`} /> : <div className="intents">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="intent off"><Skeleton h={14} w="60%" /><Skeleton h={26} w="45%" /></div>)}</div>}
+      {v ? <IntentCards v={v} agg={sel ? (agg?.get(sel.key) ?? null) : null} hrefFor={(k) => `/asset/${encodeURIComponent(ref)}?i=${k}`} /> : <div className="intents">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="intent off"><Skeleton h={14} w="60%" /><Skeleton h={26} w="45%" /></div>)}</div>}
 
       <section className="section">
         <div className="section-head">
