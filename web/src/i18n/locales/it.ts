@@ -625,4 +625,11 @@ export const it: Record<StringKey, string> = {
   "markets.empty": "Nessun risultato.",
   "home.qsub": "Scegline uno. Mostriamo le opzioni e facciamo i controlli.",
   "asset.today": "oggi",
+  "bridge.destOnly": "Solo destinazione: il bridge parte da una rete EVM, firmato nel tuo wallet",
+  "bridge.destOnlyShort": "solo arrivo",
+  "bridge.needRecipient": "Inserisci un indirizzo {c}",
+  "bridge.recipient": "Destinatario su {c}",
+  "bridge.recipientPh": "Indirizzo {c}",
+  "bridge.recipientBad": "Indirizzo {c} non valido",
+  "bridge.recipientHint": "Incolla un indirizzo del tuo wallet su questa rete. I trasferimenti a un indirizzo errato non sono reversibili.",
 };

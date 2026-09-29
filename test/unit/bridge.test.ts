@@ -1,13 +1,13 @@
 /** Bridge (LI.FI): quote parsing and the check every quote must pass before the wallet sees it. */
 import { describe, expect, it } from "vitest";
 import { LIFI_DIAMONDS } from "../../web/src/bridge/diamonds.js";
-import { checkBridgeQuote, cleanText, NATIVE, parseToken, type Quote, type QuoteRequest } from "../../web/src/bridge/lifi.js";
+import { checkBridgeQuote, cleanText, NATIVE, parseToken, validRecipient, type Quote, type QuoteRequest } from "../../web/src/bridge/lifi.js";
 
 const USER = "0x00000000000000000000000000000000000000Aa" as const;
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
-const tok = (chainId: number, address: `0x${string}`, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: 1, verified: true, logo: null });
+const tok = (chainId: number, address: string, symbol: string, decimals: number) => ({ chainId, address, native: address === NATIVE, symbol, name: symbol, decimals, priceUSD: 1, verified: true, logo: null });
 
-const req: QuoteRequest = { fromChainId: 8453, toChainId: 4663, fromToken: USDC_BASE, toToken: NATIVE, fromAmount: 50_000_000n, user: USER, slippage: 0.005, order: "CHEAPEST" };
+const req: QuoteRequest = { fromChainId: 8453, toChainId: 4663, fromToken: USDC_BASE, toToken: NATIVE, fromAmount: 50_000_000n, user: USER, recipient: USER, slippage: 0.005, order: "CHEAPEST" };
 const good: Quote = {
   tool: "across",
   toolName: "AcrossV4",
@@ -64,8 +64,55 @@ describe("checkBridgeQuote", () => {
   ])("refuses %s", (_n, patch) => {
     expect(() => checkBridgeQuote({ ...good, ...patch }, req)).toThrow();
   });
+  it("refuses an EVM destination for anyone but the user", () => {
+    const other = "0x000000000000000000000000000000000000dEaD";
+    expect(() => checkBridgeQuote({ ...good, toAddress: other }, { ...req, recipient: other })).toThrow("recipient");
+  });
   it("refuses a source chain that is not pinned", () => {
     expect(() => checkBridgeQuote({ ...good, fromChainId: 999999, tx: { ...good.tx, chainId: 999999 } }, { ...req, fromChainId: 999999 })).toThrow("not supported");
+  });
+});
+
+describe("non-EVM destinations (Solana, Bitcoin, Sui)", () => {
+  const SOL = 1151111081099710;
+  const SOL_TO = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+  const solReq: QuoteRequest = { ...req, fromChainId: 8453, toChainId: SOL, toToken: "11111111111111111111111111111111", recipient: SOL_TO };
+  const solQuote: Quote = { ...good, toChainId: SOL, toToken: tok(SOL, "11111111111111111111111111111111", "SOL", 9), toAddress: SOL_TO };
+  it("accepts a quote to the recipient the user typed", () => {
+    expect(() => checkBridgeQuote(solQuote, solReq)).not.toThrow();
+  });
+  it("refuses another recipient, a case-changed base58 address, or an invalid recipient", () => {
+    expect(() => checkBridgeQuote({ ...solQuote, toAddress: "7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV" }, solReq)).toThrow();
+    expect(() => checkBridgeQuote({ ...solQuote, toAddress: SOL_TO.toLowerCase() }, solReq)).toThrow("address");
+    expect(() => checkBridgeQuote(solQuote, { ...solReq, recipient: USER })).toThrow("recipient");
+  });
+  it("still requires the pinned diamond on the EVM source chain", () => {
+    expect(() => checkBridgeQuote({ ...solQuote, tx: { ...solQuote.tx, to: "0x000000000000000000000000000000000000dEaD" } }, solReq)).toThrow("contract");
+  });
+  it.each<[string, "SVM" | "UTXO" | "MVM" | "EVM", string, boolean]>([
+    ["Solana", "SVM", SOL_TO, true],
+    ["Solana, one character changed", "SVM", "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWN", true],
+    ["Solana, too short", "SVM", "9WzDXwBbmkg8ZTbNMq", false],
+    ["Solana, EVM address", "SVM", USER, false],
+    ["Bitcoin P2WPKH", "UTXO", "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq", true],
+    ["Bitcoin P2WPKH, typo", "UTXO", "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdr", false],
+    ["Bitcoin taproot", "UTXO", "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0", true],
+    ["Bitcoin legacy P2PKH", "UTXO", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa", true],
+    ["Bitcoin legacy, typo", "UTXO", "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb", false],
+    ["Bitcoin P2SH", "UTXO", "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy", true],
+    ["Bitcoin testnet", "UTXO", "tb1qw508d6qejxtdg4c3zdxq5t6t6dr5h0zuq8xc4w", false],
+    ["Sui", "MVM", `0x${"ab".repeat(32)}`, true],
+    ["Sui, short", "MVM", "0xabc", false],
+    ["EVM", "EVM", USER, true],
+  ])("recipient check: %s", (_n, kind, addr, ok) => {
+    expect(validRecipient(kind, addr)).toBe(ok);
+  });
+  it("parses non-EVM token addresses by chain", () => {
+    expect(parseToken({ chainId: SOL, address: "11111111111111111111111111111111", symbol: "SOL", decimals: 9 })?.native).toBe(true);
+    expect(parseToken({ chainId: 20000000000001, address: "bitcoin", symbol: "BTC", decimals: 8 })?.native).toBe(true);
+    expect(parseToken({ chainId: 9270000000000000, address: "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC", symbol: "USDC", decimals: 6 })?.native).toBe(false);
+    expect(parseToken({ chainId: SOL, address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", symbol: "X", decimals: 6 })).toBeNull();
+    expect(parseToken({ chainId: 20000000000001, address: "<script>", symbol: "X", decimals: 8 })).toBeNull();
   });
 });
 

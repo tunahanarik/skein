@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, parseUnits, type Address, type Hex } from "viem";
-import { allowanceData, approveData, balanceData, chains as fetchChains, checkBridgeQuote, NATIVE, quote as fetchQuote, scanUrl, status as fetchStatus, tokens as fetchTokens, type Chain, type Quote, type QuoteRequest, type Token } from "../bridge/lifi";
+import { allowanceData, approveData, balanceData, chains as fetchChains, checkBridgeQuote, NATIVE, quote as fetchQuote, scanUrl, status as fetchStatus, tokens as fetchTokens, validRecipient, type Chain, type Quote, type QuoteRequest, type Token } from "../bridge/lifi";
 import { LIFI_DIAMONDS } from "../bridge/diamonds";
 import { Modal } from "../components/Modal";
 import { useAssetList } from "../components/common";
@@ -12,7 +12,7 @@ import { useWallet, type Eip1193 } from "../wallet";
 const RH = 4663;
 const SLIPPAGES = [10, 50, 100, 300] as const; // bps
 /** Shown first in token lists, in this order (by symbol). */
-const MAJOR = ["ETH", "WETH", "USDC", "USDT", "USDG", "DAI", "WBTC", "cbBTC", "USDe", "BNB", "POL", "AVAX"];
+const MAJOR = ["ETH", "WETH", "USDC", "USDT", "USDG", "DAI", "WBTC", "cbBTC", "USDe", "BNB", "POL", "AVAX", "SOL", "BTC", "SUI"];
 /** Quotes shown before a wallet is connected are built for this throwaway address (display only). */
 const PREVIEW: Address = "0x00000000000000000000000000000000c0ffee01";
 
@@ -25,7 +25,7 @@ type Step =
   | { k: "error"; msg: string; hash?: Hex };
 
 function sortTokens(list: Token[]): Token[] {
-  const rank = (t: Token) => (t.address === NATIVE ? -1 : MAJOR.includes(t.symbol) ? MAJOR.indexOf(t.symbol) : 999);
+  const rank = (t: Token) => (t.native ? -1 : MAJOR.includes(t.symbol) ? MAJOR.indexOf(t.symbol) : 999);
   return [...list].sort((a, b) => rank(a) - rank(b) || a.symbol.localeCompare(b.symbol));
 }
 
@@ -37,7 +37,11 @@ function useChainTokens(chainId: number | null, canonical: Set<string> | null) {
     const ac = new AbortController();
     setList(null);
     fetchTokens(chainId, ac.signal)
-      .then((l) => setList(sortTokens(chainId === RH ? l.filter((t) => t.address === NATIVE || canonical?.has(t.address.toLowerCase())) : l.filter((t) => t.verified || t.address === NATIVE))))
+      .then((l) => {
+        // Verified tokens only; a destination whose list LI.FI does not verify (Hyperliquid, Lighter) shows what it lists.
+        const v = l.filter((t) => t.verified || t.native);
+        setList(sortTokens(chainId === RH ? l.filter((t) => t.native || canonical?.has(t.address.toLowerCase())) : v.length ? v : l.slice(0, 100)));
+      })
       .catch((e) => (e as Error).name !== "AbortError" && setList([]));
     return () => ac.abort();
   }, [chainId, canonical]);
@@ -70,7 +74,7 @@ export function ChainIcon({ chain, size = 16 }: { chain: Pick<Chain, "name" | "l
 }
 
 /** Network + token chooser: networks on the left, that network's tokens on the right. */
-function TokenModal({ title, chains, chainId, canonical, onPick, onClose }: { title: string; chains: Chain[]; chainId: number; canonical: Set<string> | null; onPick: (chainId: number, t: Token) => void; onClose: () => void }) {
+function TokenModal({ title, side, chains, chainId, canonical, onPick, onClose }: { title: string; side: "from" | "to"; chains: Chain[]; chainId: number; canonical: Set<string> | null; onPick: (chainId: number, t: Token) => void; onClose: () => void }) {
   const { t } = useI18n();
   const [cid, setCid] = useState(chainId);
   const [q, setQ] = useState("");
@@ -83,12 +87,17 @@ function TokenModal({ title, chains, chainId, canonical, onPick, onClose }: { ti
     <Modal title={title} onClose={onClose}>
       <div className="tmodal">
         <div className="tm-chains" role="listbox" aria-label={t("bridge.network")}>
-          {chains.map((c) => (
-            <button key={c.id} role="option" aria-selected={c.id === cid} className={c.id === cid ? "on" : undefined} onClick={() => setCid(c.id)}>
-              <ChainIcon chain={c} size={20} />
-              <span>{c.name}</span>
-            </button>
-          ))}
+          {chains.map((c) => {
+            // A bridge starts only where a transaction can be signed (EVM, pinned diamond).
+            const off = side === "from" && !c.source;
+            return (
+              <button key={c.id} role="option" aria-selected={c.id === cid} aria-disabled={off} disabled={off} title={off ? t("bridge.destOnly") : undefined} className={c.id === cid ? "on" : undefined} onClick={() => setCid(c.id)}>
+                <ChainIcon chain={c} size={20} />
+                <span className="cn">{c.name}</span>
+                {!c.source && <span className="dest-tag">{t("bridge.destOnlyShort")}</span>}
+              </button>
+            );
+          })}
         </div>
         <div className="tm-tokens">
           <input className="input" autoFocus placeholder={t("bridge.searchToken")} aria-label={t("bridge.searchToken")} value={q} onChange={(e) => setQ(e.target.value)} />
@@ -102,7 +111,7 @@ function TokenModal({ title, chains, chainId, canonical, onPick, onClose }: { ti
                   <span className="s">{x.symbol}</span>
                   <span className="n">{x.name}</span>
                 </span>
-                {x.address !== NATIVE && <span className="a mono">{`${x.address.slice(0, 6)}…${x.address.slice(-4)}`}</span>}
+                {!x.native && <span className="a mono">{`${x.address.slice(0, 6)}…${x.address.slice(-4)}`}</span>}
               </button>
             ))}
           </div>
@@ -133,6 +142,8 @@ export function BridgeForm() {
   const [fromTok, setFromTok] = useState<Token | null>(null);
   const [toTok, setToTok] = useState<Token | null>(null);
   const [amt, setAmt] = useState("");
+  /** Destination address typed by the user; only for Solana, Bitcoin and Sui (EVM delivers to the connected wallet). */
+  const [recipient, setRecipient] = useState("");
   const [slip, setSlip] = useState<number>(50);
   const [order, setOrder] = useState<"CHEAPEST" | "FASTEST">("CHEAPEST");
   const [settings, setSettings] = useState(false);
@@ -167,7 +178,7 @@ export function BridgeForm() {
   useEffect(() => {
     setBalance(null);
     if (!w.provider || !user || !onFrom || !fromTok) return;
-    readBalance(w.provider, fromTok.address, user).then((b) => live.current && setBalance(b), () => undefined);
+    readBalance(w.provider, fromTok.address as Address, user).then((b) => live.current && setBalance(b), () => undefined);
   }, [w.provider, user, onFrom, fromTok, step.k]);
 
   const amountRaw = useMemo(() => {
@@ -180,8 +191,16 @@ export function BridgeForm() {
     }
   }, [amt, fromTok]);
 
+  const toKind = chains?.find((c) => c.id === toId)?.kind ?? "EVM";
+  const needsRecipient = toKind !== "EVM";
+  const recv = recipient.trim();
+  const recipientOk = !needsRecipient || validRecipient(toKind, recv);
+  useEffect(() => setRecipient(""), [toKind]);
+
   const request = (who: Address | null): QuoteRequest | null =>
-    fromTok && toTok && amountRaw && who && fromTok.chainId === fromId && toTok.chainId === toId ? { fromChainId: fromId, toChainId: toId, fromToken: fromTok.address, toToken: toTok.address, fromAmount: amountRaw, user: who, slippage: slip / 10_000, order } : null;
+    fromTok && toTok && amountRaw && who && recipientOk && fromTok.chainId === fromId && toTok.chainId === toId
+      ? { fromChainId: fromId, toChainId: toId, fromToken: fromTok.address as Address, toToken: toTok.address, fromAmount: amountRaw, user: who, recipient: needsRecipient ? recv : who, slippage: slip / 10_000, order }
+      : null;
 
   // Automatic quote (debounced). Without a wallet the quote is built for a throwaway address and only displayed.
   useEffect(() => {
@@ -206,7 +225,7 @@ export function BridgeForm() {
       setQuoting(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromId, toId, fromTok, toTok, amountRaw, slip, order, user]);
+  }, [fromId, toId, fromTok, toTok, amountRaw, slip, order, user, recipientOk, recv]);
 
   async function refreshAllowance() {
     if (!w.provider || !user || !fromTok || fromTok.address === NATIVE || !onFrom) return setAllowance(null);
@@ -304,7 +323,11 @@ export function BridgeForm() {
   function pick(side: "from" | "to", cid: number, tok: Token) {
     setPicking(null);
     const other = side === "from" ? toId : fromId;
-    if (cid === other) {
+    if (cid === other && !chainOf(toId)?.source) {
+      // The destination is not a source chain: keep it where it is and move the source elsewhere.
+      setFromId(cid === 8453 ? 1 : 8453);
+      setFromTok(null);
+    } else if (cid === other) {
       // Same network on both sides: swap them, like the flip button.
       setFromId(toId);
       setToId(fromId);
@@ -343,6 +366,7 @@ export function BridgeForm() {
   let main: { label: string; onClick?: () => void; disabled?: boolean };
   if (!user) main = { label: t("shell.connect"), onClick: w.openPicker };
   else if (!amountRaw) main = { label: t("bridge.enterAmount"), disabled: true };
+  else if (!recipientOk) main = { label: t("bridge.needRecipient", { c: chainName(toId) }), disabled: true };
   else if (step.k === "wallet") main = { label: t("swap.confirmWallet"), disabled: true };
   else if (step.k === "pending") main = { label: step.what === "approve" ? t("swap.approving") : t("bridge.sending"), disabled: true };
   else if (step.k === "bridging") main = { label: t("bridge.inFlightShort"), disabled: true };
@@ -414,7 +438,7 @@ export function BridgeForm() {
           className="icon-btn round"
           aria-label={t("bridge.flip")}
           title={t("bridge.flip")}
-          disabled={busy}
+          disabled={busy || !chainOf(toId)?.source}
           onClick={() => {
             setFromId(toId);
             setToId(fromId);
@@ -438,6 +462,27 @@ export function BridgeForm() {
         </div>
         <div className="muted small">{q?.toAmountUsd != null ? usd(String(q.toAmountUsd)) : " "}</div>
       </div>
+
+      {needsRecipient && (
+        <div className="bx-row bx-recv">
+          <label className="muted small" htmlFor="bx-recipient">
+            {t("bridge.recipient", { c: chainName(toId) })}
+          </label>
+          <input
+            id="bx-recipient"
+            className="input mono"
+            spellCheck={false}
+            autoComplete="off"
+            autoCapitalize="off"
+            placeholder={t("bridge.recipientPh", { c: chainName(toId) })}
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value.replace(/\s+/g, "").slice(0, 100))}
+            disabled={busy}
+            aria-invalid={!!recv && !recipientOk}
+          />
+          {recv && !recipientOk ? <div className="small bad-text">{t("bridge.recipientBad", { c: chainName(toId) })}</div> : <div className="faint small">{t("bridge.recipientHint")}</div>}
+        </div>
+      )}
 
       {q && (
         <details className="bx-quote">
@@ -504,6 +549,7 @@ export function BridgeForm() {
         <TokenModal
           title={picking === "from" ? t("bridge.fromToken") : t("bridge.toToken")}
           chains={chains}
+          side={picking}
           chainId={picking === "from" ? fromId : toId}
           canonical={canonical}
           onPick={(cid, tok) => pick(picking, cid, tok)}

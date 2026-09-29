@@ -39,15 +39,21 @@ report.add(code && code.length > 2 ? "PASS" : "FAIL", "Robinhood Chain diamond c
 const USDC_BASE: Address = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const USDC_ARB: Address = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
 const USDG: Address = "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168";
-const cases: [string, Omit<QuoteRequest, "user" | "slippage" | "order">][] = [
+// Non-EVM destinations: quote-only recipients (well-known public example addresses, never funded
+// by this script). The transaction still starts at the pinned diamond on the EVM source chain.
+const SOL_TO = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
+const BTC_TO = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq";
+const cases: [string, Omit<QuoteRequest, "user" | "recipient" | "slippage" | "order"> & { recipient?: string }][] = [
   ["Ethereum ETH → Robinhood ETH", { fromChainId: 1, toChainId: 4663, fromToken: NATIVE, toToken: NATIVE, fromAmount: parseEther("0.05") }],
   ["Base USDC → Robinhood ETH", { fromChainId: 8453, toChainId: 4663, fromToken: USDC_BASE, toToken: NATIVE, fromAmount: parseUnits("50", 6) }],
   ["Arbitrum USDC → Robinhood USDG", { fromChainId: 42161, toChainId: 4663, fromToken: USDC_ARB, toToken: USDG, fromAmount: parseUnits("50", 6) }],
   ["Robinhood ETH → Base ETH", { fromChainId: 4663, toChainId: 8453, fromToken: NATIVE, toToken: NATIVE, fromAmount: parseEther("0.02") }],
   ["Robinhood USDG → Arbitrum USDC", { fromChainId: 4663, toChainId: 42161, fromToken: USDG, toToken: USDC_ARB, fromAmount: parseUnits("50", 6) }],
+  ["Base ETH → Solana SOL", { fromChainId: 8453, toChainId: 1151111081099710, fromToken: NATIVE, toToken: "11111111111111111111111111111111", fromAmount: parseEther("0.02"), recipient: SOL_TO }],
+  ["Arbitrum USDC → Bitcoin BTC", { fromChainId: 42161, toChainId: 20000000000001, fromToken: USDC_ARB, toToken: "bitcoin", fromAmount: parseUnits("100", 6), recipient: BTC_TO }],
 ];
 for (const [label, c] of cases) {
-  const req: QuoteRequest = { ...c, user: USER, slippage: 0.005, order: "CHEAPEST" };
+  const req: QuoteRequest = { ...c, user: USER, recipient: c.recipient ?? USER, slippage: 0.005, order: "CHEAPEST" };
   try {
     const q = await quote(req);
     checkBridgeQuote(q, req);

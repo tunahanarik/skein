@@ -624,4 +624,11 @@ export const zh: Record<StringKey, string> = {
   "markets.empty": "没有匹配结果。",
   "home.qsub": "选一个。我们会列出选项并替你完成检查。",
   "asset.today": "今日",
+  "bridge.destOnly": "仅可作为目标：跨链从 EVM 网络发起，并在你的钱包中签名",
+  "bridge.destOnlyShort": "仅目标",
+  "bridge.needRecipient": "请输入 {c} 地址",
+  "bridge.recipient": "{c} 收款地址",
+  "bridge.recipientPh": "{c} 地址",
+  "bridge.recipientBad": "不是有效的 {c} 地址",
+  "bridge.recipientHint": "请粘贴你自己在该网络上的钱包地址。转到错误地址的资产无法撤回。",
 };

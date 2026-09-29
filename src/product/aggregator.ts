@@ -179,7 +179,7 @@ export class AggregatorScanner {
       const order = [...tokens].sort((a, b) => lastLifi(a).localeCompare(lastLifi(b))).slice(0, this.deps.lifiBudget ?? 15);
       for (const t of order) {
         const oracle = prices.get(t.key) ?? null;
-        const req: QuoteRequest = { fromChainId: 4663, toChainId: 4663, fromToken: USDG, toToken: t.address, fromAmount: amountIn, user: PROBE_USER, slippage: 0.005, order: "CHEAPEST" };
+        const req: QuoteRequest = { fromChainId: 4663, toChainId: 4663, fromToken: USDG, toToken: t.address, fromAmount: amountIn, user: PROBE_USER, recipient: PROBE_USER, slippage: 0.005, order: "CHEAPEST" };
         try {
           const r = await lifi(req);
           checkBridgeQuote(r, req);

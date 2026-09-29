@@ -601,4 +601,11 @@ export const ko: Record<StringKey, string> = {
   "markets.empty": "결과가 없습니다.",
   "home.qsub": "하나를 고르세요. 선택지와 확인은 저희가 합니다.",
   "asset.today": "오늘",
+  "bridge.destOnly": "도착 전용: 브리지는 EVM 네트워크에서 시작하며 지갑에서 서명합니다",
+  "bridge.destOnlyShort": "도착 전용",
+  "bridge.needRecipient": "{c} 주소를 입력하세요",
+  "bridge.recipient": "{c} 받는 주소",
+  "bridge.recipientPh": "{c} 주소",
+  "bridge.recipientBad": "유효한 {c} 주소가 아닙니다",
+  "bridge.recipientHint": "이 네트워크에 있는 본인 지갑 주소를 붙여 넣으세요. 잘못된 주소로 보낸 전송은 되돌릴 수 없습니다.",
 };

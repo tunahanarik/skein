@@ -625,4 +625,11 @@ export const pt: Record<StringKey, string> = {
   "markets.empty": "Nada encontrado.",
   "home.qsub": "Escolha um. Mostramos as opções e fazemos as verificações.",
   "asset.today": "hoje",
+  "bridge.destOnly": "Somente destino: o bridge começa numa rede EVM, assinado na sua carteira",
+  "bridge.destOnlyShort": "só destino",
+  "bridge.needRecipient": "Informe um endereço {c}",
+  "bridge.recipient": "Destinatário em {c}",
+  "bridge.recipientPh": "Endereço {c}",
+  "bridge.recipientBad": "Endereço {c} inválido",
+  "bridge.recipientHint": "Cole um endereço da sua própria carteira nesta rede. Transferências para um endereço errado não podem ser desfeitas.",
 };

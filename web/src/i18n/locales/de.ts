@@ -624,4 +624,11 @@ export const de: Record<StringKey, string> = {
   "markets.empty": "Keine Treffer.",
   "home.qsub": "Wähle eins. Wir zeigen die Optionen und übernehmen die Prüfungen.",
   "asset.today": "heute",
+  "bridge.destOnly": "Nur Ziel: Bridges starten in einem EVM-Netzwerk und werden in deiner Wallet signiert",
+  "bridge.destOnlyShort": "nur Ziel",
+  "bridge.needRecipient": "{c}-Adresse eingeben",
+  "bridge.recipient": "Empfänger auf {c}",
+  "bridge.recipientPh": "{c}-Adresse",
+  "bridge.recipientBad": "Keine gültige {c}-Adresse",
+  "bridge.recipientHint": "Füge eine Adresse deiner eigenen Wallet in diesem Netzwerk ein. Überweisungen an eine falsche Adresse lassen sich nicht rückgängig machen.",
 };

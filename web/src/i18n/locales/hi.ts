@@ -601,4 +601,11 @@ export const hi: Record<StringKey, string> = {
   "markets.empty": "कोई मेल नहीं मिला।",
   "home.qsub": "एक चुनें। विकल्प और जाँचें हम संभालते हैं।",
   "asset.today": "आज",
+  "bridge.destOnly": "केवल गंतव्य: ब्रिज एक EVM नेटवर्क से शुरू होता है और आपके वॉलेट में साइन होता है",
+  "bridge.destOnlyShort": "केवल गंतव्य",
+  "bridge.needRecipient": "{c} पता दर्ज करें",
+  "bridge.recipient": "{c} पर प्राप्तकर्ता",
+  "bridge.recipientPh": "{c} पता",
+  "bridge.recipientBad": "मान्य {c} पता नहीं है",
+  "bridge.recipientHint": "इस नेटवर्क पर अपने वॉलेट का पता पेस्ट करें। गलत पते पर भेजा गया ट्रांसफ़र वापस नहीं हो सकता।",
 };

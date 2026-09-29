@@ -625,4 +625,11 @@ export const ru: Record<StringKey, string> = {
   "markets.empty": "Ничего не найдено.",
   "home.qsub": "Выберите одно. Мы покажем варианты и всё проверим.",
   "asset.today": "сегодня",
+  "bridge.destOnly": "Только получение: бридж начинается в EVM-сети и подписывается в вашем кошельке",
+  "bridge.destOnlyShort": "только сюда",
+  "bridge.needRecipient": "Введите адрес {c}",
+  "bridge.recipient": "Получатель в {c}",
+  "bridge.recipientPh": "Адрес {c}",
+  "bridge.recipientBad": "Недействительный адрес {c}",
+  "bridge.recipientHint": "Вставьте адрес своего кошелька в этой сети. Перевод на неверный адрес отменить нельзя.",
 };

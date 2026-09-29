@@ -625,4 +625,11 @@ export const ar: Record<StringKey, string> = {
   "markets.empty": "لا توجد نتائج.",
   "home.qsub": "اختر واحدًا. نعرض الخيارات ونجري الفحوص عنك.",
   "asset.today": "اليوم",
+  "bridge.destOnly": "وجهة فقط: يبدأ الجسر من شبكة EVM ويُوقَّع في محفظتك",
+  "bridge.destOnlyShort": "وجهة فقط",
+  "bridge.needRecipient": "أدخل عنوان {c}",
+  "bridge.recipient": "المستلم على {c}",
+  "bridge.recipientPh": "عنوان {c}",
+  "bridge.recipientBad": "ليس عنوان {c} صالحًا",
+  "bridge.recipientHint": "الصق عنوانًا من محفظتك على هذه الشبكة. لا يمكن التراجع عن التحويل إلى عنوان خاطئ.",
 };

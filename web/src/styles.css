@@ -892,3 +892,12 @@ table.data tbody tr:hover { background: transparent; }
 /* the picker list lives on the top layer (portal), positioned from its button */
 .picker-pop { position: fixed; z-index: 60; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 6px; overflow: hidden; }
 .picker-pop .picker-list { max-height: none; min-height: 0; overflow-y: auto; }
+
+/* bridge: destination-only networks and the recipient field (Solana, Bitcoin, Sui) */
+.tm-chains button .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-chains .dest-tag { font-size: 10.5px; color: var(--text-3); background: var(--surface-2); border-radius: 99px; padding: 1px 7px; flex: none; }
+.tm-chains button:disabled { opacity: 0.45; cursor: not-allowed; }
+.tm-chains button:disabled:hover { background: none; color: var(--text-2); }
+.bx-recv .input { width: 100%; background: var(--surface-3); font-size: 13px; }
+.bx-recv .input[aria-invalid="true"] { outline: 2px solid color-mix(in srgb, var(--bad) 60%, transparent); }
+.bad-text { color: var(--bad); }

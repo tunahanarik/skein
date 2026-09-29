@@ -624,4 +624,11 @@ export const ja: Record<StringKey, string> = {
   "markets.empty": "該当なし。",
   "home.qsub": "ひとつ選んでください。選択肢の表示と確認はこちらで行います。",
   "asset.today": "今日",
+  "bridge.destOnly": "送付先のみ：ブリッジは EVM ネットワークから開始し、ウォレットで署名します",
+  "bridge.destOnlyShort": "送付先のみ",
+  "bridge.needRecipient": "{c} アドレスを入力",
+  "bridge.recipient": "{c} の受取アドレス",
+  "bridge.recipientPh": "{c} アドレス",
+  "bridge.recipientBad": "有効な {c} アドレスではありません",
+  "bridge.recipientHint": "このネットワーク上のご自身のウォレットのアドレスを貼り付けてください。誤ったアドレスへの送金は取り消せません。",
 };

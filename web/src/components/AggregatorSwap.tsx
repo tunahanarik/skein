@@ -102,7 +102,7 @@ export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; am
   const live = useRef(true);
   useEffect(() => () => void (live.current = false), []);
 
-  const req = (who: Address): QuoteRequest => ({ fromChainId: RH, toChainId: RH, fromToken: from.address, toToken: to.address, fromAmount: amountRaw, user: who, slippage: 0.005, order: "CHEAPEST" });
+  const req = (who: Address): QuoteRequest => ({ fromChainId: RH, toChainId: RH, fromToken: from.address, toToken: to.address, fromAmount: amountRaw, user: who, recipient: who, slippage: 0.005, order: "CHEAPEST" });
 
   /** LI.FI first (more sources); KyberSwap when LI.FI has no route or its keyless quota is used up. */
   async function getQuote(who: Address): Promise<AggQuote> {

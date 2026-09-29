@@ -627,6 +627,13 @@ export const en = {
   "markets.empty": "Nothing matches your search.",
   "home.qsub": "Pick one. We show the options and do the checks for you.",
   "asset.today": "today",
+  "bridge.destOnly": "Destination only: bridges start on an EVM network, signed in your wallet",
+  "bridge.destOnlyShort": "to only",
+  "bridge.needRecipient": "Enter a {c} address",
+  "bridge.recipient": "Recipient on {c}",
+  "bridge.recipientPh": "{c} address",
+  "bridge.recipientBad": "Not a valid {c} address",
+  "bridge.recipientHint": "Paste an address from your own wallet on this network. Transfers to a wrong address cannot be reversed.",
 };
 
 export type StringKey = keyof typeof en;
@@ -1231,4 +1238,11 @@ export const tr: Record<StringKey, string> = {
   "markets.empty": "Aramanla eşleşen bir şey yok.",
   "home.qsub": "Birini seç. Seçenekleri biz gösterip kontrolleri biz yaparız.",
   "asset.today": "bugün",
+  "bridge.destOnly": "Sadece hedef: köprü, cüzdanında imzalanan bir EVM ağından başlar",
+  "bridge.destOnlyShort": "hedef",
+  "bridge.needRecipient": "{c} adresini gir",
+  "bridge.recipient": "{c} alıcı adresi",
+  "bridge.recipientPh": "{c} adresi",
+  "bridge.recipientBad": "Geçerli bir {c} adresi değil",
+  "bridge.recipientHint": "Bu ağdaki kendi cüzdanından bir adres yapıştır. Yanlış adrese giden transfer geri alınamaz.",
 };
