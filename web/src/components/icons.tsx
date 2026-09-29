@@ -75,3 +75,38 @@ export function Badge({ icon, tone, size = 40 }: { icon: IconName; tone: "earn" 
     </span>
   );
 }
+
+/** Bundled protocol logos (web/public/protocols, from DefiLlama's icon set), by the protocol's first name. */
+const PROTOCOL_LOGOS: Record<string, string> = {
+  beefy: "/protocols/beefy.webp",
+  morpho: "/protocols/morpho.webp",
+  pendle: "/protocols/pendle.webp",
+  ramses: "/protocols/ramses.webp",
+  spark: "/protocols/spark.webp",
+  steer: "/protocols/steer.webp",
+  uniswap: "/protocols/uniswap.webp",
+};
+export function protocolLogo(name: string): string | null {
+  const first = name.split("+")[0]!.trim().toLowerCase().split(/\s+/)[0] ?? "";
+  return PROTOCOL_LOGOS[first] ?? null;
+}
+
+/** A protocol's logo, with the intent as a small corner badge; the intent badge alone when the logo is unknown. */
+export function ProtocolMark({ name, icon, tone, size = 40 }: { name: string; icon: IconName; tone: "earn" | "fixed" | "borrow" | "lp" | "trade"; size?: number }) {
+  const src = protocolLogo(name);
+  if (!src) return <Badge icon={icon} tone={tone} size={size} />;
+  return (
+    <span className="pmark-wrap" style={{ width: size, height: size }} title={name}>
+      <img className="pmark-img" src={src} alt="" width={size} height={size} decoding="async" />
+      <span className={`pmark-corner t-${tone}`} aria-hidden="true">
+        <Icon name={icon} size={Math.max(10, Math.round(size * 0.28))} />
+      </span>
+    </span>
+  );
+}
+
+/** The protocol's logo alone (nothing when unknown). */
+export function ProtocolLogo({ name, size = 32 }: { name: string; size?: number }) {
+  const src = protocolLogo(name);
+  return src ? <img className="pmark-img" src={src} alt="" title={name} width={size} height={size} decoding="async" style={{ width: size, height: size, flex: "none" }} /> : null;
+}

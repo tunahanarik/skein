@@ -4,6 +4,7 @@ import { amount, date, feePpm, pctE18, pctText, usd } from "../format";
 import { useI18n, type StringKey } from "../i18n";
 import { actionLabel, ago, code, contextLine } from "../text";
 import { ProtocolLink, UsabilityBadge } from "./common";
+import { ProtocolLogo } from "./icons";
 import { Estimate } from "./Estimate";
 import { AlertForm } from "./AlertForm";
 import { RateHistory } from "./RateHistory";
@@ -32,6 +33,7 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
     <article className="panel card">
       <div className="top">
         {showRank && card.ranking && <span className="rank num">{card.ranking.position}</span>}
+        <ProtocolLogo name={card.protocol.name} size={34} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="label">{actionLabel(t, card)}</div>
           <div className="ctx">{contextLine(t, card)}</div>

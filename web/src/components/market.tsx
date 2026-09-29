@@ -15,7 +15,7 @@ import { useWallet } from "../wallet";
 import { useLive } from "../live";
 import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
-import { Badge, Icon, type IconName } from "./icons";
+import { Badge, Icon, ProtocolMark, type IconName } from "./icons";
 import { AggregatorSwap } from "./AggregatorSwap";
 import { parseUnits } from "viem";
 
@@ -92,7 +92,7 @@ export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey;
         const unit = intent === "BORROW" ? t("intent.unit.ltv") : card.headline?.basis === "FIXED" || intent === "FIXED" ? t("intent.unit.fixed") : t("intent.unit.apy");
         return (
           <a key={card.cardId} className="opp" {...linkProps(`/asset/${encodeURIComponent(assetRef)}?i=${intent}`)}>
-            <Badge icon={INTENT_LOOK[intent].icon} tone={INTENT_LOOK[intent].tone} size={38} />
+            <ProtocolMark name={card.protocol.name} icon={INTENT_LOOK[intent].icon} tone={INTENT_LOOK[intent].tone} size={38} />
             <span className="main">
               <span className="l">{actionLabel(t, card)}</span>
               <span className="c">{subline(card.protocol.name, contextLine(t, card))}</span>

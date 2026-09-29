@@ -7,6 +7,7 @@ import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
 import { code } from "../text";
 import { useWallet } from "../wallet";
+import { ProtocolLogo } from "../components/icons";
 
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 
@@ -194,6 +195,7 @@ function Positions({ positions }: { positions: PositionV[] }) {
             return (
               <article key={p.id} className="panel card">
                 <div className="top">
+                  <ProtocolLogo name={p.protocol.name} size={34} />
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div className="label">{t(`pos.kind.${p.kind}`)}</div>
                     <div className="ctx">
