@@ -11,7 +11,7 @@
  */
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
 import { CACHE_TTL_MS } from "../config/freshness.js";
-import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
+import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_QUOTE_TIMEOUT_MS, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
 import { BUCKET_MS, CHART_TTL_MS, deviation, MAX_DEVIATION, RANGE_MS, resample, shareToToken, summarize, type ChainlinkRounds, type PriceChartData } from "./charts.js";
@@ -355,7 +355,7 @@ export class AssetIntelligenceService {
         const routes: TradeRoute[] = [...found.direct, ...found.oneHop];
         const quoteCard = async (r: TradeRoute): Promise<ProductCard> => {
           const tq = performance.now();
-          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx);
+          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx, PRODUCT_QUOTE_TIMEOUT_MS);
           this.metrics.time("quote_latency_ms", ms(tq), { kind: r.kind });
           if (q.ok) return routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS });
           return routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason);
@@ -409,7 +409,8 @@ export class AssetIntelligenceService {
     }
     const productCards = categories.flatMap((c) => c.subcategories.flatMap((x) => x.cards));
     // Third-party 24h volume for the pools of the routes actually shown (display only, bounded wait).
-    if (this.deps.volumes) {
+    // Skipped for an amount quote: the swap panel waits on it, and volume is not part of a quote.
+    if (this.deps.volumes && amountRaw === null) {
       const shown = productCards.filter((c) => c.trade);
       const poolOf = (marketId: string) => marketId.split(":").at(-1)!.toLowerCase();
       const pools = [...new Set(shown.flatMap((c) => c.trade!.route.markets.map((m) => poolOf(m.marketId))))];

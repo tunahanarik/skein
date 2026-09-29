@@ -438,19 +438,31 @@ function QuickSwap({ from }: { from?: string }) {
       return null;
     }
   })();
+  // Only the latest request may update the panel (the amount can change while a quote is in flight).
+  const seq = useRef(0);
   async function quote() {
     if (!fromA || !to || !valid) return;
+    const n = ++seq.current;
     setState({ loading: true, card: null, none: false, err: null });
     try {
       const v = await api.asset(fromA.address, { to, amount: amt });
+      if (n !== seq.current) return;
       const cards = v.categories.find((c) => c.category === "TRADE")?.subcategories.flatMap((s) => s.cards) ?? [];
       const card = cards.find(canSwap) ?? null;
       setState({ loading: false, card, none: !card, err: null });
     } catch {
+      if (n !== seq.current) return;
       // Not a Uniswap v3 target (e.g. USDG added for the aggregator): use the aggregator.
       setState({ loading: false, card: null, none: true, err: null });
     }
   }
+  // Quote automatically once the pair and amount settle, like the bridge; the button stays as a retry.
+  useEffect(() => {
+    if (!targets || !fromA || !to || !valid) return;
+    const tm = setTimeout(() => void quote(), 400);
+    return () => clearTimeout(tm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets, fromA, to, amt]);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>

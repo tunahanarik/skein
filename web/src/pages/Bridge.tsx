@@ -199,7 +199,7 @@ export function BridgeForm() {
         })
         .catch((e) => (e as Error).name !== "AbortError" && live.current && setQuoteErr(short(e)))
         .finally(() => live.current && !ac.signal.aborted && setQuoting(false));
-    }, 600);
+    }, 350);
     return () => {
       clearTimeout(tm);
       ac.abort();

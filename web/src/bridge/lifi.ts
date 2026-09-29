@@ -85,9 +85,40 @@ async function get<T>(path: string, q: Record<string, string>, signal?: AbortSig
   return body as T;
 }
 
+/**
+ * Chain and token lists change rarely: kept in memory for LISTS_TTL_MS so reopening the bridge is
+ * instant and the keyless quota goes to quotes. A failed load is not kept. Quotes are never cached.
+ */
+const LISTS_TTL_MS = 10 * 60_000;
+const lists = new Map<string, { at: number; p: Promise<unknown> }>();
+function cachedList<T>(key: string, load: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+  let e = lists.get(key);
+  if (!e || Date.now() - e.at > LISTS_TTL_MS) {
+    const p = load();
+    e = { at: Date.now(), p };
+    lists.set(key, e);
+    p.catch(() => lists.get(key)?.p === p && lists.delete(key));
+  }
+  const p = e.p as Promise<T>;
+  if (!signal) return p;
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(new DOMException("Aborted", "AbortError"));
+    if (signal.aborted) return abort();
+    signal.addEventListener("abort", abort, { once: true });
+    p.then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
+  });
+}
+/** Test hook: forget cached chain and token lists. */
+export function clearListCache(): void {
+  lists.clear();
+}
+
 /** EVM mainnets that LI.FI supports AND whose diamond is pinned. */
-export async function chains(signal?: AbortSignal): Promise<Chain[]> {
-  const r = await get<{ chains: Record<string, unknown>[] }>("/chains", { chainTypes: "EVM" }, signal);
+export function chains(signal?: AbortSignal): Promise<Chain[]> {
+  return cachedList("chains", loadChains, signal);
+}
+async function loadChains(): Promise<Chain[]> {
+  const r = await get<{ chains: Record<string, unknown>[] }>("/chains", { chainTypes: "EVM" });
   const out: Chain[] = [];
   for (const c of r.chains) {
     const id = Number(c.id);
@@ -124,9 +155,11 @@ export function parseToken(t: Record<string, unknown>): Token | null {
   };
 }
 
-export async function tokens(chainId: number, signal?: AbortSignal): Promise<Token[]> {
-  const r = await get<{ tokens: Record<string, Record<string, unknown>[]> }>("/tokens", { chains: String(chainId) }, signal);
-  return (r.tokens[String(chainId)] ?? []).map(parseToken).filter((t): t is Token => !!t && t.chainId === chainId);
+export function tokens(chainId: number, signal?: AbortSignal): Promise<Token[]> {
+  return cachedList(`tokens:${chainId}`, async () => {
+    const r = await get<{ tokens: Record<string, Record<string, unknown>[]> }>("/tokens", { chains: String(chainId) });
+    return (r.tokens[String(chainId)] ?? []).map(parseToken).filter((t): t is Token => !!t && t.chainId === chainId);
+  }, signal);
 }
 
 export interface QuoteRequest {
