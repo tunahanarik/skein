@@ -2,7 +2,8 @@
  * Building blocks of the "market" design: intent cards, opportunity rows, the inline asset
  * picker, the ticker strip, the wallet summary and the quick swap / bridge panel.
  */
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { api, type AggregatorRow, type AssetListItem, type Card, type Intelligence, type Portfolio } from "../api";
 import { amount, pct, pctE18, usd } from "../format";
 import { useI18n } from "../i18n";
@@ -121,11 +122,34 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
   const [q, setQ] = useState("");
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<CSSProperties | null>(null);
   useEffect(() => {
     if (!open) return;
-    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && !popRef.current?.contains(e.target as Node) && setOpen(false);
+    // The list opens on the page's top layer (a portal), so no panel can clip or restyle it:
+    // placed under the button, or above it when there is more room there.
+    const place = () => {
+      const r = ref.current?.getBoundingClientRect();
+      if (!r) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const w = Math.min(340, vw - 16);
+      const left = Math.min(Math.max(8, r.right - w), vw - w - 8);
+      const below = vh - r.bottom - 16;
+      const above = r.top - 16;
+      const x = { left, right: "auto", width: w };
+      setPos(below >= 300 || below >= above ? { ...x, top: r.bottom + 8, bottom: "auto", maxHeight: Math.max(200, below) } : { ...x, top: "auto", bottom: vh - r.top + 8, maxHeight: above });
+    };
+    place();
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
   }, [open]);
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -145,8 +169,9 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
           ▾
         </span>
       </button>
-      {open && (
-        <div className="picker-pop panel" id={`${id}-l`}>
+      {open &&
+        createPortal(
+          <div className="picker-pop panel" id={`${id}-l`} ref={popRef} style={pos ?? { visibility: "hidden" }}>
           <input className="input" autoFocus placeholder={t("search.placeholder")} aria-label={t("search.label")} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Escape" && setOpen(false)} />
           <div className="faint small" style={{ padding: "6px 4px 0" }}>
             {t("picker.count", { n: shown.length })}
@@ -166,12 +191,13 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
               >
                 <Avatar symbol={a.symbol} address={a.address} />
                 <span className="s">{a.symbol}</span>
-                <span className="n">{a.name}</span>
+                <span className="n">{a.name.replace(/\s*•\s*Robinhood Token$/i, "")}</span>
               </button>
             ))}
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

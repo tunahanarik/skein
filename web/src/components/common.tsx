@@ -75,12 +75,17 @@ const failedLogos = new Set<string>();
 const LOGO_VERSION = 2;
 
 /** Token logo served by our own API (canonical assets only); falls back to a monogram. */
+/** Static icons that read better than the source logo (WETH shows the ETH mark, as bridges and wallets do). */
+const STATIC_LOGOS: Record<string, string> = { "0x0bd7d308f8e1639fab988df18a8011f41eacad73": "/tokens/weth.svg" };
+
 export function Avatar({ symbol, address, size }: { symbol: string; address?: string | null; size?: "lg" }) {
   // Failure is remembered per address, so an avatar that first renders without an address
   // (data still loading) still shows the logo once the address arrives.
   const [failedFor, setFailedFor] = useState<string | null>(null);
   const failed = !address || failedLogos.has(address.toLowerCase()) || failedFor === address.toLowerCase();
   const cls = `avatar${size === "lg" ? " lg" : ""}`;
+  const fixed = address ? STATIC_LOGOS[address.toLowerCase()] : undefined;
+  if (fixed) return <img className={`${cls} logo`} src={fixed} alt="" decoding="async" />;
   if (!failed && address && /^0x[0-9a-fA-F]{40}$/.test(address)) {
     return (
       <img

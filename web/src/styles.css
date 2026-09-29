@@ -883,3 +883,12 @@ table.data tbody tr:hover { background: transparent; }
 @media (max-width: 560px) { .bx-amt, .drawer-body .bx-amt, .qs-amt { font-size: 22px; } }
 .qs-box .picker-btn { background: var(--surface-3); border-radius: 99px; padding: 6px 12px 6px 6px; font-size: 15px; }
 .qs-box .picker-btn:hover { background: var(--btn-2-hover); }
+
+/* token picker inside the side panel: its own opaque surface (the drawer strips .panel backgrounds) */
+.drawer-body .picker-pop.panel, .picker-pop.panel { background: var(--surface-3); padding: 10px; border-radius: 20px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); }
+.picker-pop .input { background: var(--surface-2); }
+.picker-pop .picker-list { max-height: min(320px, 46vh); overflow-y: auto; }
+.picker-opt:hover, .picker-opt[aria-selected="true"] { background: var(--surface-2); }
+/* the picker list lives on the top layer (portal), positioned from its button */
+.picker-pop { position: fixed; z-index: 60; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 6px; overflow: hidden; }
+.picker-pop .picker-list { max-height: none; min-height: 0; overflow-y: auto; }

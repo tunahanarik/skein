@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useI18n } from "../i18n";
 
 /** Accessible dialog: focus moves in, Escape and the backdrop close it, focus returns on close. */
@@ -18,7 +19,8 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
       prev?.focus?.();
     };
   }, []);
-  return (
+  // Rendered on the page's top layer, so a dialog opened from the side panel is neither clipped nor restyled by it.
+  return createPortal(
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal panel" role="dialog" aria-modal="true" aria-labelledby={id} tabIndex={-1} ref={ref}>
         <div className="modal-head">
@@ -29,6 +31,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
