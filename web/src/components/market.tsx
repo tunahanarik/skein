@@ -82,14 +82,20 @@ function subline(protocol: string, ctx: string): string {
   return ctx.toLowerCase().startsWith(protocol.toLowerCase()) ? ctx : `${protocol} · ${ctx}`;
 }
 
+/** The headline number of an opportunity and its unit (APY, fixed APY or max LTV). */
+export function oppValue(t: ReturnType<typeof useI18n>["t"], intent: IntentKey, card: Card): { val: string; unit: string } {
+  const val = intent === "BORROW" ? (card.lltv ? pctE18(card.lltv, 0) : "—") : card.headline ? pctE18(card.headline.value, 1) : "—";
+  const unit = intent === "BORROW" ? t("intent.unit.ltv") : card.headline?.basis === "FIXED" || intent === "FIXED" ? t("intent.unit.fixed") : t("intent.unit.apy");
+  return { val, unit };
+}
+
 export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey; card: Card }[]; assetRef: string }) {
   const { t } = useI18n();
   if (!rows.length) return <div className="panel empty small">{t("home.noOpps")}</div>;
   return (
     <div className="opps">
       {rows.map(({ intent, card }) => {
-        const val = intent === "BORROW" ? (card.lltv ? pctE18(card.lltv, 0) : "—") : card.headline ? pctE18(card.headline.value, 1) : "—";
-        const unit = intent === "BORROW" ? t("intent.unit.ltv") : card.headline?.basis === "FIXED" || intent === "FIXED" ? t("intent.unit.fixed") : t("intent.unit.apy");
+        const { val, unit } = oppValue(t, intent, card);
         return (
           <a key={card.cardId} className="opp" {...linkProps(`/asset/${encodeURIComponent(assetRef)}?i=${intent}`)}>
             <ProtocolMark name={card.protocol.name} icon={INTENT_LOOK[intent].icon} tone={INTENT_LOOK[intent].tone} size={38} />

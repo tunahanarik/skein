@@ -610,4 +610,6 @@ export const ko: Record<StringKey, string> = {
   "bridge.recipientHint": "이 네트워크에 있는 본인 지갑 주소를 붙여 넣으세요. 잘못된 주소로 보낸 전송은 되돌릴 수 없습니다.",
   "swap.routeSearching": "경로 찾는 중…",
   "swap.routeFound": "경로를 찾았습니다",
+  "home.canDoWith": "{s}(으)로 할 수 있는 일",
+  "home.inspect": "보기",
 };

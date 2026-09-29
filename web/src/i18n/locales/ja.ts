@@ -633,4 +633,6 @@ export const ja: Record<StringKey, string> = {
   "bridge.recipientHint": "このネットワーク上のご自身のウォレットのアドレスを貼り付けてください。誤ったアドレスへの送金は取り消せません。",
   "swap.routeSearching": "ルートを検索中…",
   "swap.routeFound": "ルートが見つかりました",
+  "home.canDoWith": "{s} でできること",
+  "home.inspect": "見る",
 };

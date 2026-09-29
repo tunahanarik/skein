@@ -610,4 +610,6 @@ export const hi: Record<StringKey, string> = {
   "bridge.recipientHint": "इस नेटवर्क पर अपने वॉलेट का पता पेस्ट करें। गलत पते पर भेजा गया ट्रांसफ़र वापस नहीं हो सकता।",
   "swap.routeSearching": "रूट खोजा जा रहा है…",
   "swap.routeFound": "रूट मिल गया",
+  "home.canDoWith": "{s} के साथ आप क्या कर सकते हैं",
+  "home.inspect": "देखें",
 };

@@ -634,4 +634,6 @@ export const es: Record<StringKey, string> = {
   "bridge.recipientHint": "Pega una dirección de tu propia wallet en esta red. Las transferencias a una dirección equivocada no se pueden revertir.",
   "swap.routeSearching": "Buscando ruta…",
   "swap.routeFound": "Ruta encontrada",
+  "home.canDoWith": "Qué puedes hacer con {s}",
+  "home.inspect": "Ver",
 };

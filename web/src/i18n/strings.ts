@@ -636,6 +636,8 @@ export const en = {
   "bridge.recipientHint": "Paste an address from your own wallet on this network. Transfers to a wrong address cannot be reversed.",
   "swap.routeSearching": "Searching for a route…",
   "swap.routeFound": "Route found",
+  "home.canDoWith": "What you can do with {s}",
+  "home.inspect": "View",
 };
 
 export type StringKey = keyof typeof en;
@@ -1249,4 +1251,6 @@ export const tr: Record<StringKey, string> = {
   "bridge.recipientHint": "Bu ağdaki kendi cüzdanından bir adres yapıştır. Yanlış adrese giden transfer geri alınamaz.",
   "swap.routeSearching": "Rota aranıyor…",
   "swap.routeFound": "Rota bulundu",
+  "home.canDoWith": "{s} ile yapabileceklerin",
+  "home.inspect": "İncele",
 };

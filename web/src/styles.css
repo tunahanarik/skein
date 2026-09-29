@@ -1,45 +1,45 @@
 /*
- * Design tokens ("soft" design). Every colour lives here; a palette change is one edit.
+ * Design tokens ("neon night": near-black, lime accent, 10px controls). Every colour lives here; a palette change is one edit.
  * Dark is the default look; light via data-theme="light".
  * Surfaces are separated by tone, not borders; --border is only for thin dividers.
  * --i-*: pastel intent families (earn, fixed yield, borrow, liquidity, trade), bg + fg.
  */
 :root {
-  --bg: #101412;
-  --surface: #181e1b;
-  --surface-2: #1d2420;
-  --surface-3: #252d29;
-  --border: #1f2622;
-  --border-2: #2a322e;
-  --text: #edf1ee;
-  --text-2: #9aa49e;
-  --text-3: #6e7872;
-  --link: #a8d8b8;
-  --accent: #cfebd8;
-  --accent-2: #ddf2e4;
-  --accent-soft: #1f2b25;
-  --on-accent: #0f1411;
-  --ok: #86d3a3;
-  --ok-soft: #1f2b25;
-  --warn: #f0c9a0;
-  --warn-soft: #2f271f;
-  --info: #afcdee;
-  --info-soft: #1e2733;
-  --bad: #e79a90;
-  --bad-soft: #33201d;
-  --muted-soft: #1d2420;
-  --i-earn-bg: #1f2b25; --i-earn-fg: #a8d8b8;
-  --i-fixed-bg: #26243a; --i-fixed-fg: #c8c0f4;
-  --i-borrow-bg: #2f271f; --i-borrow-fg: #f0c9a0;
-  --i-lp-bg: #1e2733; --i-lp-fg: #afcdee;
-  --i-trade-bg: #1d2420; --i-trade-fg: #dde3df;
-  --ticker-bg: #0d110f;
-  --mark-a: #a8d8b8;
-  --mark-b: #edf1ee;
+  --bg: #0a0b0a;
+  --surface: #141713;
+  --surface-2: #1b1f1a;
+  --surface-3: #23281f;
+  --border: #1d211c;
+  --border-2: #2a2f27;
+  --text: #f2f4ef;
+  --text-2: #9ba198;
+  --text-3: #6c7269;
+  --link: #c8f169;
+  --accent: #c8f169;
+  --accent-2: #d6f785;
+  --accent-soft: #1f2a10;
+  --on-accent: #1a2406;
+  --ok: #c8f169;
+  --ok-soft: #1f2a10;
+  --warn: #f2c46b;
+  --warn-soft: #2e2414;
+  --info: #8ec5ff;
+  --info-soft: #14233a;
+  --bad: #ff8a7a;
+  --bad-soft: #361b17;
+  --muted-soft: #1b1f1a;
+  --i-earn-bg: #1f2a10; --i-earn-fg: #c8f169;
+  --i-fixed-bg: #221f33; --i-fixed-fg: #c3b8ff;
+  --i-borrow-bg: #2e2414; --i-borrow-fg: #f2c46b;
+  --i-lp-bg: #14233a; --i-lp-fg: #8ec5ff;
+  --i-trade-bg: #1b1f1a; --i-trade-fg: #e4e8e0;
+  --ticker-bg: #070807;
+  --mark-a: #c8f169;
+  --mark-b: #f2f4ef;
   --shadow: none;
   --shadow-pop: 0 20px 60px rgba(0, 0, 0, 0.45);
-  --radius: 22px;
-  --radius-sm: 14px;
+  --radius: 16px;
+  --radius-sm: 10px;
   --font: "Inter Tight Variable", "Inter Tight", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
   color-scheme: dark;
@@ -54,13 +54,13 @@
   --text: #1a201c;
   --text-2: #5e6660;
   --text-3: #8c938e;
-  --link: #2f6a47;
-  --accent: #1a201c;
-  --accent-2: #2b332e;
-  --accent-soft: #e3f1e8;
-  --on-accent: #f4f2ee;
-  --ok: #2f8a55;
-  --ok-soft: #e3f1e8;
+  --link: #3b5a07;
+  --accent: #1a2406;
+  --accent-2: #2a3a0b;
+  --accent-soft: #eef7d9;
+  --on-accent: #e9f8c4;
+  --ok: #4c7a07;
+  --ok-soft: #eef7d9;
   --warn: #9a5b00;
   --warn-soft: #fbebdd;
   --info: #2a5d8f;
@@ -74,7 +74,7 @@
   --i-lp-bg: #e3eef9; --i-lp-fg: #2a5d8f;
   --i-trade-bg: #eceae5; --i-trade-fg: #1a201c;
   --ticker-bg: #eceae5;
-  --mark-a: #3c6a50;
+  --mark-a: #5f8f0d;
   --mark-b: #1a201c;
   --shadow-pop: 0 20px 60px rgba(26, 32, 28, 0.16);
   color-scheme: light;
@@ -580,7 +580,7 @@ table.data th { color: var(--text-3); }
  * segmented tabs whose selected option is inverted, filled chips and pickers,
  * switch toggles. Change the look here and in the --btn-* tokens.
  * ===================================================================== */
-:root { --btn-radius: 99px; --btn-2: #1d2420; --btn-2-hover: #252d29; --seg-bg: #181e1b; }
+:root { --btn-radius: 10px; --btn-2: #1b1f1a; --btn-2-hover: #23281f; --seg-bg: #141713; }
 :root[data-theme="light"] { --btn-2: #eceae5; --btn-2-hover: #e2dfd9; --seg-bg: #eceae5; }
 
 /* buttons */
@@ -920,3 +920,71 @@ table.data tbody tr:hover { background: transparent; }
 .pmark-corner.t-lp { background: var(--i-lp-bg); color: var(--i-lp-fg); }
 .pmark-corner.t-trade { background: var(--i-trade-bg); color: var(--i-trade-fg); }
 .card .top { align-items: center; }
+
+
+/* =====================================================================
+ * NEON NIGHT — near-black surfaces, lime accent, 10px controls, underlined
+ * navigation, borderless 16px cards. Overrides the soft layer above.
+ * ===================================================================== */
+.btn, .btn.small, .btn.big, .btn.round, .pill, .icon-btn, .qa, .lang, .lang select, .mk-search, .tok-btn, .picker-btn { border-radius: 10px; }
+.chip, .seg button, .seg-tabs button, .quick-actions .qa { border-radius: 8px; }
+.seg, .seg-tabs, .quick-actions, .chips .chip { border-radius: 10px; }
+.btn.primary { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-2); }
+.chip.on, .seg button.on, .seg-tabs button.on, .seg button[aria-checked="true"], .qa.on, .pill.on { background: var(--accent); color: var(--on-accent); }
+nav.main a { border-radius: 0; padding: 8px 4px; margin: 0 8px; background: transparent !important; }
+nav.main a.active { background: transparent; border-radius: 0; box-shadow: inset 0 -2px 0 var(--accent); color: var(--text); }
+nav.main a:hover { background: transparent; color: var(--text); }
+.ticker a { border-radius: 8px; }
+.intent, .panel, .opps, .card, .modal, .drawer, .picker-pop.panel { border-radius: var(--radius); }
+.qs-box, .bx-row, .bx-settings, .wallet-opt, .pf-feat { border-radius: 14px; }
+.up { color: var(--ok); }
+.down { color: var(--bad); }
+
+/* home: one focused column (asset stage, three big cards, compact intent strip) */
+.home-col { max-width: 820px; margin: 0 auto; }
+.stage { padding-top: 28px; display: grid; gap: 14px; }
+.stage-top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.stage-id { display: grid; gap: 2px; min-width: 0; }
+.stage-id .n { font-size: 14px; color: var(--text-2); }
+.stage-id .picker-btn { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; padding: 2px 10px 2px 2px; background: transparent; }
+.stage-id .picker-btn .avatar { display: none; }
+.stage-id .picker-btn:hover { background: var(--surface); }
+.stage-px { display: grid; justify-items: end; gap: 2px; }
+.stage-px .price { font-size: 34px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+.stage-px .num.up, .stage-px .num.down { font-size: 14px; }
+.stage .pchart { background: transparent; padding: 0; }
+.top-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.top-card { background: var(--surface); border-radius: var(--radius); padding: 16px; display: grid; gap: 4px; align-content: start; color: var(--text); text-decoration: none; transition: background 0.15s ease; min-width: 0; }
+.top-card:hover { background: var(--surface-2); text-decoration: none; }
+.top-card .pmark-wrap, .top-card .sbadge { margin-bottom: 10px; }
+.top-card .k { font-weight: 600; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-card .p { font-size: 12.5px; color: var(--text-2); }
+.top-card .v { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; margin-top: 10px; line-height: 1.1; }
+.top-card .u { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.top-card .btn { margin-top: 12px; text-align: center; }
+.mini-intents { margin-top: 12px; }
+.mini-intents .intents { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.mini-intents .intent { min-height: 0; padding: 12px; gap: 2px; }
+.mini-intents .intent .sbadge { display: none; }
+.mini-intents .intent .k { font-size: 12px; color: var(--text-2); font-weight: 500; }
+.mini-intents .intent .v { font-size: 17px; margin-top: 2px; }
+.mini-intents .intent .f { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 720px) {
+  .top-cards { grid-template-columns: 1fr; }
+  .top-card { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 12px; align-items: center; }
+  .top-card .pmark-wrap, .top-card .sbadge { grid-row: span 2; margin: 0; }
+  .top-card .v { grid-column: 3; grid-row: 1; margin: 0; font-size: 20px; text-align: end; }
+  .top-card .u { grid-column: 3; grid-row: 2; text-align: end; }
+  .top-card .btn { display: none; }
+  .mini-intents .intents { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stage-px .price { font-size: 26px; }
+}
+.stage .pc-foot { display: none; }
+.stage .pc-plot svg { max-height: 200px; }
+@media (max-width: 720px) {
+  header.top .shell { height: auto; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; row-gap: 10px; }
+  header.top .lang select { max-width: 92px; }
+  nav.main { order: 10; width: 100%; margin: 0; }
+  nav.main a:first-child { margin-left: 0; }
+}

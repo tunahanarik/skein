@@ -634,4 +634,6 @@ export const it: Record<StringKey, string> = {
   "bridge.recipientHint": "Incolla un indirizzo del tuo wallet su questa rete. I trasferimenti a un indirizzo errato non sono reversibili.",
   "swap.routeSearching": "Ricerca del percorso…",
   "swap.routeFound": "Percorso trovato",
+  "home.canDoWith": "Cosa puoi fare con {s}",
+  "home.inspect": "Vedi",
 };

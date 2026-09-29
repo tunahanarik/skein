@@ -634,4 +634,6 @@ export const pt: Record<StringKey, string> = {
   "bridge.recipientHint": "Cole um endereço da sua própria carteira nesta rede. Transferências para um endereço errado não podem ser desfeitas.",
   "swap.routeSearching": "Procurando rota…",
   "swap.routeFound": "Rota encontrada",
+  "home.canDoWith": "O que você pode fazer com {s}",
+  "home.inspect": "Ver",
 };

@@ -633,4 +633,6 @@ export const zh: Record<StringKey, string> = {
   "bridge.recipientHint": "请粘贴你自己在该网络上的钱包地址。转到错误地址的资产无法撤回。",
   "swap.routeSearching": "正在查找路径…",
   "swap.routeFound": "已找到路径",
+  "home.canDoWith": "你可以用 {s} 做什么",
+  "home.inspect": "查看",
 };
