@@ -988,3 +988,14 @@ nav.main a:hover { background: transparent; color: var(--text); }
   nav.main { order: 10; width: 100%; margin: 0; }
   nav.main a:first-child { margin-left: 0; }
 }
+
+/* language menu (replaces the native select, whose list cannot be themed) */
+.lang-menu { position: relative; }
+.lang-menu .lang { border: 0; cursor: pointer; font: inherit; font-size: 13px; color: var(--text-2); padding: 9px 10px 9px 12px; gap: 6px; }
+.lang-menu .lang:hover, .lang-menu .lang[aria-expanded="true"] { color: var(--text); background: var(--btn-2-hover); }
+.lang-menu .lang .chev { transform: rotate(90deg); opacity: 0.7; }
+.lang-pop { position: absolute; top: calc(100% + 8px); right: 0; z-index: 70; min-width: 180px; max-height: min(420px, 70vh); overflow-y: auto; background: var(--surface-2); border-radius: 14px; padding: 6px; box-shadow: var(--shadow-pop); display: grid; gap: 2px; }
+.lang-pop button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; padding: 9px 12px; border-radius: 9px; cursor: pointer; text-align: start; }
+.lang-pop button:hover, .lang-pop button:focus-visible { background: var(--surface-3); color: var(--text); outline: none; }
+.lang-pop button[aria-selected="true"] { color: var(--accent); }
+[dir="rtl"] .lang-pop { right: auto; left: 0; }

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { shortAddr } from "./format";
 import { I18nProvider, LANGS, useI18n, type Lang } from "./i18n";
 import { AboutPage } from "./pages/About";
@@ -18,20 +18,60 @@ import { QuickProvider, Ticker, useQuick } from "./components/market";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
+/** Language menu styled like the rest of the site (a native <select> list cannot be themed). */
 function LanguagePicker() {
   const { lang, setLang, t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const current = LANGS.find((l) => l.code === lang) ?? LANGS[0]!;
+  useEffect(() => {
+    if (!open) return;
+    listRef.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
+    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  const move = (e: ReactKeyboardEvent) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    const items = [...(listRef.current?.querySelectorAll<HTMLButtonElement>("button") ?? [])];
+    const i = items.indexOf(document.activeElement as HTMLButtonElement);
+    items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length]?.focus();
+  };
   return (
-    <label className="lang">
-      <Icon name="globe" size={16} />
-      <span className="sr-only">{t("shell.language")}</span>
-      <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t("shell.language")}>
-        {LANGS.map((l) => (
-          <option key={l.code} value={l.code}>
-            {l.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="lang-menu" ref={ref}>
+      <button className="lang" aria-haspopup="listbox" aria-expanded={open} aria-label={t("shell.language")} onClick={() => setOpen(!open)}>
+        <Icon name="globe" size={16} />
+        <span className="cur">{current.label}</span>
+        <Icon name="chevron" size={14} className="chev" />
+      </button>
+      {open && (
+        <div className="lang-pop" role="listbox" aria-label={t("shell.language")} ref={listRef} onKeyDown={move}>
+          {LANGS.map((l) => (
+            <button
+              key={l.code}
+              role="option"
+              aria-selected={l.code === lang}
+              lang={l.code}
+              dir={l.rtl ? "rtl" : undefined}
+              onClick={() => {
+                setLang(l.code as Lang);
+                setOpen(false);
+              }}
+            >
+              <span>{l.label}</span>
+              {l.code === lang && <Icon name="check" size={15} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

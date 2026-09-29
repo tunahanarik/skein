@@ -81,7 +81,8 @@ describe("asset page", () => {
   it("switches to Turkish, with localized numbers, and remembers it", async () => {
     await mountAt("/asset/NVDA");
     await screen.findByText(/Buy PT-NVDA/);
-    fireEvent.change(screen.getByLabelText("Language"), { target: { value: "tr" } });
+    fireEvent.click(screen.getByRole("button", { name: "Language" }));
+    fireEvent.click(screen.getByRole("option", { name: "Türkçe" }));
     expect(await screen.findByText("NVDA ile PT-NVDA-15OCT2026 al")).toBeTruthy();
     expect(screen.getByText("NVDA teminatıyla USDG borç al")).toBeTruthy();
     expect(document.body.textContent).toContain("%7,28");
