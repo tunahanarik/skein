@@ -244,31 +244,32 @@ describe("wallet connect and swap", () => {
 });
 
 describe("bridge", () => {
-  it("quotes through LI.FI, approves the exact amount to the pinned diamond, sends, and tracks until done", async () => {
+  it("quotes automatically, hides look-alikes, approves the exact amount to the pinned diamond, sends, and tracks until done", async () => {
     const { LIFI_DIAMONDS } = await import("./bridge/diamonds");
     const USER = "0x00000000000000000000000000000000000000aa";
     const USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
     const DIAMOND = LIFI_DIAMONDS[8453]!.diamond;
-    const lifi: string[] = [];
+    const quotes: URLSearchParams[] = [];
     vi.stubGlobal("fetch", async (input: string) => {
       const url = new URL(input, "http://localhost");
       const json = (b: unknown) => new Response(JSON.stringify(b), { status: 200, headers: { "content-type": "application/json" } });
       if (url.host === "li.quest") {
-        lifi.push(url.pathname + url.search);
-        const token = (chainId: number, address: string, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: "1", verificationStatus: "verified" });
-        if (url.pathname === "/v1/chains") return json({ chains: [8453, 4663].map((id) => ({ id, mainnet: true, chainType: "EVM", name: id === 8453 ? "Base" : "Robinhood Chain", coin: "ETH", diamondAddress: LIFI_DIAMONDS[id]!.diamond })) });
+        const token = (chainId: number, address: string, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: "1", verificationStatus: "verified", logoURI: "https://static.debank.com/x.png" });
+        if (url.pathname === "/v1/chains") return json({ chains: [8453, 4663].map((id) => ({ id, mainnet: true, chainType: "EVM", name: id === 8453 ? "Base" : "Robinhood Chain", coin: "ETH", diamondAddress: LIFI_DIAMONDS[id]!.diamond, logoURI: "https://raw.githubusercontent.com/lifinance/types/main/x.svg" })) });
         if (url.pathname === "/v1/tokens") {
           const c = url.searchParams.get("chains")!;
           return json({ tokens: { [c]: c === "8453" ? [token(8453, USDC, "USDC", 6)] : [token(4663, "0x0000000000000000000000000000000000000000", "ETH", 18), token(4663, "0x0A3B763d00000000000000000000000000000000", "USDG", 6)] } });
         }
         if (url.pathname === "/v1/quote") {
-          expect(url.searchParams.get("toAddress")).toBe(USER);
+          quotes.push(url.searchParams);
+          const who = url.searchParams.get("fromAddress")!;
+          expect(url.searchParams.get("toAddress")).toBe(who);
           return json({
             tool: "across",
             toolDetails: { name: "AcrossV4" },
-            action: { fromChainId: 8453, toChainId: 4663, fromToken: token(8453, USDC, "USDC", 6), toToken: token(4663, "0x0000000000000000000000000000000000000000", "ETH", 18), fromAmount: url.searchParams.get("fromAmount"), fromAddress: USER, toAddress: USER },
+            action: { fromChainId: 8453, toChainId: 4663, fromToken: token(8453, USDC, "USDC", 6), toToken: token(4663, "0x0000000000000000000000000000000000000000", "ETH", 18), fromAmount: url.searchParams.get("fromAmount"), fromAddress: who, toAddress: who },
             estimate: { approvalAddress: DIAMOND, toAmount: "18000000000000000", toAmountMin: "17900000000000000", executionDuration: 2, feeCosts: [{ amountUSD: "0.16", included: true }], gasCosts: [{ amountUSD: "0.01" }] },
-            transactionRequest: { from: USER, to: DIAMOND, data: "0x4c279d6b", value: "0x0", chainId: 8453 },
+            transactionRequest: { from: who, to: DIAMOND, data: "0x4c279d6b", value: "0x0", chainId: 8453 },
           });
         }
         if (url.pathname === "/v1/status") return json({ status: "DONE", substatus: "COMPLETED", receiving: { txHash: `0x${"b".repeat(64)}` } });
@@ -302,31 +303,43 @@ describe("bridge", () => {
     try {
       history.pushState(null, "", "/bridge");
       render(<App />);
-      await waitFor(() => expect((screen.getByLabelText("Token to send") as HTMLSelectElement).value).toBe(USDC));
-      // The look-alike USDG on Robinhood Chain is not offered (not in the canonical registry).
-      expect([...(screen.getByLabelText("Token to receive") as HTMLSelectElement).options].map((o) => o.text)).toEqual(["ETH"]);
+      const main = () => screen.getAllByRole("button").find((b) => b.classList.contains("big"))!;
+
+      // Token buttons show the chosen tokens; the Robinhood side never offers the look-alike USDG.
+      const fromBtn = await screen.findByRole("button", { name: "Token to send" });
+      await waitFor(() => expect(fromBtn.textContent).toContain("USDC"), { timeout: 3000 });
+      fireEvent.click(screen.getByRole("button", { name: "Token to receive" }));
+      const dialog = await screen.findByRole("dialog");
+      const list = within(dialog).getByRole("listbox", { name: "Select token" });
+      await waitFor(() => expect(within(list).getAllByRole("option").map((o) => o.textContent)).toEqual(["ETHETH"]));
+      fireEvent.click(within(list).getAllByRole("option")[0]!);
+
       fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "50" } });
-      fireEvent.click(screen.getAllByRole("button", { name: "Connect wallet" }).at(-1)!);
+      // Without a wallet the quote is a preview for a throwaway address.
+      await screen.findByText(/AcrossV4/, {}, { timeout: 3000 });
+      expect(quotes.at(-1)!.get("fromAddress")).not.toBe(USER);
+
+      fireEvent.click(main());
       await act(async () => {
         fireEvent.click(await screen.findByRole("button", { name: /Test Wallet/ }));
       });
+      await waitFor(() => expect(quotes.at(-1)!.get("fromAddress")).toBe(USER), { timeout: 3000 });
+      await waitFor(() => expect(main().textContent).toMatch(/^1\. Allow USDC/), { timeout: 3000 });
       await act(async () => {
-        fireEvent.click(await screen.findByRole("button", { name: "Get quote" }));
+        fireEvent.click(main());
       });
-      await screen.findByText(/AcrossV4 · LI.FI/);
+      await waitFor(() => expect(main().textContent).toBe("Bridge Base → Robinhood Chain"), { timeout: 3000 });
       await act(async () => {
-        fireEvent.click(await screen.findByRole("button", { name: /^1\. Allow USDC/ }));
+        fireEvent.click(main());
       });
-      await act(async () => {
-        fireEvent.click(await screen.findByRole("button", { name: "Bridge Base → Robinhood Chain" }));
-      });
-      await screen.findByText(/Bridge complete/);
-      const sent = reqs.filter((r) => r.method === "eth_sendTransaction").map((r) => r.params![0] as { to: string; data: string; value: string });
+      await screen.findByText(/Bridge complete/, {}, { timeout: 3000 });
+
+      const sent = reqs.filter((r) => r.method === "eth_sendTransaction").map((r) => r.params![0] as { to: string; data: string; from: string });
       expect(sent).toHaveLength(2);
       expect(sent[0]!.to).toBe(USDC);
       expect(sent[0]!.data).toBe(`0x095ea7b3${DIAMOND.slice(2).toLowerCase().padStart(64, "0")}${(50_000_000n).toString(16).padStart(64, "0")}`);
       expect(sent[1]!.to).toBe(DIAMOND);
-      expect(lifi.filter((p) => p.startsWith("/v1/quote"))).toHaveLength(2); // quote, then re-quote before signing
+      expect(sent[1]!.from.toLowerCase()).toBe(USER);
       expect(reqs.some((r) => /sign/i.test(r.method))).toBe(false);
     } finally {
       window.removeEventListener("eip6963:requestProvider", announce);

@@ -9,6 +9,7 @@
  *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
  *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
+ *   GET /api/img?u=<url>                              bridge token / network logo (allowlisted hosts; proxied, sniffed)
  *
  * Only GET/HEAD. Every input is validated; errors never carry stack traces. Request logs carry
  * the route TEMPLATE, never the raw path (a wallet address is part of the portfolio path).
@@ -20,6 +21,7 @@ import type { AssetRegistry } from "../registry/registry.js";
 import type { AssetIntelligenceService } from "../product/service.js";
 import type { ProductMode } from "../product/types.js";
 import type { LogoStore } from "./logos.js";
+import type { ImageProxy } from "./images.js";
 import type { RateHistory } from "./rateHistory.js";
 import { RateLimiter } from "./rateLimit.js";
 import { SECURITY_HEADERS, sendJson } from "./json.js";
@@ -36,6 +38,7 @@ export interface ApiDeps {
   /** Trust X-Forwarded-For for rate limiting (only behind a known proxy). */
   trustProxy?: boolean;
   logos?: LogoStore;
+  images?: ImageProxy;
   rates?: RateHistory;
 }
 
@@ -174,6 +177,21 @@ export function createApi(deps: ApiDeps) {
     return true;
   }
 
+  async function image(req: IncomingMessage, res: ServerResponse, u: string | null): Promise<boolean> {
+    if (!deps.images || !u) return false;
+    const img = await deps.images.get(u);
+    if (!img) return false;
+    res.statusCode = 200;
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+    res.setHeader("Content-Type", img.contentType);
+    res.setHeader("Content-Length", img.bytes.length);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    // SVG can carry script: the sandbox keeps it inert even if opened directly.
+    res.setHeader("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+    res.end(req.method === "HEAD" ? undefined : img.bytes);
+    return true;
+  }
+
   return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const t0 = performance.now();
     let template = "unmatched";
@@ -192,6 +210,12 @@ export function createApi(deps: ApiDeps) {
         if (!limiter.take(`l:${ip}`, RATE_LIMITS.logos)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
         if (await logo(req, res, lm[1]!)) return;
         throw new ApiError(404, "NO_LOGO", "no logo");
+      }
+      if (url.pathname === "/api/img") {
+        template = "/api/img";
+        if (!limiter.take(`l:${ip}`, RATE_LIMITS.logos)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
+        if (await image(req, res, url.searchParams.get("u"))) return;
+        throw new ApiError(404, "NO_IMAGE", "no image");
       }
       // Cheap pre-check so a flood never reaches the engine.
       if (!limiter.take(`g:${ip}`, RATE_LIMITS.general)) throw new ApiError(429, "RATE_LIMITED", "too many requests");

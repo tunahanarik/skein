@@ -5,7 +5,7 @@ import { checkBridgeQuote, cleanText, NATIVE, parseToken, type Quote, type Quote
 
 const USER = "0x00000000000000000000000000000000000000Aa" as const;
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as const;
-const tok = (chainId: number, address: `0x${string}`, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: 1, verified: true });
+const tok = (chainId: number, address: `0x${string}`, symbol: string, decimals: number) => ({ chainId, address, symbol, name: symbol, decimals, priceUSD: 1, verified: true, logo: null });
 
 const req: QuoteRequest = { fromChainId: 8453, toChainId: 4663, fromToken: USDC_BASE, toToken: NATIVE, fromAmount: 50_000_000n, user: USER, slippage: 0.005, order: "CHEAPEST" };
 const good: Quote = {
@@ -80,5 +80,40 @@ describe("untrusted token metadata", () => {
     expect(parseToken({ chainId: 1, address: "0xnope", symbol: "X", decimals: 18 })).toBeNull();
     expect(parseToken({ chainId: 1, address: USDC_BASE, symbol: "X", decimals: 99 })).toBeNull();
     expect(parseToken({ chainId: 1, address: USDC_BASE, symbol: "USDC", decimals: 6, verificationStatus: "verified" })?.verified).toBe(true);
+  });
+});
+
+describe("image proxy (bridge token and network logos)", async () => {
+  const { allowedImageUrl, ImageProxy, sniffAny } = await import("../../src/server/images.js");
+  const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
+  const respond = (b: Buffer, calls: string[] = []) => (async (u: string) => (calls.push(String(u)), new Response(new Uint8Array(b), { status: 200 }))) as unknown as typeof fetch;
+
+  it("only allowlisted https hosts and paths", () => {
+    expect(allowedImageUrl("https://static.debank.com/image/eth_token/logo_url/x.png")).not.toBeNull();
+    expect(allowedImageUrl("https://raw.githubusercontent.com/lifinance/types/main/src/assets/icons/chains/ethereum.svg")).not.toBeNull();
+    for (const bad of [
+      "http://static.debank.com/x.png",
+      "https://raw.githubusercontent.com/someone/else/x.png",
+      "https://static.debank.com.evil.io/x.png",
+      "https://u:p@static.debank.com/x.png",
+      "https://static.debank.com:8443/x.png",
+      "https://127.0.0.1/x.png",
+      "not a url",
+    ])
+      expect([bad, allowedImageUrl(bad)]).toEqual([bad, null]);
+  });
+
+  it("sniffs raster images and SVG, rejects HTML", () => {
+    expect(sniffAny(PNG)).toBe("png");
+    expect(sniffAny(Buffer.from('<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg"></svg>'))).toBe("svg");
+    expect(sniffAny(Buffer.from("<html><body>hi</body></html>"))).toBeNull();
+  });
+
+  it("never fetches a URL outside the allowlist, and rejects oversize bodies", async () => {
+    const calls: string[] = [];
+    expect(await new ImageProxy({ fetch: respond(PNG, calls) }).get("https://evil.example/x.png")).toBeNull();
+    expect(calls).toEqual([]);
+    expect((await new ImageProxy({ fetch: respond(PNG) }).get("https://static.debank.com/x.png"))?.contentType).toBe("image/png");
+    expect(await new ImageProxy({ fetch: respond(Buffer.concat([PNG, Buffer.alloc(300_000)])) }).get("https://static.debank.com/y.png")).toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, parseUnits, type Address, type Hex } from "viem";
-import { allowanceData, balanceData, chains as fetchChains, checkBridgeQuote, NATIVE, quote as fetchQuote, scanUrl, status as fetchStatus, tokens as fetchTokens, approveData, type Chain, type Quote, type QuoteRequest, type Token } from "../bridge/lifi";
+import { allowanceData, approveData, balanceData, chains as fetchChains, checkBridgeQuote, NATIVE, quote as fetchQuote, scanUrl, status as fetchStatus, tokens as fetchTokens, type Chain, type Quote, type QuoteRequest, type Token } from "../bridge/lifi";
 import { LIFI_DIAMONDS } from "../bridge/diamonds";
+import { Modal } from "../components/Modal";
 import { useAssetList } from "../components/common";
 import { amount, pct, usd } from "../format";
 import { useI18n } from "../i18n";
@@ -12,10 +13,11 @@ const RH = 4663;
 const SLIPPAGES = [10, 50, 100, 300] as const; // bps
 /** Shown first in token lists, in this order (by symbol). */
 const MAJOR = ["ETH", "WETH", "USDC", "USDT", "USDG", "DAI", "WBTC", "cbBTC", "USDe", "BNB", "POL", "AVAX"];
+/** Quotes shown before a wallet is connected are built for this throwaway address (display only). */
+const PREVIEW: Address = "0x00000000000000000000000000000000c0ffee01";
 
 type Step =
   | { k: "idle" }
-  | { k: "quoting" }
   | { k: "wallet"; what: "approve" | "bridge" }
   | { k: "pending"; what: "approve" | "bridge"; hash: Hex }
   | { k: "bridging"; hash: Hex; q: Quote; recv: Hex | null; sub: string }
@@ -30,52 +32,84 @@ function sortTokens(list: Token[]): Token[] {
 /** Robinhood Chain side: only the native coin and canonical registry assets (look-alikes dropped). */
 function useChainTokens(chainId: number | null, canonical: Set<string> | null) {
   const [list, setList] = useState<Token[] | null>(null);
-  const [err, setErr] = useState(false);
   useEffect(() => {
     if (!chainId) return;
     const ac = new AbortController();
     setList(null);
-    setErr(false);
     fetchTokens(chainId, ac.signal)
       .then((l) => setList(sortTokens(chainId === RH ? l.filter((t) => t.address === NATIVE || canonical?.has(t.address.toLowerCase())) : l.filter((t) => t.verified || t.address === NATIVE))))
-      .catch((e) => (e as Error).name !== "AbortError" && setErr(true));
+      .catch((e) => (e as Error).name !== "AbortError" && setList([]));
     return () => ac.abort();
   }, [chainId, canonical]);
-  return { list, err };
+  return list;
 }
 
-function TokenPicker({ label, list, value, onChange }: { label: string; list: Token[] | null; value: Token | null; onChange: (t: Token) => void }) {
+const img = (u: string) => `/api/img?u=${encodeURIComponent(u)}`;
+
+/** Token logo: our verified logo on Robinhood Chain, else LI.FI's (through /api/img), else a monogram. */
+export function TokenIcon({ token, size = 32 }: { token: Pick<Token, "chainId" | "address" | "symbol" | "logo"> | null; size?: number }) {
+  const [failed, setFailed] = useState<string | null>(null);
+  if (!token) return <span className="ticon mono" style={{ width: size, height: size }} />;
+  const src = token.chainId === RH && token.address !== NATIVE ? `/api/logo/${token.address.toLowerCase()}?v=2` : token.logo ? img(token.logo) : null;
+  if (src && failed !== src) return <img className="ticon" src={src} alt="" width={size} height={size} loading="lazy" onError={() => setFailed(src)} />;
+  return (
+    <span className="ticon mono" style={{ width: size, height: size, fontSize: size * 0.34 }} aria-hidden="true">
+      {token.symbol.slice(0, 3)}
+    </span>
+  );
+}
+
+export function ChainIcon({ chain, size = 16 }: { chain: Pick<Chain, "name" | "logo"> | null; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  if (chain?.logo && !failed) return <img className="cicon" src={img(chain.logo)} alt="" width={size} height={size} loading="lazy" onError={() => setFailed(true)} />;
+  return (
+    <span className="cicon mono" style={{ width: size, height: size, fontSize: size * 0.5 }} aria-hidden="true">
+      {chain?.name.slice(0, 1) ?? "?"}
+    </span>
+  );
+}
+
+/** Network + token chooser: networks on the left, that network's tokens on the right. */
+function TokenModal({ title, chains, chainId, canonical, onPick, onClose }: { title: string; chains: Chain[]; chainId: number; canonical: Set<string> | null; onPick: (chainId: number, t: Token) => void; onClose: () => void }) {
   const { t } = useI18n();
+  const [cid, setCid] = useState(chainId);
   const [q, setQ] = useState("");
+  const list = useChainTokens(cid, canonical);
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const l = list ?? [];
-    return (s ? l.filter((x) => x.symbol.toLowerCase().includes(s) || x.name.toLowerCase().includes(s) || x.address.toLowerCase() === s) : l).slice(0, 300);
+    return (s ? (list ?? []).filter((x) => x.symbol.toLowerCase().includes(s) || x.name.toLowerCase().includes(s) || x.address.toLowerCase() === s) : (list ?? [])).slice(0, 200);
   }, [list, q]);
   return (
-    <div style={{ display: "grid", gap: 6 }}>
-      <input className="input" placeholder={t("bridge.searchToken")} aria-label={`${label} — ${t("bridge.searchToken")}`} value={q} onChange={(e) => setQ(e.target.value)} disabled={!list} />
-      <select
-        className="input"
-        aria-label={label}
-        value={value?.address ?? ""}
-        disabled={!list}
-        onChange={(e) => {
-          const tok = (list ?? []).find((x) => x.address === e.target.value);
-          if (tok) onChange(tok);
-        }}
-      >
-        {!list && <option>{t("misc.loading")}</option>}
-        {value && !shown.some((x) => x.address === value.address) && <option value={value.address}>{value.symbol}</option>}
-        {shown.map((x) => (
-          <option key={x.address} value={x.address}>
-            {x.symbol}
-            {x.name && x.name !== x.symbol ? ` — ${x.name}` : ""}
-            {x.address === NATIVE ? "" : ` (${x.address.slice(0, 6)}…${x.address.slice(-4)})`}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Modal title={title} onClose={onClose}>
+      <div className="tmodal">
+        <div className="tm-chains" role="listbox" aria-label={t("bridge.network")}>
+          {chains.map((c) => (
+            <button key={c.id} role="option" aria-selected={c.id === cid} className={c.id === cid ? "on" : undefined} onClick={() => setCid(c.id)}>
+              <ChainIcon chain={c} size={20} />
+              <span>{c.name}</span>
+            </button>
+          ))}
+        </div>
+        <div className="tm-tokens">
+          <input className="input" autoFocus placeholder={t("bridge.searchToken")} aria-label={t("bridge.searchToken")} value={q} onChange={(e) => setQ(e.target.value)} />
+          <div className="tm-list" role="listbox" aria-label={t("bridge.select")}>
+            {!list && <div className="muted small" style={{ padding: 10 }}>{t("misc.loading")}</div>}
+            {list && !shown.length && <div className="muted small" style={{ padding: 10 }}>—</div>}
+            {shown.map((x) => (
+              <button key={x.address} role="option" aria-selected={false} className="tm-tok" onClick={() => onPick(cid, x)}>
+                <TokenIcon token={x} size={30} />
+                <span className="nm">
+                  <span className="s">{x.symbol}</span>
+                  <span className="n">{x.name}</span>
+                </span>
+                {x.address !== NATIVE && <span className="a mono">{`${x.address.slice(0, 6)}…${x.address.slice(-4)}`}</span>}
+              </button>
+            ))}
+          </div>
+          {cid === RH && <div className="faint small">{t("bridge.rhTokens")}</div>}
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -84,46 +118,32 @@ async function readBalance(p: Eip1193, token: Address, owner: Address): Promise<
   return BigInt((await p.request({ method: "eth_call", params: [{ to: token, data: balanceData(owner) }, "latest"] })) as string);
 }
 
-export interface BridgePreset {
-  fromId: number;
-  toId: number;
-  fromSymbol: string;
-  toSymbol: string;
-}
-/** Where a bridge is, for the progress list next to the form. */
-export type BridgePhase = "idle" | "approve" | "send" | "arrive" | "done";
-
-/** Popular routes (chips on the bridge page). */
-export const POPULAR: BridgePreset[] = [
-  { fromId: 1, toId: RH, fromSymbol: "ETH", toSymbol: "ETH" },
-  { fromId: 8453, toId: RH, fromSymbol: "USDC", toSymbol: "USDG" },
-  { fromId: 42161, toId: RH, fromSymbol: "USDC", toSymbol: "USDG" },
-  { fromId: RH, toId: 8453, fromSymbol: "USDG", toSymbol: "USDC" },
-];
-
-/** The bridge form: chains, tokens, amount, quote, approve, send, track. */
-export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null; onPhase?: (p: BridgePhase) => void }) {
+/** The bridge: amount + token/network on each side, an automatic quote, and one main button. */
+export function BridgeForm() {
   const { t } = useI18n();
   const w = useWallet();
   const assets = useAssetList();
   const canonical = useMemo(() => (assets ? new Set(assets.map((a) => a.address.toLowerCase())) : null), [assets]);
   const [chains, setChains] = useState<Chain[] | null>(null);
   const [chainErr, setChainErr] = useState(false);
-  const [fromId, setFromId] = useState(initial?.fromId ?? 8453);
-  const [toId, setToId] = useState(initial?.toId ?? RH);
-  const from = useChainTokens(fromId, canonical);
-  const to = useChainTokens(toId, canonical);
+  const [fromId, setFromId] = useState(8453);
+  const [toId, setToId] = useState(RH);
+  const fromList = useChainTokens(fromId, canonical);
+  const toList = useChainTokens(toId, canonical);
   const [fromTok, setFromTok] = useState<Token | null>(null);
   const [toTok, setToTok] = useState<Token | null>(null);
-  // Token symbols asked for by a preset; used once, when that chain's list first arrives.
-  const want = useRef<{ from: string | null; to: string | null }>({ from: initial?.fromSymbol ?? null, to: initial?.toSymbol ?? null });
   const [amt, setAmt] = useState("");
   const [slip, setSlip] = useState<number>(50);
   const [order, setOrder] = useState<"CHEAPEST" | "FASTEST">("CHEAPEST");
+  const [settings, setSettings] = useState(false);
+  const [picking, setPicking] = useState<"from" | "to" | null>(null);
   const [q, setQ] = useState<Quote | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const [quoteErr, setQuoteErr] = useState<string | null>(null);
   const [step, setStep] = useState<Step>({ k: "idle" });
   const [balance, setBalance] = useState<bigint | null>(null);
-  const user = w.source === "connected" ? w.address : null;
+  const [allowance, setAllowance] = useState<bigint | null>(null);
+  const user = w.source === "connected" ? (w.address as Address | null) : null;
   const onFrom = w.chainId === fromId;
   const live = useRef(true);
   useEffect(() => () => void (live.current = false), []);
@@ -136,25 +156,18 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     return () => ac.abort();
   }, []);
 
-  // Default token per side: the native coin, or keep the same symbol when the chain changes.
+  // Default token per side: keep the same symbol when possible, else the native coin.
   useEffect(() => {
-    if (!from.list) return;
-    const w = want.current.from;
-    want.current.from = null;
-    setFromTok((cur) => from.list!.find((x) => x.symbol === (w ?? cur?.symbol)) ?? from.list!.find((x) => x.symbol === cur?.symbol) ?? from.list![0] ?? null);
-  }, [from.list]);
+    if (fromList) setFromTok((cur) => (cur && cur.chainId === fromId ? cur : (fromList.find((x) => x.symbol === cur?.symbol) ?? fromList[0] ?? null)));
+  }, [fromList, fromId]);
   useEffect(() => {
-    if (!to.list) return;
-    const w = want.current.to;
-    want.current.to = null;
-    setToTok((cur) => to.list!.find((x) => x.symbol === (w ?? cur?.symbol)) ?? to.list!.find((x) => x.symbol === cur?.symbol) ?? to.list![0] ?? null);
-  }, [to.list]);
-  useEffect(() => setQ(null), [fromId, toId, fromTok, toTok, amt, slip, order]);
+    if (toList) setToTok((cur) => (cur && cur.chainId === toId ? cur : (toList.find((x) => x.symbol === cur?.symbol) ?? toList[0] ?? null)));
+  }, [toList, toId]);
 
   useEffect(() => {
     setBalance(null);
     if (!w.provider || !user || !onFrom || !fromTok) return;
-    readBalance(w.provider, fromTok.address, user as Address).then((b) => live.current && setBalance(b), () => undefined);
+    readBalance(w.provider, fromTok.address, user).then((b) => live.current && setBalance(b), () => undefined);
   }, [w.provider, user, onFrom, fromTok, step.k]);
 
   const amountRaw = useMemo(() => {
@@ -167,23 +180,43 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     }
   }, [amt, fromTok]);
 
-  const request = (): QuoteRequest | null =>
-    fromTok && toTok && amountRaw && user ? { fromChainId: fromId, toChainId: toId, fromToken: fromTok.address, toToken: toTok.address, fromAmount: amountRaw, user: user as Address, slippage: slip / 10_000, order } : null;
+  const request = (who: Address | null): QuoteRequest | null =>
+    fromTok && toTok && amountRaw && who && fromTok.chainId === fromId && toTok.chainId === toId ? { fromChainId: fromId, toChainId: toId, fromToken: fromTok.address, toToken: toTok.address, fromAmount: amountRaw, user: who, slippage: slip / 10_000, order } : null;
 
-  async function getQuote() {
-    const req = request();
-    if (!req) return;
-    setStep({ k: "quoting" });
-    try {
-      const fresh = await fetchQuote(req);
-      checkBridgeQuote(fresh, req);
-      if (!live.current) return;
-      setQ(fresh);
-      setStep({ k: "idle" });
-    } catch (e) {
-      setStep({ k: "error", msg: short(e) });
-    }
+  // Automatic quote (debounced). Without a wallet the quote is built for a throwaway address and only displayed.
+  useEffect(() => {
+    setQ(null);
+    setQuoteErr(null);
+    const req = request(user ?? PREVIEW);
+    if (!req || step.k === "wallet" || step.k === "pending" || step.k === "bridging") return;
+    const ac = new AbortController();
+    setQuoting(true);
+    const tm = setTimeout(() => {
+      fetchQuote(req, ac.signal)
+        .then((fresh) => {
+          checkBridgeQuote(fresh, req);
+          if (live.current) setQ(fresh);
+        })
+        .catch((e) => (e as Error).name !== "AbortError" && live.current && setQuoteErr(short(e)))
+        .finally(() => live.current && !ac.signal.aborted && setQuoting(false));
+    }, 600);
+    return () => {
+      clearTimeout(tm);
+      ac.abort();
+      setQuoting(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromId, toId, fromTok, toTok, amountRaw, slip, order, user]);
+
+  async function refreshAllowance() {
+    if (!w.provider || !user || !fromTok || fromTok.address === NATIVE || !onFrom) return setAllowance(null);
+    const r = (await w.provider.request({ method: "eth_call", params: [{ to: fromTok.address, data: allowanceData(user, LIFI_DIAMONDS[fromId]!.diamond) }, "latest"] })) as string;
+    if (live.current) setAllowance(BigInt(r));
   }
+  useEffect(() => {
+    void refreshAllowance().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [w.provider, user, fromTok, onFrom, fromId]);
 
   async function send(p: Eip1193, tx: { from: Address; to: Address; data: Hex; value: Hex; gas?: Hex }, chainId: number): Promise<Hex> {
     if ((await chainIdOf(p)) !== chainId) throw new Error("wrong network");
@@ -191,12 +224,11 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
   }
 
   async function approve() {
-    const req = request();
-    if (!w.provider || !req || !q || req.fromToken === NATIVE) return;
-    const spender = LIFI_DIAMONDS[req.fromChainId]!.diamond;
+    const req = request(user);
+    if (!w.provider || !req || req.fromToken === NATIVE) return;
     try {
       setStep({ k: "wallet", what: "approve" });
-      const hash = await send(w.provider, { from: req.user, to: req.fromToken, data: approveData(spender, req.fromAmount), value: "0x0" }, req.fromChainId);
+      const hash = await send(w.provider, { from: req.user, to: req.fromToken, data: approveData(LIFI_DIAMONDS[req.fromChainId]!.diamond, req.fromAmount), value: "0x0" }, req.fromChainId);
       setStep({ k: "pending", what: "approve", hash });
       if (!(await waitReceipt(w.provider, hash))) throw new Error("approval failed");
       setStep({ k: "idle" });
@@ -206,23 +238,11 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     }
   }
 
-  const [allowance, setAllowance] = useState<bigint | null>(null);
-  async function refreshAllowance() {
-    if (!w.provider || !user || !fromTok || fromTok.address === NATIVE || !onFrom) return setAllowance(null);
-    const spender = LIFI_DIAMONDS[fromId]!.diamond;
-    const r = (await w.provider.request({ method: "eth_call", params: [{ to: fromTok.address, data: allowanceData(user as Address, spender) }, "latest"] })) as string;
-    if (live.current) setAllowance(BigInt(r));
-  }
-  useEffect(() => {
-    void refreshAllowance().catch(() => undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [w.provider, user, fromTok, onFrom, fromId]);
-
   async function bridge() {
-    const req = request();
+    const req = request(user);
     if (!w.provider || !req) return;
     try {
-      // Re-quote right before signing and re-check everything against the request.
+      // Re-quote for the connected address right before signing and re-check everything.
       const fresh = await fetchQuote(req);
       checkBridgeQuote(fresh, req);
       setQ(fresh);
@@ -242,7 +262,7 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     let stop = false;
     const until = Date.now() + 45 * 60_000;
     const { hash, q: bq } = step;
-    const tick = async () => {
+    void (async () => {
       while (!stop && Date.now() < until) {
         try {
           const s = await fetchStatus({ txHash: hash, fromChainId: bq.fromChainId, toChainId: bq.toChainId, tool: bq.tool });
@@ -255,8 +275,7 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
         }
         await new Promise((r) => setTimeout(r, 6000));
       }
-    };
-    void tick();
+    })();
     return () => {
       stop = true;
     };
@@ -268,11 +287,11 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     return k === "OTHER" ? t("swap.err.OTHER", { m: short(e) }) : t(`swap.err.${k}`);
   }
 
-  const busy = step.k === "quoting" || step.k === "wallet" || step.k === "pending" || step.k === "bridging";
-  const needsApproval = !!(q && fromTok && fromTok.address !== NATIVE && allowance !== null && amountRaw && allowance < amountRaw);
+  const busy = step.k === "wallet" || step.k === "pending" || step.k === "bridging";
+  const needsApproval = !!(user && fromTok && fromTok.address !== NATIVE && allowance !== null && amountRaw && allowance < amountRaw);
   const insufficient = balance !== null && amountRaw !== null && balance < amountRaw + (fromTok?.address === NATIVE && q ? BigInt(q.tx.value) - amountRaw : 0n);
-  const chainName = (id: number) => chains?.find((c) => c.id === id)?.name ?? LIFI_DIAMONDS[id]?.name ?? String(id);
-  const fmt = (v: bigint, tok: Token) => `${amount(formatUnits(v, tok.decimals))} ${tok.symbol}`;
+  const chainOf = (id: number) => chains?.find((c) => c.id === id) ?? null;
+  const chainName = (id: number) => chainOf(id)?.name ?? LIFI_DIAMONDS[id]?.name ?? String(id);
   const link = (h?: Hex | null) => {
     const u = h ? scanUrl(h) : null;
     return u ? (
@@ -282,72 +301,75 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
     ) : null;
   };
 
-  const ChainSelect = ({ value, onChange, label }: { value: number; onChange: (id: number) => void; label: string }) => (
-    <select className="input" aria-label={label} value={value} onChange={(e) => onChange(Number(e.target.value))} disabled={!chains || busy}>
-      {(chains ?? [{ id: value, name: chainName(value) } as Chain]).map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.name}
-        </option>
-      ))}
-    </select>
+  function pick(side: "from" | "to", cid: number, tok: Token) {
+    setPicking(null);
+    const other = side === "from" ? toId : fromId;
+    if (cid === other) {
+      // Same network on both sides: swap them, like the flip button.
+      setFromId(toId);
+      setToId(fromId);
+      setFromTok(toTok);
+      setToTok(fromTok);
+    }
+    if (side === "from") {
+      setFromId(cid);
+      setFromTok(tok);
+    } else {
+      setToId(cid);
+      setToTok(tok);
+    }
+  }
+
+  // A render function, not a component: a component declared here would remount on every render.
+  const tokenButton = (side: "from" | "to", tok: Token | null, cid: number) => (
+    <button className="tok-btn" onClick={() => setPicking(side)} disabled={busy || !chains} aria-label={side === "from" ? t("bridge.fromToken") : t("bridge.toToken")}>
+      <span className="ti-wrap">
+        <TokenIcon token={tok} size={30} />
+        <span className="badge-chain">
+          <ChainIcon chain={chainOf(cid)} size={15} />
+        </span>
+      </span>
+      <span className="tb-txt">
+        <span className="s">{tok?.symbol ?? "…"}</span>
+        <span className="c">{t("bridge.on", { c: chainName(cid) })}</span>
+      </span>
+      <span className="chev" aria-hidden="true">
+        ▾
+      </span>
+    </button>
   );
 
-  const phase: BridgePhase =
-    step.k === "done" ? "done" : step.k === "bridging" ? "arrive" : (step.k === "wallet" || step.k === "pending") && step.what === "bridge" ? "send" : (step.k === "wallet" || step.k === "pending") && step.what === "approve" ? "approve" : "idle";
-  useEffect(() => onPhase?.(phase), [phase, onPhase]);
+  // One main action, in the order a user meets the requirements.
+  let main: { label: string; onClick?: () => void; disabled?: boolean };
+  if (!user) main = { label: t("shell.connect"), onClick: w.openPicker };
+  else if (!amountRaw) main = { label: t("bridge.enterAmount"), disabled: true };
+  else if (step.k === "wallet") main = { label: t("swap.confirmWallet"), disabled: true };
+  else if (step.k === "pending") main = { label: step.what === "approve" ? t("swap.approving") : t("bridge.sending"), disabled: true };
+  else if (step.k === "bridging") main = { label: t("bridge.inFlightShort"), disabled: true };
+  else if (!onFrom) main = { label: t("bridge.switchTo", { c: chainName(fromId) }), onClick: () => w.provider && switchChain(w.provider, fromId, chainOf(fromId)?.addParams ?? null).catch((e) => setStep({ k: "error", msg: kindMsg(e) })) };
+  else if (insufficient) main = { label: t("swap.insufficient", { s: fromTok?.symbol ?? "" }), disabled: true };
+  else if (quoting) main = { label: t("bridge.finding"), disabled: true };
+  else if (!q) main = { label: quoteErr ? t("bridge.noRoute") : t("bridge.finding"), disabled: true };
+  else if (needsApproval) main = { label: t("bridge.approve", { s: fromTok?.symbol ?? "" }), onClick: () => void approve() };
+  else main = { label: t("bridge.go", { a: chainName(fromId), b: chainName(toId) }), onClick: () => void bridge() };
+
+  const phases = ["approve", "send", "arrive", "done"] as const;
+  const at = step.k === "done" ? 4 : step.k === "bridging" ? 2 : (step.k === "wallet" || step.k === "pending") && step.what === "bridge" ? 1 : (step.k === "wallet" || step.k === "pending") && step.what === "approve" ? 0 : -1;
 
   return (
-    <>
+    <div className="bx">
       {chainErr && <div className="notice bad small">{t("bridge.unavailable")}</div>}
 
-      <div className="panel pad bridge">
-        <div className="bridge-side">
-          <div className="muted small">{t("bridge.from")}</div>
-          <ChainSelect value={fromId} label={t("bridge.fromChain")} onChange={(id) => (id === toId ? (setToId(fromId), setFromId(id)) : setFromId(id))} />
-          <TokenPicker label={t("bridge.fromToken")} list={from.list} value={fromTok} onChange={setFromTok} />
-          <input className="input num" inputMode="decimal" placeholder="0.0" aria-label={t("bridge.amount")} value={amt} onChange={(e) => setAmt(e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""))} disabled={busy} />
-          {balance !== null && fromTok && (
-            <div className="small muted">
-              {t("swap.balance", { x: fmt(balance, fromTok) })}{" "}
-              <button className="linkish" onClick={() => setAmt(formatUnits(balance, fromTok.decimals))} disabled={busy}>
-                {t("bridge.max")}
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div style={{ textAlign: "center" }}>
-          <button
-            className="btn small"
-            aria-label={t("bridge.flip")}
-            title={t("bridge.flip")}
-            disabled={busy}
-            onClick={() => {
-              setFromId(toId);
-              setToId(fromId);
-              const ft = fromTok;
-              setFromTok(toTok);
-              setToTok(ft);
-            }}
-          >
-            ⇅
-          </button>
-        </div>
-
-        <div className="bridge-side">
-          <div className="muted small">{t("bridge.to")}</div>
-          <ChainSelect value={toId} label={t("bridge.toChain")} onChange={(id) => (id === fromId ? (setFromId(toId), setToId(id)) : setToId(id))} />
-          <TokenPicker label={t("bridge.toToken")} list={to.list} value={toTok} onChange={setToTok} />
-          {toId === RH && <div className="faint small">{t("bridge.rhTokens")}</div>}
-        </div>
-
-        <details className="more settings">
-          <summary>{t("bridge.settings")}</summary>
-        <div className="row" style={{ gap: 16, flexWrap: "wrap", marginTop: 10 }}>
+      <div className="bx-head">
+        <span className="muted small">{t("bridge.poweredBy")}</span>
+        <button className="icon-btn" aria-label={t("bridge.settings")} aria-expanded={settings} title={t("bridge.settings")} onClick={() => setSettings(!settings)}>
+          ⚙
+        </button>
+      </div>
+      {settings && (
+        <div className="bx-settings">
           <div>
-            <div className="muted small" style={{ marginBottom: 6 }}>
-              {t("swap.slippage")}
-            </div>
+            <div className="muted small">{t("swap.slippage")}</div>
             <div className="seg" role="radiogroup" aria-label={t("swap.slippage")}>
               {SLIPPAGES.map((b) => (
                 <button key={b} role="radio" aria-checked={slip === b} className={slip === b ? "on" : undefined} onClick={() => setSlip(b)} disabled={busy}>
@@ -357,9 +379,7 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
             </div>
           </div>
           <div>
-            <div className="muted small" style={{ marginBottom: 6 }}>
-              {t("bridge.prefer")}
-            </div>
+            <div className="muted small">{t("bridge.prefer")}</div>
             <div className="seg" role="radiogroup" aria-label={t("bridge.prefer")}>
               {(["CHEAPEST", "FASTEST"] as const).map((o) => (
                 <button key={o} role="radio" aria-checked={order === o} className={order === o ? "on" : undefined} onClick={() => setOrder(o)} disabled={busy}>
@@ -369,29 +389,69 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
             </div>
           </div>
         </div>
-        </details>
+      )}
 
-        {!user ? (
-          <button className="btn primary" onClick={w.openPicker}>
-            {t("shell.connect")}
-          </button>
-        ) : !q ? (
-          <button className="btn primary" disabled={busy || !amountRaw || !fromTok || !toTok} onClick={() => void getQuote()}>
-            {step.k === "quoting" ? t("quote.quoting") : t("bridge.getQuote")}
-          </button>
-        ) : null}
+      <div className="bx-row">
+        <div className="bx-top">
+          <span className="muted small">{t("bridge.from")}</span>
+          {balance !== null && fromTok && (
+            <span className="muted small">
+              {t("swap.balance", { x: amount(formatUnits(balance, fromTok.decimals), 6) })}{" "}
+              <button className="linkish" onClick={() => setAmt(formatUnits(balance, fromTok.decimals))} disabled={busy}>
+                {t("bridge.max")}
+              </button>
+            </span>
+          )}
+        </div>
+        <div className="bx-mid">
+          <input className="bx-amt num" inputMode="decimal" placeholder="0" aria-label={t("bridge.amount")} value={amt} onChange={(e) => setAmt(e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""))} disabled={busy} />
+          {tokenButton("from", fromTok, fromId)}
+        </div>
+        <div className="muted small">{q?.fromAmountUsd != null ? usd(String(q.fromAmountUsd)) : " "}</div>
+      </div>
 
-        {q && fromTok && toTok && (
-          <div className="kv bridge-quote">
-            <span className="muted">{t("bridge.via")}</span>
-            <strong>{q.toolName} · LI.FI</strong>
-            <span className="muted">{t("bridge.receive")}</span>
-            <strong className="num">
-              ≈ {fmt(q.toAmount, q.toToken)}
-              {q.toAmountUsd !== null ? ` (${usd(String(q.toAmountUsd))})` : ""}
-            </strong>
+      <div className="bx-flip">
+        <button
+          className="icon-btn round"
+          aria-label={t("bridge.flip")}
+          title={t("bridge.flip")}
+          disabled={busy}
+          onClick={() => {
+            setFromId(toId);
+            setToId(fromId);
+            setFromTok(toTok);
+            setToTok(fromTok);
+          }}
+        >
+          ↓
+        </button>
+      </div>
+
+      <div className="bx-row">
+        <div className="bx-top">
+          <span className="muted small">{t("bridge.to")}</span>
+        </div>
+        <div className="bx-mid">
+          <span className={`bx-amt num${q ? "" : " ph"}`} aria-live="polite">
+            {q ? amount(formatUnits(q.toAmount, q.toToken.decimals), 6) : quoting ? "…" : "0"}
+          </span>
+          {tokenButton("to", toTok, toId)}
+        </div>
+        <div className="muted small">{q?.toAmountUsd != null ? usd(String(q.toAmountUsd)) : " "}</div>
+      </div>
+
+      {q && (
+        <details className="bx-quote">
+          <summary>
+            <span>
+              {t("bridge.via")} <strong>{q.toolName}</strong> · {q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "—"} · {t("bridge.feeShort", { x: usd(String(q.feesUsd + q.gasUsd)) })}
+            </span>
+          </summary>
+          <div className="kv">
             <span className="muted">{t("swap.minReceived")}</span>
-            <span className="num">{fmt(q.toAmountMin < q.toAmount ? q.toAmountMin : q.toAmount, q.toToken)}</span>
+            <span className="num">
+              {amount(formatUnits(q.toAmountMin < q.toAmount ? q.toAmountMin : q.toAmount, q.toToken.decimals), 6)} {q.toToken.symbol}
+            </span>
             <span className="muted">{t("bridge.fees")}</span>
             <span className="num">
               {usd(String(q.feesUsd))} + {t("bridge.gas", { x: usd(String(q.gasUsd)) })}
@@ -399,97 +459,74 @@ export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null
             {q.extraNativeFee > 0n && (
               <>
                 <span className="muted">{t("bridge.extraFee")}</span>
-                <span className="num">{amount(formatUnits(q.extraNativeFee, 18))} {LIFI_DIAMONDS[fromId]?.coin}</span>
+                <span className="num">
+                  {amount(formatUnits(q.extraNativeFee, 18))} {LIFI_DIAMONDS[fromId]?.coin}
+                </span>
               </>
             )}
-            <span className="muted">{t("bridge.time")}</span>
-            <span className="num">{q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "—"}</span>
           </div>
-        )}
+        </details>
+      )}
+      {quoteErr && !q && !quoting && amountRaw && <div className="muted small">{quoteErr}</div>}
 
-        {q && user && (
-          <div style={{ display: "grid", gap: 8 }}>
-            {!onFrom ? (
-              <button className="btn primary" disabled={busy} onClick={() => w.provider && switchChain(w.provider, fromId, chains?.find((c) => c.id === fromId)?.addParams ?? null).catch((e) => setStep({ k: "error", msg: kindMsg(e) }))}>
-                {t("bridge.switchTo", { c: chainName(fromId) })}
-              </button>
-            ) : insufficient ? (
-              <div className="notice bad small">{t("swap.insufficient", { s: fromTok?.symbol ?? "" })}</div>
-            ) : (
-              <>
-                {needsApproval && (
-                  <button className="btn primary" disabled={busy} onClick={() => void approve()}>
-                    {step.k === "wallet" && step.what === "approve" ? t("swap.confirmWallet") : step.k === "pending" && step.what === "approve" ? t("swap.approving") : t("bridge.approve", { s: fromTok?.symbol ?? "" })}
-                  </button>
-                )}
-                <button className="btn primary" disabled={busy || needsApproval || step.k === "done"} onClick={() => void bridge()}>
-                  {step.k === "wallet" && step.what === "bridge" ? t("swap.confirmWallet") : step.k === "pending" && step.what === "bridge" ? t("bridge.sending") : t("bridge.go", { a: chainName(fromId), b: chainName(toId) })}
-                </button>
-              </>
-            )}
-            <button className="linkish small" onClick={() => void getQuote()} disabled={busy}>
-              {t("bridge.requote")}
-            </button>
-          </div>
-        )}
+      <button className="btn primary big" onClick={main.onClick} disabled={main.disabled}>
+        {main.label}
+      </button>
 
-        {step.k === "bridging" && (
-          <div className="notice info small" role="status">
-            {t("bridge.inFlight")} {step.sub && `(${step.sub})`} {link(step.hash)}
-          </div>
-        )}
-        {step.k === "done" && (
-          <div className="notice ok small" role="status">
-            {t("bridge.done")} {link(step.recv ?? step.hash)}
-          </div>
-        )}
-        {step.k === "error" && (
-          <div className="notice bad small" role="alert">
-            {step.msg} {link(step.hash)}
-          </div>
-        )}
-      </div>
-    </>
+      {at >= 0 && (
+        <div className="bx-steps" role="status">
+          {phases.map((p, i) => (
+            <span key={p} className={`st ${at > i || at === 4 ? "done" : at === i ? "now" : ""}`}>
+              <span className="dotc" aria-hidden="true">
+                {at > i || at === 4 ? "✓" : i + 1}
+              </span>
+              {t(`bridge.phase.${p}`)}
+            </span>
+          ))}
+        </div>
+      )}
+      {step.k === "bridging" && (
+        <div className="notice info small">
+          {t("bridge.inFlight")} {step.sub && `(${step.sub})`} {link(step.hash)}
+        </div>
+      )}
+      {step.k === "done" && (
+        <div className="notice ok small" role="status">
+          {t("bridge.done")} {link(step.recv ?? step.hash)}
+        </div>
+      )}
+      {step.k === "error" && (
+        <div className="notice bad small" role="alert">
+          {step.msg} {link(step.hash)}
+        </div>
+      )}
+
+      {picking && chains && (
+        <TokenModal
+          title={picking === "from" ? t("bridge.fromToken") : t("bridge.toToken")}
+          chains={chains}
+          chainId={picking === "from" ? fromId : toId}
+          canonical={canonical}
+          onPick={(cid, tok) => pick(picking, cid, tok)}
+          onClose={() => setPicking(null)}
+        />
+      )}
+    </div>
   );
 }
 
-const PHASES = ["approve", "send", "arrive", "done"] as const;
-
 export function BridgePage() {
   const { t } = useI18n();
-  const [preset, setPreset] = useState<BridgePreset | null>(null);
-  const [phase, setPhase] = useState<BridgePhase>("idle");
-  const at = (PHASES as readonly string[]).indexOf(phase);
   return (
-    <div className="bridge-page">
-      <div style={{ display: "grid", gap: 14, alignContent: "start" }}>
-        <div>
-          <h1>{t("bridge.title")}</h1>
-          <p className="muted" style={{ margin: "6px 0 0" }}>{t("bridge.lead")}</p>
-        </div>
-        <BridgeForm key={preset ? `${preset.fromId}-${preset.toId}-${preset.fromSymbol}-${preset.toSymbol}` : "default"} initial={preset} onPhase={setPhase} />
-        <div className="row small">
-          <span className="muted">{t("bridge.popular")}</span>
-          {POPULAR.map((p) => (
-            <button key={`${p.fromId}-${p.toId}-${p.fromSymbol}`} className="pill" onClick={() => setPreset({ ...p })}>
-              {p.fromSymbol} · {LIFI_DIAMONDS[p.fromId]?.name ?? p.fromId} → {p.toSymbol === p.fromSymbol ? "" : `${p.toSymbol} · `}
-              {LIFI_DIAMONDS[p.toId]?.name ?? p.toId}
-            </button>
-          ))}
-        </div>
+    <div className="bridge-simple">
+      <h1>{t("bridge.title")}</h1>
+      <p className="muted">{t("bridge.leadShort")}</p>
+      <div className="panel pad">
+        <BridgeForm />
       </div>
-      <aside style={{ display: "grid", gap: 12, alignContent: "start" }}>
-        <div className="panel pad steps" aria-label={t("bridge.stepsTitle")}>
-          <div className="muted small">{t("bridge.stepsTitle")}</div>
-          {PHASES.map((p, i) => (
-            <div key={p} className={`step ${at > i || phase === "done" ? "done" : at === i ? "now" : ""}`}>
-              <span className="dotc" aria-hidden="true">{at > i || phase === "done" ? "✓" : i + 1}</span>
-              <span>{t(`bridge.phase.${p}`)}</span>
-            </div>
-          ))}
-          <div className="faint small" style={{ borderTop: "1px solid var(--border)", paddingTop: 10 }}>{t("bridge.next")}</div>
-        </div>
-        <div className="faint small" style={{ display: "grid", gap: 6 }}>
+      <details className="more bridge-how">
+        <summary>{t("bridge.how")}</summary>
+        <div className="body faint small">
           <div>{t("bridge.note1")}</div>
           <div>{t("bridge.note2")}</div>
           <div>
@@ -499,7 +536,7 @@ export function BridgePage() {
             </a>
           </div>
         </div>
-      </aside>
+      </details>
     </div>
   );
 }

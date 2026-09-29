@@ -67,6 +67,17 @@ function useDiscoveredWallets(): { info: WalletInfo; provider: Eip1193 }[] {
   return list;
 }
 
+/** Name and bundled icon for a wallet that only exposes window.ethereum (no EIP-6963 announcement). */
+function legacyInfo(e: Eip1193): { name: string; icon: string | null; rdns: string | null } {
+  const f = e as unknown as Record<string, unknown>;
+  if (f.isRabby) return { name: "Rabby", icon: "/wallets/rabby.png", rdns: null };
+  if (f.isOkxWallet || f.isOKExWallet) return { name: "OKX Wallet", icon: "/wallets/okx.png", rdns: null };
+  if (f.isCoinbaseWallet) return { name: "Coinbase Wallet", icon: "/wallets/coinbase.png", rdns: null };
+  if (f.isTrust || f.isTrustWallet) return { name: "Trust Wallet", icon: "/wallets/trust.png", rdns: null };
+  if (f.isMetaMask) return { name: "MetaMask", icon: "/wallets/metamask.png", rdns: null };
+  return { name: "Browser wallet", icon: null, rdns: null };
+}
+
 interface WalletState {
   address: `0x${string}` | null;
   source: "connected" | "pasted" | null;
@@ -96,7 +107,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const e = (window as unknown as { ethereum?: Eip1193 }).ethereum;
     return e && typeof e.request === "function" ? e : null;
   }, []);
-  const all = useMemo(() => (discovered.length ? discovered : legacy ? [{ info: { id: "injected", name: "Browser wallet", icon: null, rdns: null }, provider: legacy }] : []), [discovered, legacy]);
+  const all = useMemo(() => (discovered.length ? discovered : legacy ? [{ info: { id: "injected", ...legacyInfo(legacy) }, provider: legacy }] : []), [discovered, legacy]);
 
   const [address, setAddress] = useState<`0x${string}` | null>(null);
   const [source, setSource] = useState<WalletState["source"]>(null);

@@ -27,6 +27,17 @@ it in their own wallet (docs/swaps.md, "Wallets").
   - Other chains: LI.FI-verified tokens only.
   - Token metadata is sanitized (control and bidi characters removed, length bounded).
 - Status is polled from LI.FI `/v1/status` until DONE or FAILED. Transactions link to scan.li.fi.
+- Quotes appear automatically. Before a wallet is connected, the quote is built for a throwaway
+  address and is only displayed. Sending always re-quotes for the connected address and runs
+  `checkBridgeQuote` again.
+- Logos:
+  - Robinhood Chain tokens use our verified `/api/logo`.
+  - Other tokens and all networks use LI.FI's logo URLs, fetched by the server through
+    `/api/img` (`src/server/images.ts`). Only allowlisted https hosts and paths are fetched, with
+    no redirects, a 256 KB cap and a type check. SVG is served under a sandboxing CSP, and results
+    are cached. The browser still loads images only from our own origin.
+  - Wallet icons for the install list are bundled in `web/public/wallets` (from each wallet's
+    official site; Trust Wallet's from its `trustwallet/assets` repo).
 
 Non-EVM networks (Solana, Bitcoin, Sui) are listed by LI.FI but need non-EVM wallets; not offered yet.
 

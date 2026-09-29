@@ -21,6 +21,8 @@ export interface Chain {
   id: number;
   name: string;
   coin: string;
+  /** Remote logo URL (shown through /api/img, which allowlists hosts), or null. */
+  logo: string | null;
   addParams: { chainId: Hex; chainName: string; nativeCurrency: { name: string; symbol: string; decimals: number }; rpcUrls: string[]; blockExplorerUrls: string[] } | null;
 }
 
@@ -32,6 +34,8 @@ export interface Token {
   decimals: number;
   priceUSD: number | null;
   verified: boolean;
+  /** Remote logo URL (shown through /api/img), or null. */
+  logo: string | null;
 }
 
 export interface Quote {
@@ -61,6 +65,7 @@ export type BridgeStatus = "PENDING" | "DONE" | "FAILED" | "NOT_FOUND" | "INVALI
 
 /** External text: one line, no control or bidi characters, bounded. */
 export const cleanText = (s: unknown, max = 40): string => (typeof s === "string" ? s.replace(/[\u0000-\u001f\u007f‪-‮⁦-⁩]/g, "").trim().slice(0, max) : "");
+const httpsUrl = (u: unknown): string | null => (typeof u === "string" && /^https:\/\/[^\s"'<>]{1,580}$/.test(u) ? u : null);
 const isAddr = (a: unknown): a is string => typeof a === "string" && /^0x[0-9a-fA-F]{40}$/.test(a);
 const isNative = (a: string) => a.toLowerCase() === NATIVE || a.toLowerCase() === NATIVE_ALT;
 const num = (v: unknown): number | null => {
@@ -96,6 +101,7 @@ export async function chains(signal?: AbortSignal): Promise<Chain[]> {
       id,
       name: pin.name,
       coin: pin.coin,
+      logo: httpsUrl(c.logoURI),
       addParams: rpc.length && nc ? { chainId: `0x${id.toString(16)}`, chainName: pin.name, nativeCurrency: { name: cleanText(nc.name, 20) || pin.coin, symbol: cleanText(nc.symbol, 10) || pin.coin, decimals: Number(nc.decimals) || 18 }, rpcUrls: rpc, blockExplorerUrls: exp } : null,
     });
   }
@@ -114,6 +120,7 @@ export function parseToken(t: Record<string, unknown>): Token | null {
     decimals,
     priceUSD: num(t.priceUSD),
     verified: t.verificationStatus === "verified",
+    logo: httpsUrl(t.logoURI),
   };
 }
 

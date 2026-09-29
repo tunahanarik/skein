@@ -112,7 +112,7 @@ export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey;
 /* ---------------- inline asset picker ---------------- */
 
 /** A big inline button showing the asset; opens a searchable list. */
-export function AssetPicker({ value, onChange, label }: { value: AssetListItem | null; onChange: (a: AssetListItem) => void; label: string }) {
+export function AssetPicker({ value, onChange, label, only }: { value: AssetListItem | null; onChange: (a: AssetListItem) => void; label: string; only?: string[] | null }) {
   const { t } = useI18n();
   const list = useAssetList();
   const [open, setOpen] = useState(false);
@@ -127,9 +127,9 @@ export function AssetPicker({ value, onChange, label }: { value: AssetListItem |
   }, [open]);
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const l = list ?? [];
+    const l = only ? (list ?? []).filter((a) => only.includes(a.symbol)) : (list ?? []);
     return (s ? l.filter((a) => a.symbol.toLowerCase().includes(s) || a.name.toLowerCase().includes(s) || a.address.toLowerCase() === s) : l).slice(0, 60);
-  }, [list, q]);
+  }, [list, q, only]);
   return (
     <div className="picker" ref={ref}>
       <button className="picker-btn" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-l`} aria-label={`${label}: ${value?.symbol ?? ""}`} onClick={() => setOpen(!open)}>
@@ -417,14 +417,10 @@ function QuickSwap({ from }: { from?: string }) {
       </div>
       <div className="qs-box">
         <div className="muted small">{t("quick.get")}</div>
-        <select className="input" aria-label={t("quote.into")} value={to} onChange={(e) => (setTo(e.target.value), setState((s) => ({ ...s, card: null, none: false })))} disabled={!targets?.length}>
-          {!targets && <option>{t("misc.loading")}</option>}
-          {targets?.map((x) => (
-            <option key={x} value={x}>
-              {x}
-            </option>
-          ))}
-        </select>
+        <div className="row" style={{ flexWrap: "nowrap", justifyContent: "space-between" }}>
+          <span className={`qs-amt num${state.card ? "" : " ph"}`}>{state.card?.trade?.quote ? amount(state.card.trade.quote.expectedOutput.display, 6) : state.loading || !targets ? "…" : "0"}</span>
+          <AssetPicker label={t("quote.into")} only={targets} value={list?.find((a) => a.symbol === to) ?? null} onChange={(a) => (setTo(a.symbol), setState((s) => ({ ...s, card: null, none: false })))} />
+        </div>
         {targets && !targets.length && <div className="muted small">{t("quote.noTargets")}</div>}
       </div>
       {!state.card && (
@@ -444,6 +440,7 @@ function QuickSwap({ from }: { from?: string }) {
       )}
       {state.err && <div className="notice bad small">{state.err}</div>}
       {state.card && <SwapBody key={state.card.cardId} card={state.card} />}
+      {!state.card && <div className="faint small qs-note">{t("quick.note")}</div>}
     </div>
   );
 }
