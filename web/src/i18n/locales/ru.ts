@@ -671,4 +671,5 @@ export const ru: Record<StringKey, string> = {
   "markets.tag.borrow": "Заём",
   "markets.tag.lp": "LP",
   "markets.mapNote": "Размер = ликвидность пула, цвет = изменение за сегодня.",
+  "markets.reset": "Сбросить",
 };

@@ -673,6 +673,7 @@ export const en = {
   "markets.tag.borrow": "Borrow",
   "markets.tag.lp": "LP",
   "markets.mapNote": "Tile size follows pool liquidity; colour follows today's change.",
+  "markets.reset": "Reset",
 };
 
 export type StringKey = keyof typeof en;
@@ -1323,4 +1324,5 @@ export const tr: Record<StringKey, string> = {
   "markets.tag.borrow": "Borç",
   "markets.tag.lp": "LP",
   "markets.mapNote": "Kutu büyüklüğü havuz likiditesini, renk bugünkü değişimi gösterir.",
+  "markets.reset": "Sıfırla",
 };

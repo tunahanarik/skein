@@ -671,4 +671,5 @@ export const ar: Record<StringKey, string> = {
   "markets.tag.borrow": "اقتراض",
   "markets.tag.lp": "LP",
   "markets.mapNote": "حجم المربع = سيولة المجمع، واللون = تغيّر اليوم.",
+  "markets.reset": "إعادة تعيين",
 };

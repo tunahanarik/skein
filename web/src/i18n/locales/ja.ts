@@ -670,4 +670,5 @@ export const ja: Record<StringKey, string> = {
   "markets.tag.borrow": "借入",
   "markets.tag.lp": "LP",
   "markets.mapNote": "タイルの大きさはプール流動性、色は今日の変動を表します。",
+  "markets.reset": "リセット",
 };

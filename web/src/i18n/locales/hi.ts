@@ -647,4 +647,5 @@ export const hi: Record<StringKey, string> = {
   "markets.tag.borrow": "उधार",
   "markets.tag.lp": "LP",
   "markets.mapNote": "टाइल का आकार पूल तरलता, रंग आज का बदलाव दिखाता है।",
+  "markets.reset": "रीसेट",
 };

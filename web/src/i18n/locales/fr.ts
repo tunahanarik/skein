@@ -670,4 +670,5 @@ export const fr: Record<StringKey, string> = {
   "markets.tag.borrow": "Emprunt",
   "markets.tag.lp": "LP",
   "markets.mapNote": "Taille = liquidité du pool ; couleur = variation du jour.",
+  "markets.reset": "Réinitialiser",
 };

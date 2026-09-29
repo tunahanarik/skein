@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, type Market } from "../api";
 import { Avatar, Skeleton, useAsync } from "../components/common";
-import { Icon } from "../components/icons";
+import { Icon, type IconName } from "../components/icons";
 import { pct, usd } from "../format";
 import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
@@ -108,70 +108,109 @@ function MoverBoard({ rows }: { rows: Market[] }) {
 
 type FilterState = { kind: Kind; caps: Set<Cap>; dir: "all" | "up" | "down"; minLiq: number };
 
-function Filters({ f, set, onClear }: { f: FilterState; set: (p: Partial<FilterState>) => void; onClear: () => void }) {
+const CAP_LOOK: Record<Cap, { icon: IconName; tone: "earn" | "fixed" | "borrow" | "lp"; label: "intent.EARN" | "intent.FIXED" | "intent.BORROW" | "intent.LIQUIDITY" }> = {
+  earn: { icon: "earn", tone: "earn", label: "intent.EARN" },
+  fixed: { icon: "lock", tone: "fixed", label: "intent.FIXED" },
+  borrow: { icon: "bank", tone: "borrow", label: "intent.BORROW" },
+  lp: { icon: "drop", tone: "lp", label: "intent.LIQUIDITY" },
+};
+
+/** Equal-width segmented choice. */
+function Seg<T extends string | number>({ label, value, options, onChange }: { label: string; value: T; options: { v: T; text: ReactNode }[]; onChange: (v: T) => void }) {
+  return (
+    <div className="fseg" role="radiogroup" aria-label={label} style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      {options.map((o) => (
+        <button key={String(o.v)} role="radio" aria-checked={value === o.v} className={value === o.v ? "on" : undefined} onClick={() => onChange(o.v)}>
+          {o.text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A filter row with an icon, a label, how many assets match, and a switch. */
+function Toggle({ on, onClick, icon, tone, label, count }: { on: boolean; onClick: () => void; icon: IconName; tone: string; label: string; count: number }) {
+  return (
+    <button className={`frow${on ? " on" : ""}`} role="switch" aria-checked={on} onClick={onClick} title={label}>
+      <span className={`fi t-${tone}`}>
+        <Icon name={icon} size={15} />
+      </span>
+      <span className="t">{label}</span>
+      <span className="cnt num">{count}</span>
+      <span className="sw" aria-hidden="true" />
+    </button>
+  );
+}
+
+function Filters({ f, set, onClear, all, saved }: { f: FilterState; set: (p: Partial<FilterState>) => void; onClear: () => void; all: Market[]; saved: number }) {
   const { t } = useI18n();
   // Always open on wide screens; on phones the header toggles it (CSS).
   const [open, setOpen] = useState(false);
   const active = (f.kind !== "all" ? 1 : 0) + f.caps.size + (f.dir !== "all" ? 1 : 0) + (f.minLiq ? 1 : 0);
+  const up = all.filter((r) => (r.changePct ?? 0) > 0).length;
+  const down = all.filter((r) => (r.changePct ?? 0) < 0).length;
   return (
     <aside className="panel mk-filters" aria-label={t("markets.filters")}>
-      <button className="hd mk-ftoggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {t("markets.filters")}
-        {active > 0 && <span className="fcount">{active}</span>}
-        <Icon name="chevron" size={14} className="chev" />
-      </button>
-      <div className={`mk-fbody${open ? " open" : ""}`}>
-      <div className="grp">
-        <div className="lbl">{t("markets.type")}</div>
-        <div className="chips">
-          {(["all", "stocks", "etfs", "saved"] as const).map((x) => (
-            <button key={x} className={`chip${f.kind === x ? " on" : ""}`} aria-pressed={f.kind === x} onClick={() => set({ kind: x })}>
-              {x === "saved" && <Icon name="star" size={13} />} {t(`markets.${x}`)}
-            </button>
-          ))}
-        </div>
+      <div className="mk-fhead">
+        <button className="mk-ftoggle" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <Icon name="sliders" size={16} />
+          <span>{t("markets.filters")}</span>
+          {active > 0 && <span className="fcount">{active}</span>}
+          <Icon name="chevron" size={14} className="chev" />
+        </button>
+        {active > 0 && (
+          <button className="mk-reset" onClick={onClear}>
+            {t("markets.reset")}
+          </button>
+        )}
       </div>
-      <div className="grp">
-        <div className="lbl">{t("markets.can")}</div>
-        {CAPS.map((c) => (
-          <label key={c} className="chk">
-            <input
-              type="checkbox"
-              checked={f.caps.has(c)}
-              onChange={() => {
+      <div className={`mk-fbody${open ? " open" : ""}`}>
+        <section className="fsec">
+          <div className="lbl">{t("markets.type")}</div>
+          <Seg
+            label={t("markets.type")}
+            value={f.kind === "saved" ? ("" as Kind) : f.kind}
+            options={(["all", "stocks", "etfs"] as const).map((v) => ({ v, text: t(`markets.${v}`) }))}
+            onChange={(v) => set({ kind: v })}
+          />
+          <Toggle on={f.kind === "saved"} onClick={() => set({ kind: f.kind === "saved" ? "all" : "saved" })} icon="star" tone="star" label={t("markets.saved")} count={saved} />
+        </section>
+        <section className="fsec">
+          <div className="lbl">{t("markets.can")}</div>
+          {CAPS.map((c) => (
+            <Toggle
+              key={c}
+              on={f.caps.has(c)}
+              onClick={() => {
                 const n = new Set(f.caps);
                 if (n.has(c)) n.delete(c);
                 else n.add(c);
                 set({ caps: n });
               }}
+              icon={CAP_LOOK[c].icon}
+              tone={CAP_LOOK[c].tone}
+              label={t(CAP_LOOK[c].label)}
+              count={all.filter((r) => r.caps?.[c]).length}
             />
-            <span className={`ctag c-${c}`}>{t(`markets.tag.${c}`)}</span>
-          </label>
-        ))}
-      </div>
-      <div className="grp">
-        <div className="lbl">{t("markets.today")}</div>
-        <div className="chips">
-          {(["all", "up", "down"] as const).map((x) => (
-            <button key={x} className={`chip${f.dir === x ? " on" : ""}`} aria-pressed={f.dir === x} onClick={() => set({ dir: x })}>
-              {x === "all" ? t("markets.any") : t(`markets.${x}`)}
-            </button>
           ))}
-        </div>
-      </div>
-      <div className="grp">
-        <div className="lbl">{t("markets.minLiq")}</div>
-        <div className="chips">
-          {MIN_LIQ.map((n) => (
-            <button key={n} className={`chip${f.minLiq === n ? " on" : ""}`} aria-pressed={f.minLiq === n} onClick={() => set({ minLiq: n })}>
-              {n === 0 ? t("markets.any") : compactUsd(n)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <button className="linkish small mk-clear" onClick={onClear}>
-        {t("markets.clear")}
-      </button>
+        </section>
+        <section className="fsec">
+          <div className="lbl">{t("markets.today")}</div>
+          <Seg
+            label={t("markets.today")}
+            value={f.dir}
+            options={[
+              { v: "all" as const, text: t("markets.any") },
+              { v: "up" as const, text: <span title={String(up)}><span className="dotc up" /> {t("markets.up")}</span> },
+              { v: "down" as const, text: <span title={String(down)}><span className="dotc down" /> {t("markets.down")}</span> },
+            ]}
+            onChange={(v) => set({ dir: v })}
+          />
+        </section>
+        <section className="fsec">
+          <div className="lbl">{t("markets.minLiq")}</div>
+          <Seg label={t("markets.minLiq")} value={f.minLiq} options={MIN_LIQ.map((n) => ({ v: n as number, text: n === 0 ? t("markets.any") : compactUsd(n) }))} onChange={(v) => set({ minLiq: v })} />
+        </section>
       </div>
     </aside>
   );
@@ -386,7 +425,7 @@ export function MarketsPage() {
       )}
 
       <div className="mk-body">
-        <Filters f={f} set={(p) => setF((cur) => ({ ...cur, ...p }))} onClear={() => (setF(NO_FILTERS), setQ(""))} />
+        <Filters f={f} set={(p) => setF((cur) => ({ ...cur, ...p }))} onClear={() => (setF(NO_FILTERS), setQ(""))} all={all} saved={all.filter((r) => watch.has(r.key)).length} />
         <div className="mk-main">
           <div className="mk-toolbar">
             <strong>{t("markets.results", { n: rows.length })}</strong>

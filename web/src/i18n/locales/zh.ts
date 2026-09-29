@@ -670,4 +670,5 @@ export const zh: Record<StringKey, string> = {
   "markets.tag.borrow": "借贷",
   "markets.tag.lp": "LP",
   "markets.mapNote": "方块大小表示池流动性，颜色表示今日涨跌。",
+  "markets.reset": "重置",
 };
