@@ -631,4 +631,6 @@ export const de: Record<StringKey, string> = {
   "bridge.recipientPh": "{c}-Adresse",
   "bridge.recipientBad": "Keine gültige {c}-Adresse",
   "bridge.recipientHint": "Füge eine Adresse deiner eigenen Wallet in diesem Netzwerk ein. Überweisungen an eine falsche Adresse lassen sich nicht rückgängig machen.",
+  "swap.routeSearching": "Route wird gesucht…",
+  "swap.routeFound": "Route gefunden",
 };

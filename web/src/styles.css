@@ -901,3 +901,10 @@ table.data tbody tr:hover { background: transparent; }
 .bx-recv .input { width: 100%; background: var(--surface-3); font-size: 13px; }
 .bx-recv .input[aria-invalid="true"] { outline: 2px solid color-mix(in srgb, var(--bad) 60%, transparent); }
 .bad-text { color: var(--bad); }
+
+/* swap route row: searching / found */
+.route-ok { color: var(--ok); font-weight: 500; cursor: default; }
+.route-wait { color: var(--text-3); animation: route-pulse 1.2s ease-in-out infinite; }
+@keyframes route-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .route-wait { animation: none; } }
+.kv .route-wait, .kv .route-ok { justify-self: end; text-align: end; }

@@ -471,7 +471,7 @@ function QuickSwap({ from }: { from?: string }) {
     const n = ++seq.current;
     setState({ loading: true, card: null, none: false, err: null });
     try {
-      const v = await api.asset(fromA.address, { to, amount: amt });
+      const v = await api.asset(fromA.address, { to, amount: amt, exec: true });
       if (n !== seq.current) return;
       const cards = v.categories.find((c) => c.category === "TRADE")?.subcategories.flatMap((s) => s.cards) ?? [];
       const card = cards.find(canSwap) ?? null;
@@ -485,7 +485,7 @@ function QuickSwap({ from }: { from?: string }) {
   // Quote automatically once the pair and amount settle, like the bridge; the button stays as a retry.
   useEffect(() => {
     if (!targets || !fromA || !to || !valid) return;
-    const tm = setTimeout(() => void quote(), 400);
+    const tm = setTimeout(() => void quote(), 250);
     return () => clearTimeout(tm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targets, fromA, to, amt]);
@@ -507,6 +507,12 @@ function QuickSwap({ from }: { from?: string }) {
         </div>
         {targets && !targets.length && <div className="muted small">{t("quote.noTargets")}</div>}
       </div>
+      {valid && !state.card && !state.none && !state.err && (!targets || targets.length > 0) && (
+        <div className="kv">
+          <span className="muted">{t("swap.route")}</span>
+          <span className="route-wait">{t("swap.routeSearching")}</span>
+        </div>
+      )}
       {!state.card && (
         <button className="btn primary big" disabled={!valid || !to || state.loading} onClick={() => void quote()}>
           {state.loading ? t("quote.quoting") : t("quick.getQuote")}

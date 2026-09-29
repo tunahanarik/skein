@@ -11,7 +11,7 @@
  */
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
 import { CACHE_TTL_MS } from "../config/freshness.js";
-import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_QUOTE_TIMEOUT_MS, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
+import { EXECUTABLE_PROTOCOLS, PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_QUOTE_TIMEOUT_MS, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
 import { BUCKET_MS, CHART_TTL_MS, deviation, MAX_DEVIATION, RANGE_MS, resample, shareToToken, summarize, type ChainlinkRounds, type PriceChartData } from "./charts.js";
@@ -105,6 +105,8 @@ export interface AssetQueryOptions {
   tradeTarget?: string;
   /** Decimal amount of the asset to quote (requires tradeTarget). Never inferred from a balance. */
   tradeAmount?: string;
+  /** With an amount: quote only routes the web app can execute (EXECUTABLE_PROTOCOLS). */
+  executableOnly?: boolean;
   /** The holder's row (portfolio view); enables balance and borrow capacity. */
   holding?: PortfolioAsset | null;
 }
@@ -245,7 +247,7 @@ export class AssetIntelligenceService {
     const t0 = performance.now();
     const mode = opts.mode ?? "PRODUCT";
     const s = await this.snapshot();
-    const cacheKey = [s.ctx.chainId, assetInput.toLowerCase(), mode, opts.tradeTarget?.toLowerCase() ?? "-", opts.tradeAmount ?? "-", opts.holding ? `h${opts.holding.rawBalance}` : "-", s.takenAt].join("|");
+    const cacheKey = [s.ctx.chainId, assetInput.toLowerCase(), mode, opts.tradeTarget?.toLowerCase() ?? "-", opts.tradeAmount ?? "-", opts.executableOnly ? "x" : "-", opts.holding ? `h${opts.holding.rawBalance}` : "-", s.takenAt].join("|");
     const hit = !opts.holding && this.viewCache.get(cacheKey);
     if (hit) {
       this.metrics.inc("cache_hit", 1, { cache: "asset_view" });
@@ -362,7 +364,7 @@ export class AssetIntelligenceService {
         };
         // A route through two venues has no single quoter: it stays in the route view but is not
         // offered as a quote for an amount (its output cannot be estimated consistently).
-        const quotable = routes.filter((r) => new Set(r.properties.protocols).size === 1);
+        const quotable = routes.filter((r) => new Set(r.properties.protocols).size === 1 && (!opts.executableOnly || r.properties.protocols.every((p) => EXECUTABLE_PROTOCOLS.includes(p))));
         const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(quotable, QUOTE_CONCURRENCY, quoteCard);
         tradeGroups.push({ target, cards });
       }

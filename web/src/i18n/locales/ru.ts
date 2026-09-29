@@ -632,4 +632,6 @@ export const ru: Record<StringKey, string> = {
   "bridge.recipientPh": "Адрес {c}",
   "bridge.recipientBad": "Недействительный адрес {c}",
   "bridge.recipientHint": "Вставьте адрес своего кошелька в этой сети. Перевод на неверный адрес отменить нельзя.",
+  "swap.routeSearching": "Поиск маршрута…",
+  "swap.routeFound": "Маршрут найден",
 };

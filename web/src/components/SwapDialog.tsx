@@ -122,7 +122,9 @@ export function SwapBody({ card }: { card: Card }) {
       <div className="swap">
         <div className="kv">
           <span className="muted">{t("swap.route")}</span>
-          <span className="path">{card.trade!.route.path.map((a) => a.symbol).join(" → ")} · Uniswap v3</span>
+          <span className="route-ok" title={`${card.trade!.route.path.map((a) => a.symbol).join(" → ")} · Uniswap v3`}>
+            {t("swap.routeFound")}
+          </span>
           <span className="muted">{t("swap.youPay")}</span>
           <strong className="num">
             {amount(q.input.display)} {inA.symbol}

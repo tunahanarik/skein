@@ -237,10 +237,13 @@ export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; am
         <span>
           {q ? (
             <>
-              <strong>{q.toolName}</strong> <span className={`src-badge ${verified ? "ok" : "warn"}`}>{verified ? t("agg.verified") : t("agg.unverified")}</span>
+              <span className="route-ok" title={q.toolName}>
+                {t("swap.routeFound")}
+              </span>{" "}
+              <span className={`src-badge ${verified ? "ok" : "warn"}`}>{verified ? t("agg.verified") : t("agg.unverified")}</span>
             </>
           ) : loading ? (
-            "…"
+            <span className="route-wait">{t("swap.routeSearching")}</span>
           ) : (
             "—"
           )}

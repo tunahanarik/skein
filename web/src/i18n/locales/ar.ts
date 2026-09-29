@@ -632,4 +632,6 @@ export const ar: Record<StringKey, string> = {
   "bridge.recipientPh": "عنوان {c}",
   "bridge.recipientBad": "ليس عنوان {c} صالحًا",
   "bridge.recipientHint": "الصق عنوانًا من محفظتك على هذه الشبكة. لا يمكن التراجع عن التحويل إلى عنوان خاطئ.",
+  "swap.routeSearching": "جارٍ البحث عن مسار…",
+  "swap.routeFound": "تم العثور على مسار",
 };

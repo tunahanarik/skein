@@ -37,11 +37,12 @@ async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
 
 export const api = {
   assets: (s?: AbortSignal) => get<{ assets: AssetListItem[] }>("/api/assets", s),
-  asset: (ref: string, o: { mode?: "debug"; to?: string; amount?: string } = {}, s?: AbortSignal) => {
+  asset: (ref: string, o: { mode?: "debug"; to?: string; amount?: string; exec?: boolean } = {}, s?: AbortSignal) => {
     const q = new URLSearchParams();
     if (o.mode) q.set("mode", o.mode);
     if (o.to) q.set("to", o.to);
     if (o.amount) q.set("amount", o.amount);
+    if (o.exec) q.set("exec", "1");
     const qs = q.toString();
     return get<Intelligence>(`/api/assets/${encodeURIComponent(ref)}${qs ? `?${qs}` : ""}`, s);
   },

@@ -3,7 +3,7 @@
  *
  *   GET /api/health                                   RPC health (endpoint redacted), chain id
  *   GET /api/assets                                   canonical asset list (search / picker)
- *   GET /api/assets/:ref?mode=&to=&amount=            AssetIntelligence (ref = symbol, address or key)
+ *   GET /api/assets/:ref?mode=&to=&amount=&exec=1     AssetIntelligence (ref = symbol, address or key; exec=1 quotes only executable venues)
  *   GET /api/portfolio/:address?mode=                 PortfolioIntelligence (never cached, never logged)
  *   GET /api/coverage                                 coverage matrix
  *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
@@ -169,7 +169,8 @@ export function createApi(deps: ApiDeps) {
       if (amount !== null && !to) throw new ApiError(400, "AMOUNT_NEEDS_TARGET", "amount requires a trade target (to)");
       const tradeTarget = to ? resolveRef(reg, to, deps.chainId) : undefined;
       if (tradeTarget === key) throw new ApiError(400, "SAME_ASSET", "trade target must differ from the asset");
-      const v = await deps.intelligence.getAssetIntelligence(key, { mode, ...(tradeTarget ? { tradeTarget } : {}), ...(amount !== null ? { tradeAmount: amount } : {}) });
+      const executableOnly = amount !== null && q.get("exec") === "1";
+      const v = await deps.intelligence.getAssetIntelligence(key, { mode, ...(tradeTarget ? { tradeTarget } : {}), ...(amount !== null ? { tradeAmount: amount } : {}), ...(executableOnly ? { executableOnly } : {}) });
       return { template: "/api/assets/:ref", body: v, cache: amount !== null ? "no-store" : "public, max-age=10", expensive: amount !== null || mode === "DEBUG" };
     }
     m = /^\/api\/portfolio\/([^/]{1,100})$/.exec(p);

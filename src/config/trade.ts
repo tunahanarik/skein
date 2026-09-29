@@ -58,6 +58,13 @@ export const QUOTE_CONCURRENCY = 16;
 export const PRODUCT_QUOTE_TIMEOUT_MS = 3_000;
 
 /**
+ * Venues the web app can execute (web/src/swap: Uniswap v3 SwapRouter02). A quote request marked
+ * `executable` prices only routes on these, which is all the swap panel can use; Ramses and
+ * Uniswap v4 routes (the slowest to quote) stay in the route view.
+ */
+export const EXECUTABLE_PROTOCOLS: readonly string[] = ["uniswap"];
+
+/**
  * Wall-clock budget for the resumable cold pool-event scan per adapter run. On the public RPC a
  * full scan takes several minutes (rate limits + server-side log timeouts, measured 2026-09-24);
  * each run advances it and persists progress, while the factory getPool sweep already covers the

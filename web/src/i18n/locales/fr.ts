@@ -631,4 +631,6 @@ export const fr: Record<StringKey, string> = {
   "bridge.recipientPh": "Adresse {c}",
   "bridge.recipientBad": "Adresse {c} non valide",
   "bridge.recipientHint": "Collez une adresse de votre propre wallet sur ce réseau. Un transfert vers une mauvaise adresse est irréversible.",
+  "swap.routeSearching": "Recherche d'une route…",
+  "swap.routeFound": "Route trouvée",
 };
