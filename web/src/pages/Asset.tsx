@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, ApiFailure, type Card, type Intelligence, type Sub } from "../api";
 import { CardView } from "../components/CardView";
 import { OpportunityTable } from "../components/OpportunityTable";
@@ -11,6 +11,9 @@ import { PriceChart } from "../components/PriceChart";
 import { linkProps } from "../router";
 import { useWatchlist } from "../watchlist";
 import { ago, code } from "../text";
+import { IntentCards, useQuick, usePortfolio } from "../components/market";
+import { INTENT_CAT, INTENTS, type IntentKey } from "../intents";
+import { useWallet } from "../wallet";
 
 type Cat = "TRADE" | "EARN" | "BORROW" | "LIQUIDITY";
 const CATS: Cat[] = ["TRADE", "EARN", "BORROW", "LIQUIDITY"];
@@ -18,7 +21,17 @@ const CATS: Cat[] = ["TRADE", "EARN", "BORROW", "LIQUIDITY"];
 export function AssetPage({ assetRef }: { assetRef: string }) {
   const { t } = useI18n();
   const [showHidden, setShowHidden] = useState(false);
-  const [focus, setFocus] = useState<Cat | null>(null);
+  // ?i=EARN|FIXED|BORROW|LIQUIDITY|TRADE preselects an intent (links from the home page).
+  const [intent, setIntent] = useState<IntentKey | null>(() => {
+    const i = new URLSearchParams(location.search).get("i");
+    return (INTENTS as string[]).includes(i ?? "") ? (i as IntentKey) : null;
+  });
+  const focus: Cat | null = intent ? INTENT_CAT[intent] : null;
+  useEffect(() => {
+    if (!intent) return;
+    const tm = setTimeout(() => document.getElementById("opps")?.scrollIntoView?.({ behavior: "smooth", block: "start" }), 250);
+    return () => clearTimeout(tm);
+  }, [intent]);
   const res = useAsync((s) => api.asset(assetRef, showHidden ? { mode: "debug" } : {}, s), [assetRef, showHidden]);
   const list = useAssetList();
   const v = res.data;
@@ -41,14 +54,13 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
     <>
       <AssetHeader v={v} name={meta?.name ?? null} assetRef={assetRef} />
       {v ? (
-        <Capabilities v={v} focus={focus} setFocus={setFocus} />
+        <IntentCards v={v} selected={intent} onSelect={setIntent} />
       ) : (
-        <div className="caps">
-          {CATS.map((c) => (
-            <div key={c} className="cap">
-              <Skeleton h={16} w="50%" />
-              <div style={{ height: 6 }} />
-              <Skeleton h={12} w="70%" />
+        <div className="intents">
+          {INTENTS.map((c) => (
+            <div key={c} className="intent off">
+              <Skeleton h={14} w="50%" />
+              <Skeleton h={26} w="40%" />
             </div>
           ))}
         </div>
@@ -78,10 +90,12 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
           <LoadingCards />
         </div>
       )}
+      <div id="opps" />
       {v &&
         CATS.filter((c) => !focus || focus === c).map((c) => {
           const cv = v.categories.find((x) => x.category === c);
-          return <CategorySection key={c} cat={c} subs={cv?.subcategories ?? []} v={v} assetRef={assetRef} focused={focus === c} />;
+          const subs = (cv?.subcategories ?? []).filter((x) => (intent === "FIXED" ? x.subcategory === "FIXED_YIELD" : intent === "EARN" ? x.subcategory !== "FIXED_YIELD" : true));
+          return <CategorySection key={c} cat={c} subs={subs} v={v} assetRef={assetRef} focused={focus === c} />;
         })}
 
       {v?.excluded && v.excluded.length > 0 && (
@@ -121,73 +135,105 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
   const watch = useWatchlist();
   const a = v?.asset;
   return (
-    <div className="asset-head">
-      <Avatar symbol={a?.symbol ?? assetRef} address={a?.address ?? null} size="lg" />
-      <div style={{ minWidth: 0 }}>
-        <div className="row" style={{ gap: 8 }}>
-          <h1>{a?.symbol ?? assetRef}</h1>
-          {a?.registryType && <span className="tag">{code(t, "type", a.registryType)}</span>}
-          {a && (
-            <button className="star" aria-pressed={watch.has(a.key)} onClick={() => watch.toggle(a.key)} title={watch.has(a.key) ? t("watch.remove") : t("watch.add")} aria-label={watch.has(a.key) ? t("watch.remove") : t("watch.add")}>
-              {watch.has(a.key) ? "★" : "☆"}
-            </button>
-          )}
-          {a && (
-            <a className="star" {...linkProps(`/compare?a=${encodeURIComponent(a.symbol)}&b=${a.symbol === "TSLA" ? "NVDA" : "TSLA"}`)}>
-              {t("watch.compare")}
-            </a>
-          )}
+    <div className="asset-hero">
+      <div className="main">
+        <div className="ident">
+          <Avatar symbol={a?.symbol ?? assetRef} address={a?.address ?? null} size="lg" />
+          <div style={{ minWidth: 0 }}>
+            <div className="row" style={{ gap: 8 }}>
+              <h1>{a?.symbol ?? assetRef}</h1>
+              {a?.registryType && <span className="tag">{code(t, "type", a.registryType)}</span>}
+            </div>
+            <div className="muted small" style={{ overflowWrap: "anywhere" }}>
+              {name ?? ""}
+              {a && (
+                <>
+                  {name ? " · " : ""}
+                  <ExplorerLink address={a.address} />
+                </>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="muted small" style={{ overflowWrap: "anywhere" }}>
-          {name ?? ""}
-          {a && (
-            <>
-              {name ? " · " : ""}
-              <ExplorerLink address={a.address} />
-            </>
-          )}
-        </div>
-      </div>
-      <span className="spacer" />
-      <div style={{ textAlign: "right" }}>
         {v ? (
           <>
-            <div className="price num">{v.price?.usd ? usd(v.price.usd) : t("asset.unpriced")}</div>
-            <div className="small muted">
-              {v.price?.usd
-                ? `${v.price.method === "ROBINHOOD_QUOTE_MID" ? t("asset.rhQuote") : t("asset.chainlink")} · ${ago(t, v.price.observedAt)} · ${code(t, "fresh", v.price.freshness)}`
-                : v.price?.unpricedReason}
+            <div className="price-row">
+              <span className="price num">{v.price?.usd ? usd(v.price.usd) : t("asset.unpriced")}</span>
+              <span className="small muted">
+                {v.price?.usd
+                  ? `${v.price.method === "ROBINHOOD_QUOTE_MID" ? t("asset.rhQuote") : t("asset.chainlink")} · ${ago(t, v.price.observedAt)} · ${code(t, "fresh", v.price.freshness)}`
+                  : v.price?.unpricedReason}
+              </span>
             </div>
             {v.asset && <PriceChart assetRef={v.asset.address} />}
-            {v.asset && v.price?.usd && (
-              <details className="more" style={{ marginTop: 6 }}>
+          </>
+        ) : (
+          <Skeleton h={34} w={160} />
+        )}
+        {a && (
+          <div className="row small" style={{ gap: 8, marginTop: 8 }}>
+            <button className="pill" aria-pressed={watch.has(a.key)} onClick={() => watch.toggle(a.key)} title={watch.has(a.key) ? t("watch.remove") : t("watch.add")} aria-label={watch.has(a.key) ? t("watch.remove") : t("watch.add")}>
+              {watch.has(a.key) ? "★" : "☆"}
+            </button>
+            <a className="pill" {...linkProps(`/compare?a=${encodeURIComponent(a.symbol)}&b=${a.symbol === "TSLA" ? "NVDA" : "TSLA"}`)}>
+              {t("watch.compare")}
+            </a>
+            {v?.price?.usd && (
+              <details className="more">
                 <summary>{t("alert.set")}</summary>
                 <div className="body">
-                  <AlertForm kind="PRICE" assetRef={v.asset.address} symbol={v.asset.symbol} label={t("alert.price")} current={Number(v.price.usd)} />
+                  <AlertForm kind="PRICE" assetRef={a.address} symbol={a.symbol} label={t("alert.price")} current={Number(v.price.usd)} />
                 </div>
               </details>
             )}
-          </>
-        ) : (
-          <Skeleton h={30} w={120} />
+          </div>
         )}
       </div>
+      <HoldBox v={v} />
     </div>
   );
 }
 
-function Capabilities({ v, focus, setFocus }: { v: Intelligence; focus: Cat | null; setFocus: (c: Cat | null) => void }) {
+/** Your balance of this asset (connected wallet), with the quick actions. */
+function HoldBox({ v }: { v: Intelligence | null }) {
   const { t } = useI18n();
-  const d = v.summary.capabilities.detail;
+  const w = useWallet();
+  const quick = useQuick();
+  const p = usePortfolio(w.address);
+  const a = v?.asset;
+  const mine = a ? p?.assets.find((x) => x.asset?.key === a.key) : undefined;
+  const bal = mine?.balance;
+  const toOpps = () => document.getElementById("opps")?.scrollIntoView?.({ behavior: "smooth" });
   return (
-    <div className="caps" role="group" aria-label={t("asset.canDo")}>
-      {CATS.map((c) => (
-        <button key={c} className={`cap${focus === c ? " sel" : ""}`} aria-pressed={focus === c} onClick={() => setFocus(focus === c ? null : c)}>
-          <div className="t">{t(`cat.${c}`)}</div>
-          <div className={`s ${d[c]}`}>{t(`cap.${d[c]}`)}</div>
+    <aside className="panel pad hold-box">
+      {w.address ? (
+        <>
+          <div className="muted small">{t("hold.you")}</div>
+          <div className="big num">{bal ? `${amount(bal.displayBalance, 4)} ${a?.symbol ?? ""}` : p ? `0 ${a?.symbol ?? ""}` : "…"}</div>
+          <div className="muted small">{bal?.valueUsd ? usd(bal.valueUsd.display) : ""}</div>
+          {bal && Number(bal.displayBalance) > 0 && (
+            <button className="btn primary round" onClick={toOpps}>
+              {t("hold.put")}
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="muted small">{t("hold.connectHint")}</div>
+          <button className="btn primary round" onClick={w.openPicker}>
+            {t("shell.connect")}
+          </button>
+        </>
+      )}
+      <div className="row small hold-links">
+        <button className="linkish" onClick={() => quick.open("swap", a?.symbol)}>
+          {t("quick.swap")}
         </button>
-      ))}
-    </div>
+        <button className="linkish" onClick={() => quick.open("bridge")}>
+          {t("quick.bridge")}
+        </button>
+      </div>
+    </aside>
   );
 }
 

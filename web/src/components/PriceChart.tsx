@@ -37,6 +37,7 @@ export function PriceChart({ assetRef }: { assetRef: string }) {
         width={W}
         height={H}
         role="img"
+        preserveAspectRatio="none"
         onMouseLeave={() => setHover(null)}
         onMouseMove={(e) => {
           const r = (e.currentTarget as SVGSVGElement).getBoundingClientRect();

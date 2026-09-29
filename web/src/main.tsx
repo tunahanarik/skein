@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import "@fontsource-variable/space-grotesk";
 import "./styles.css";
 import { applyStoredTheme } from "./theme";
 

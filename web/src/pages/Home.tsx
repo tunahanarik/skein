@@ -1,16 +1,16 @@
-import { useState } from "react";
-import { api } from "../api";
+import { useEffect, useState } from "react";
+import { api, type AssetListItem } from "../api";
 import { AlertList } from "../components/AlertForm";
-import { AssetSearch } from "../components/AssetSearch";
 import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
+import { AssetPicker, idleSuggestions, IntentCards, OpportunityRows, usePortfolio, WalletSummary } from "../components/market";
 import { usd } from "../format";
 import { useI18n } from "../i18n";
+import { intentsOf, topOpportunities } from "../intents";
 import { linkProps, navigate } from "../router";
 import { code } from "../text";
 import { useWallet } from "../wallet";
 import { useWatchlist } from "../watchlist";
 
-const QUICK = ["NVDA", "USDG", "WETH", "TSLA", "SGOV", "AAPL"];
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 
 export function WalletEntry({ compact }: { compact?: boolean }) {
@@ -18,41 +18,41 @@ export function WalletEntry({ compact }: { compact?: boolean }) {
   const w = useWallet();
   const [text, setText] = useState("");
   return (
-    <div className="panel pad" style={{ display: "grid", gap: 12 }}>
-      <div>
+    <div className="panel pad connect-strip">
+      <div className="txt">
         <h2>{compact ? t("walletEntry.titleView") : t("walletEntry.titleStart")}</h2>
-        <p className="muted small" style={{ margin: "4px 0 0" }}>
-          {t("walletEntry.hint")}
-        </p>
+        <p className="muted small">{t("walletEntry.hint")}</p>
       </div>
-      <form
-        className="row"
-        style={{ flexWrap: "nowrap" }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (w.usePasted(text)) navigate("/wallet");
-        }}
-      >
-        <label className="sr-only" htmlFor="addr">
-          {t("walletEntry.label")}
-        </label>
-        <input id="addr" className="input mono" placeholder={t("walletEntry.placeholder")} spellCheck={false} autoComplete="off" value={text} onChange={(e) => setText(e.target.value)} />
-        <button className="btn" type="submit">
-          {t("walletEntry.view")}
-        </button>
-      </form>
-      <div className="row">
-        <button className="btn primary" disabled={w.connecting} onClick={w.openPicker}>
-          {w.connecting ? t("walletEntry.waiting") : t("walletEntry.use")}
-        </button>
-        {w.address && w.source === "connected" && (
-          <a className="btn" {...linkProps("/wallet")}>
-            {t("walletEntry.open")}
-          </a>
-        )}
+      <div className="act">
+        <div className="row">
+          <button className="btn primary round" disabled={w.connecting} onClick={w.openPicker}>
+            {w.connecting ? t("walletEntry.waiting") : t("walletEntry.use")}
+          </button>
+          {w.address && w.source === "connected" && (
+            <a className="btn round" {...linkProps("/wallet")}>
+              {t("walletEntry.open")}
+            </a>
+          )}
+        </div>
+        <form
+          className="row"
+          style={{ flexWrap: "nowrap" }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (w.usePasted(text)) navigate("/wallet");
+          }}
+        >
+          <label className="sr-only" htmlFor="addr">
+            {t("walletEntry.label")}
+          </label>
+          <input id="addr" className="input mono" placeholder={t("walletEntry.placeholder")} spellCheck={false} autoComplete="off" value={text} onChange={(e) => setText(e.target.value)} />
+          <button className="btn" type="submit">
+            {t("walletEntry.view")}
+          </button>
+        </form>
+        {w.error && <div className="small" style={{ color: "var(--bad)" }}>{t(w.error)}</div>}
+        <div className="faint small">{t("walletEntry.footnote")}</div>
       </div>
-      {w.error && <div className="small" style={{ color: "var(--bad)" }}>{t(w.error)}</div>}
-      <div className="faint small">{t("walletEntry.footnote")}</div>
     </div>
   );
 }
@@ -61,6 +61,17 @@ export function HomePage() {
   const { t } = useI18n();
   const list = useAssetList();
   const watch = useWatchlist();
+  const w = useWallet();
+  const portfolio = usePortfolio(w.source === "connected" ? w.address : null);
+  const [sel, setSel] = useState<AssetListItem | null>(null);
+  // Default asset: the largest holding of a connected wallet, else NVDA.
+  useEffect(() => {
+    if (!list || sel) return;
+    const held = portfolio ? idleSuggestions(portfolio)[0]?.asset.asset?.key : undefined;
+    setSel(list.find((a) => a.key === held) ?? list.find((a) => a.symbol === "NVDA") ?? list[0] ?? null);
+  }, [list, portfolio, sel]);
+  const intel = useAsync((s) => (sel ? api.asset(sel.address, {}, s) : Promise.resolve(null)), [sel?.key]);
+  const v = intel.data;
   const cov = useAsync((s) => api.coverage(s), []);
   const rows = cov.data?.rows ?? null;
   const count = (k: "canTrade" | "canEarn" | "canBorrowAgainst" | "canProvideLiquidity") => rows?.filter((r) => r.capabilities[k]).length ?? 0;
@@ -68,36 +79,47 @@ export function HomePage() {
     ? [...rows]
         .map((r) => ({ r, n: Object.values(r.capabilities.detail).filter((d) => d === "ACTIONABLE").length }))
         .sort((a, b) => b.n - a.n || b.r.actionable - a.r.actionable || a.r.asset.symbol.localeCompare(b.r.asset.symbol))
-        .slice(0, 6)
+        .slice(0, 8)
     : [];
+  const ways = v ? intentsOf(v).filter((i) => (i.key === "TRADE" ? i.count > 0 : i.usable.length > 0)).length : 0;
+  const ref = sel?.symbol ?? "";
 
   return (
     <>
       <section className="hero">
-        <h1>{t("home.title")}</h1>
-        <p>{t("home.lead")}</p>
+        <h1 className="hold">
+          <span>{t("home.hold1")}</span> <AssetPicker label={t("home.pickAsset")} value={sel} onChange={setSel} /> <span className="br">{t("home.hold2")}</span>
+        </h1>
+        <p>{v ? t("home.sub", { n: ways, m: v.summary.protocols.length }) : t("home.subLoading")}</p>
       </section>
 
-      <div className="entry-grid">
-        <div className="panel pad" style={{ display: "grid", gap: 12, alignContent: "start" }}>
-          <div>
-            <h2>{t("home.lookup")}</h2>
-            <p className="muted small" style={{ margin: "4px 0 0" }}>
-              {t("home.lookupHint")}
-            </p>
-          </div>
-          <AssetSearch autoFocus />
-          <div className="quick">
-            {QUICK.map((s) => (
-              <a key={s} {...linkProps(`/asset/${s}`)}>
-                <Avatar symbol={s} address={list?.find((a) => a.symbol === s)?.address ?? null} />
-                {s}
-              </a>
-            ))}
-          </div>
+      {v ? <IntentCards v={v} hrefFor={(k) => `/asset/${encodeURIComponent(ref)}?i=${k}`} /> : <div className="intents">{[0, 1, 2, 3, 4].map((i) => <div key={i} className="intent off"><Skeleton h={14} w="60%" /><Skeleton h={26} w="45%" /></div>)}</div>}
+
+      <section className="section">
+        <div className="section-head">
+          <h2>{t("home.whereGo", { s: ref })}</h2>
+          <span className="spacer" />
+          {sel && (
+            <a className="small" {...linkProps(`/asset/${encodeURIComponent(ref)}`)}>
+              {t("home.allFor", { s: ref })}
+            </a>
+          )}
         </div>
-        <WalletEntry />
-      </div>
+        {v ? <OpportunityRows rows={topOpportunities(v, 6)} assetRef={ref} /> : <div className="panel pad" style={{ display: "grid", gap: 10 }}><Skeleton /><Skeleton /><Skeleton /></div>}
+      </section>
+
+      <section className="section">
+        {portfolio ? (
+          <>
+            <div className="section-head">
+              <h2>{t("wsum.title")}</h2>
+            </div>
+            <WalletSummary p={portfolio} />
+          </>
+        ) : (
+          <WalletEntry />
+        )}
+      </section>
 
       {watch.keys.length > 0 && (
         <section className="section">

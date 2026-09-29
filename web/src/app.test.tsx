@@ -131,10 +131,11 @@ describe("alerts", () => {
 describe("shell", () => {
   it("theme toggle sets and remembers the theme", async () => {
     await mountAt("/about");
-    const btn = screen.getByRole("button", { name: /dark/i });
+    // Dark is the default look; the toggle switches to light and remembers it.
+    const btn = screen.getByRole("button", { name: /light/i });
     fireEvent.click(btn);
-    expect(document.documentElement.dataset.theme).toBe("dark");
-    expect(localStorage.getItem("waypoint.theme")).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(localStorage.getItem("waypoint.theme")).toBe("light");
   });
 
   it("a pasted wallet address never reaches the URL or storage", async () => {
@@ -199,7 +200,7 @@ describe("wallet connect and swap", () => {
     const w = await fakeWallet();
     try {
       await mountAt("/asset/NVDA");
-      fireEvent.click(await screen.findByRole("button", { name: "Connect wallet" }));
+      fireEvent.click((await screen.findAllByRole("button", { name: "Connect wallet" }))[0]!);
       await act(async () => {
         fireEvent.click(await screen.findByRole("button", { name: /Test Wallet/ }));
       });
@@ -208,7 +209,9 @@ describe("wallet connect and swap", () => {
       await act(async () => {
         fireEvent.click(await screen.findByRole("button", { name: "Compare routes" }));
       });
-      const swapButtons = await screen.findAllByRole("button", { name: "Swap" });
+      // Swap buttons in the quoted route table (the header's quick "Swap" opens the side panel instead).
+      const quoted = (await screen.findAllByRole("table"))[0]!;
+      const swapButtons = await within(quoted).findAllByRole("button", { name: "Swap" });
       await act(async () => {
         fireEvent.click(swapButtons[0]!);
       });

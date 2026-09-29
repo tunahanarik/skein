@@ -84,19 +84,39 @@ async function readBalance(p: Eip1193, token: Address, owner: Address): Promise<
   return BigInt((await p.request({ method: "eth_call", params: [{ to: token, data: balanceData(owner) }, "latest"] })) as string);
 }
 
-export function BridgePage() {
+export interface BridgePreset {
+  fromId: number;
+  toId: number;
+  fromSymbol: string;
+  toSymbol: string;
+}
+/** Where a bridge is, for the progress list next to the form. */
+export type BridgePhase = "idle" | "approve" | "send" | "arrive" | "done";
+
+/** Popular routes (chips on the bridge page). */
+export const POPULAR: BridgePreset[] = [
+  { fromId: 1, toId: RH, fromSymbol: "ETH", toSymbol: "ETH" },
+  { fromId: 8453, toId: RH, fromSymbol: "USDC", toSymbol: "USDG" },
+  { fromId: 42161, toId: RH, fromSymbol: "USDC", toSymbol: "USDG" },
+  { fromId: RH, toId: 8453, fromSymbol: "USDG", toSymbol: "USDC" },
+];
+
+/** The bridge form: chains, tokens, amount, quote, approve, send, track. */
+export function BridgeForm({ initial, onPhase }: { initial?: BridgePreset | null; onPhase?: (p: BridgePhase) => void }) {
   const { t } = useI18n();
   const w = useWallet();
   const assets = useAssetList();
   const canonical = useMemo(() => (assets ? new Set(assets.map((a) => a.address.toLowerCase())) : null), [assets]);
   const [chains, setChains] = useState<Chain[] | null>(null);
   const [chainErr, setChainErr] = useState(false);
-  const [fromId, setFromId] = useState(8453);
-  const [toId, setToId] = useState(RH);
+  const [fromId, setFromId] = useState(initial?.fromId ?? 8453);
+  const [toId, setToId] = useState(initial?.toId ?? RH);
   const from = useChainTokens(fromId, canonical);
   const to = useChainTokens(toId, canonical);
   const [fromTok, setFromTok] = useState<Token | null>(null);
   const [toTok, setToTok] = useState<Token | null>(null);
+  // Token symbols asked for by a preset; used once, when that chain's list first arrives.
+  const want = useRef<{ from: string | null; to: string | null }>({ from: initial?.fromSymbol ?? null, to: initial?.toSymbol ?? null });
   const [amt, setAmt] = useState("");
   const [slip, setSlip] = useState<number>(50);
   const [order, setOrder] = useState<"CHEAPEST" | "FASTEST">("CHEAPEST");
@@ -118,10 +138,16 @@ export function BridgePage() {
 
   // Default token per side: the native coin, or keep the same symbol when the chain changes.
   useEffect(() => {
-    if (from.list) setFromTok((cur) => from.list!.find((x) => x.symbol === cur?.symbol) ?? from.list![0] ?? null);
+    if (!from.list) return;
+    const w = want.current.from;
+    want.current.from = null;
+    setFromTok((cur) => from.list!.find((x) => x.symbol === (w ?? cur?.symbol)) ?? from.list!.find((x) => x.symbol === cur?.symbol) ?? from.list![0] ?? null);
   }, [from.list]);
   useEffect(() => {
-    if (to.list) setToTok((cur) => to.list!.find((x) => x.symbol === cur?.symbol) ?? to.list![0] ?? null);
+    if (!to.list) return;
+    const w = want.current.to;
+    want.current.to = null;
+    setToTok((cur) => to.list!.find((x) => x.symbol === (w ?? cur?.symbol)) ?? to.list!.find((x) => x.symbol === cur?.symbol) ?? to.list![0] ?? null);
   }, [to.list]);
   useEffect(() => setQ(null), [fromId, toId, fromTok, toTok, amt, slip, order]);
 
@@ -266,12 +292,12 @@ export function BridgePage() {
     </select>
   );
 
+  const phase: BridgePhase =
+    step.k === "done" ? "done" : step.k === "bridging" ? "arrive" : (step.k === "wallet" || step.k === "pending") && step.what === "bridge" ? "send" : (step.k === "wallet" || step.k === "pending") && step.what === "approve" ? "approve" : "idle";
+  useEffect(() => onPhase?.(phase), [phase, onPhase]);
+
   return (
-    <div style={{ maxWidth: 620, margin: "0 auto", display: "grid", gap: 16 }}>
-      <div>
-        <h1>{t("bridge.title")}</h1>
-        <p className="muted">{t("bridge.lead")}</p>
-      </div>
+    <>
       {chainErr && <div className="notice bad small">{t("bridge.unavailable")}</div>}
 
       <div className="panel pad bridge">
@@ -315,7 +341,9 @@ export function BridgePage() {
           {toId === RH && <div className="faint small">{t("bridge.rhTokens")}</div>}
         </div>
 
-        <div className="row" style={{ gap: 16, flexWrap: "wrap" }}>
+        <details className="more settings">
+          <summary>{t("bridge.settings")}</summary>
+        <div className="row" style={{ gap: 16, flexWrap: "wrap", marginTop: 10 }}>
           <div>
             <div className="muted small" style={{ marginBottom: 6 }}>
               {t("swap.slippage")}
@@ -341,6 +369,7 @@ export function BridgePage() {
             </div>
           </div>
         </div>
+        </details>
 
         {!user ? (
           <button className="btn primary" onClick={w.openPicker}>
@@ -420,17 +449,57 @@ export function BridgePage() {
           </div>
         )}
       </div>
+    </>
+  );
+}
 
-      <div className="faint small" style={{ display: "grid", gap: 6 }}>
-        <div>{t("bridge.note1")}</div>
-        <div>{t("bridge.note2")}</div>
+const PHASES = ["approve", "send", "arrive", "done"] as const;
+
+export function BridgePage() {
+  const { t } = useI18n();
+  const [preset, setPreset] = useState<BridgePreset | null>(null);
+  const [phase, setPhase] = useState<BridgePhase>("idle");
+  const at = (PHASES as readonly string[]).indexOf(phase);
+  return (
+    <div className="bridge-page">
+      <div style={{ display: "grid", gap: 14, alignContent: "start" }}>
         <div>
-          {t("bridge.canonical")}{" "}
-          <a href="https://docs.robinhood.com/chain/bridging/" target="_blank" rel="noopener noreferrer">
-            docs.robinhood.com ↗
-          </a>
+          <h1>{t("bridge.title")}</h1>
+          <p className="muted" style={{ margin: "6px 0 0" }}>{t("bridge.lead")}</p>
+        </div>
+        <BridgeForm key={preset ? `${preset.fromId}-${preset.toId}-${preset.fromSymbol}-${preset.toSymbol}` : "default"} initial={preset} onPhase={setPhase} />
+        <div className="row small">
+          <span className="muted">{t("bridge.popular")}</span>
+          {POPULAR.map((p) => (
+            <button key={`${p.fromId}-${p.toId}-${p.fromSymbol}`} className="pill" onClick={() => setPreset({ ...p })}>
+              {p.fromSymbol} · {LIFI_DIAMONDS[p.fromId]?.name ?? p.fromId} → {p.toSymbol === p.fromSymbol ? "" : `${p.toSymbol} · `}
+              {LIFI_DIAMONDS[p.toId]?.name ?? p.toId}
+            </button>
+          ))}
         </div>
       </div>
+      <aside style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        <div className="panel pad steps" aria-label={t("bridge.stepsTitle")}>
+          <div className="muted small">{t("bridge.stepsTitle")}</div>
+          {PHASES.map((p, i) => (
+            <div key={p} className={`step ${at > i || phase === "done" ? "done" : at === i ? "now" : ""}`}>
+              <span className="dotc" aria-hidden="true">{at > i || phase === "done" ? "✓" : i + 1}</span>
+              <span>{t(`bridge.phase.${p}`)}</span>
+            </div>
+          ))}
+          <div className="faint small" style={{ borderTop: "1px solid var(--border)", paddingTop: 10 }}>{t("bridge.next")}</div>
+        </div>
+        <div className="faint small" style={{ display: "grid", gap: 6 }}>
+          <div>{t("bridge.note1")}</div>
+          <div>{t("bridge.note2")}</div>
+          <div>
+            {t("bridge.canonical")}{" "}
+            <a href="https://docs.robinhood.com/chain/bridging/" target="_blank" rel="noopener noreferrer">
+              docs.robinhood.com ↗
+            </a>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

@@ -25,6 +25,17 @@ export function canSwap(c: Card): boolean {
 
 export function SwapDialog({ card, onClose }: { card: Card; onClose: () => void }) {
   const { t } = useI18n();
+  const q = card.trade!.quote!;
+  return (
+    <Modal title={t("swap.title", { a: q.input.asset.symbol, b: q.expectedOutput.asset.symbol })} onClose={onClose}>
+      <SwapBody card={card} />
+    </Modal>
+  );
+}
+
+/** The swap flow for one quoted route (used in the dialog and in the quick panel). */
+export function SwapBody({ card }: { card: Card }) {
+  const { t } = useI18n();
   const w = useWallet();
   const q = card.trade!.quote!;
   const ex = executableRoute(card.trade!.route);
@@ -108,7 +119,6 @@ export function SwapDialog({ card, onClose }: { card: Card; onClose: () => void 
   };
 
   return (
-    <Modal title={t("swap.title", { a: inA.symbol, b: outA.symbol })} onClose={onClose}>
       <div className="swap">
         <div className="kv">
           <span className="muted">{t("swap.route")}</span>
@@ -207,7 +217,6 @@ export function SwapDialog({ card, onClose }: { card: Card; onClose: () => void 
         )}
         <div className="faint small">{t("swap.note")}</div>
       </div>
-    </Modal>
   );
 }
 
