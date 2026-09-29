@@ -586,6 +586,17 @@ export const en = {
   "chart.since": "data since {d}",
   "chart.ext": "faded line: pre/after-market",
   "chart.updated": "updated {x}",
+  "live.title": "Live pairs",
+  "live.status": "Live · every {s} s",
+  "live.connecting": "Connecting…",
+  "live.ago": "read {n} s ago",
+  "live.none": "No active pools for this asset.",
+  "live.swapHint": "Swap {a} → {b}",
+  "live.more": "+{n} more",
+  "live.less": "Show fewer",
+  "live.note": "Spot prices read from each pool on Robinhood Chain; a trade's price also depends on its size and fees.",
+  "live.price": "Live price from the Chainlink feed",
+  "live.block": "block {b}",
 };
 
 export type StringKey = keyof typeof en;
@@ -1149,4 +1160,15 @@ export const tr: Record<StringKey, string> = {
   "chart.since": "veriler {d} tarihinden itibaren",
   "chart.ext": "soluk çizgi: seans öncesi/sonrası",
   "chart.updated": "{x} güncellendi",
+  "live.title": "Canlı pariteler",
+  "live.status": "Canlı · her {s} sn",
+  "live.connecting": "Bağlanıyor…",
+  "live.ago": "{n} sn önce okundu",
+  "live.none": "Bu varlık için aktif havuz yok.",
+  "live.swapHint": "Swap {a} → {b}",
+  "live.more": "+{n} daha",
+  "live.less": "Daha az göster",
+  "live.note": "Anlık fiyatlar Robinhood Chain'deki her havuzdan okunur; bir işlemin fiyatı miktarına ve ücretlere de bağlıdır.",
+  "live.price": "Chainlink akışından canlı fiyat",
+  "live.block": "blok {b}",
 };

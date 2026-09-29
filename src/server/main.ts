@@ -15,6 +15,7 @@ import { createApi } from "./api.js";
 import { sendJson } from "./json.js";
 import { LogoStore } from "./logos.js";
 import { ImageProxy } from "./images.js";
+import { LiveHub } from "./live.js";
 import { ChainlinkRounds } from "../product/charts.js";
 import { fetchShareHistory, type ChartRange } from "../sources/rhMarket.js";
 import { RateHistory } from "./rateHistory.js";
@@ -37,7 +38,8 @@ const intelligence = new AssetIntelligenceService({
   onSnapshot: (opps, takenAt) => rates.record(opps, takenAt),
   maxStaleMs: Number(env.SNAPSHOT_MAX_STALE_MS ?? 300_000),
 });
-const api = createApi({ intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos", bundledDir: "data/logos" }), images: new ImageProxy({ dir: ".cache/img" }), rates });
+const live = new LiveHub(rt.reader, { marketsFor: (k, n) => intelligence.liveMarkets(k, n), feedFor: (k) => intelligence.liveFeed(k) });
+const api = createApi({ live, intelligence, getRegistry: rt.getRegistry, health: () => rt.reader.health(), chainId: rt.reader.chainId, trustProxy: env.TRUST_PROXY === "1", logos: new LogoStore(rt.getRegistry, { dir: ".cache/logos", bundledDir: "data/logos" }), images: new ImageProxy({ dir: ".cache/img" }), rates });
 const webDist = env.WEB_DIST ?? "web/dist";
 const serveStatic = createStatic(webDist);
 

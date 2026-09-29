@@ -10,6 +10,7 @@
  *   GET /api/assets/:ref/chart?range=1D|1W|1M|1Y      price chart (share data × multiplier, or Chainlink)
  *   GET /api/rates/history?id=<opportunity id>          locally recorded rate history of one opportunity
  *   GET /api/logo/:address                            token logo (canonical assets; proxied, sniffed)
+ *   GET /api/stream?pairs=NVDA&prices=TSLA,WETH        live pair and token prices (Server-Sent Events)
  *   GET /api/img?u=<url>                              bridge token / network logo (allowlisted hosts; proxied, sniffed)
  *
  * Only GET/HEAD. Every input is validated; errors never carry stack traces. Request logs carry
@@ -23,6 +24,7 @@ import type { AssetIntelligenceService } from "../product/service.js";
 import type { ProductMode } from "../product/types.js";
 import type { LogoStore } from "./logos.js";
 import type { ImageProxy } from "./images.js";
+import type { LiveHub } from "./live.js";
 import type { RateHistory } from "./rateHistory.js";
 import { RateLimiter } from "./rateLimit.js";
 import { SECURITY_HEADERS, sendJson } from "./json.js";
@@ -40,6 +42,7 @@ export interface ApiDeps {
   trustProxy?: boolean;
   logos?: LogoStore;
   images?: ImageProxy;
+  live?: LiveHub;
   rates?: RateHistory;
 }
 
@@ -51,6 +54,8 @@ export class ApiError extends Error {
 
 /** Requests per minute per client IP. Expensive = quotes, portfolio, DEBUG, coverage. */
 export const RATE_LIMITS = { general: 120, expensive: 20, logos: 1200 } as const;
+/** Concurrent live streams: per client IP and in total. */
+export const STREAM_LIMITS = { perIp: 4, total: 300 } as const;
 
 const MAX_AMOUNT_LEN = 40;
 const SYMBOL = /^[A-Za-z0-9.\-]{1,16}$/;
@@ -202,6 +207,42 @@ export function createApi(deps: ApiDeps) {
     return true;
   }
 
+  const streamsByIp = new Map<string, number>();
+  let streams = 0;
+
+  /** Server-Sent Events: snapshot on connect, then changes; a comment line every 15 s keeps proxies open. */
+  async function stream(req: IncomingMessage, res: ServerResponse, url: URL, ip: string): Promise<void> {
+    if (!deps.live) throw new ApiError(404, "NO_STREAM", "live prices are not enabled on this server");
+    const reg = await deps.getRegistry();
+    const list = (k: string) =>
+      [...new Set((url.searchParams.get(k) ?? "").split(",").map((x) => x.trim()).filter(Boolean))].slice(0, 12).map((r) => resolveRef(reg, r, deps.chainId));
+    const pairs = list("pairs");
+    const prices = list("prices");
+    if (!pairs.length && !prices.length) throw new ApiError(400, "NO_ASSETS", "name assets in pairs= and/or prices=");
+    if (streams >= STREAM_LIMITS.total || (streamsByIp.get(ip) ?? 0) >= STREAM_LIMITS.perIp) throw new ApiError(429, "TOO_MANY_STREAMS", "too many live streams");
+    streams++;
+    streamsByIp.set(ip, (streamsByIp.get(ip) ?? 0) + 1);
+    res.statusCode = 200;
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.write("retry: 5000\n\n");
+    const send = (event: string, data: unknown) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    const unsubscribe = deps.live.subscribe({ pairs, prices }, send);
+    const ping = setInterval(() => res.write(": ping\n\n"), 15_000);
+    const close = () => {
+      clearInterval(ping);
+      unsubscribe();
+      streams--;
+      const n = (streamsByIp.get(ip) ?? 1) - 1;
+      if (n > 0) streamsByIp.set(ip, n);
+      else streamsByIp.delete(ip);
+    };
+    req.on("close", close);
+  }
+
   return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const t0 = performance.now();
     let template = "unmatched";
@@ -220,6 +261,12 @@ export function createApi(deps: ApiDeps) {
         if (!limiter.take(`l:${ip}`, RATE_LIMITS.logos)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
         if (await logo(req, res, lm[1]!)) return;
         throw new ApiError(404, "NO_LOGO", "no logo");
+      }
+      if (url.pathname === "/api/stream") {
+        template = "/api/stream";
+        if (!limiter.take(`g:${ip}`, RATE_LIMITS.general)) throw new ApiError(429, "RATE_LIMITED", "too many requests");
+        await stream(req, res, url, ip);
+        return;
       }
       if (url.pathname === "/api/img") {
         template = "/api/img";

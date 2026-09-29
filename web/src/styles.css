@@ -649,3 +649,34 @@ table.data th { color: var(--text-3); }
 .pc-axis { fill: var(--text-3); font-size: 11px; font-family: var(--font); }
 .pc-empty { position: absolute; inset: 0; display: grid; place-items: center; border: 1px dashed var(--border); border-radius: 12px; }
 .pc-foot { line-height: 1.5; }
+
+/* ---- live prices ---- */
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); flex: none; vertical-align: middle; }
+.live-dot.on { background: var(--ok); box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); animation: live-pulse 2s infinite; }
+@keyframes live-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 55%, transparent); } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .live-dot.on { animation: none; } }
+.up { color: var(--ok) !important; }
+.down { color: var(--bad) !important; }
+.price.up, .price.down, .px.up, .px.down, .ticker .num.up, .ticker .num.down { transition: color 0.2s ease; }
+
+.live-pairs { padding: 14px 16px; margin: 0 0 16px; display: grid; gap: 8px; }
+.lp-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lp-head h2 { font-size: 17px; }
+.lp-rows { display: grid; }
+.lp-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 90px; align-items: center; gap: 14px; padding: 9px 8px; border: 0; border-bottom: 1px solid var(--border); background: none; color: var(--text); font: inherit; text-align: start; cursor: pointer; border-radius: 0; }
+.lp-row:last-child { border-bottom: 0; }
+.lp-row:hover { background: var(--surface-2); }
+.lp-row .pair { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lp-row .avs { display: inline-flex; flex: none; }
+.lp-row .avs .avatar { width: 26px; height: 26px; font-size: 9px; }
+.lp-row .avs .avatar + .avatar { margin-inline-start: -8px; box-shadow: 0 0 0 2px var(--surface); }
+.lp-row .s { display: block; font-weight: 600; }
+.lp-row .v { display: block; font-size: 12px; color: var(--text-2); }
+.lp-row .px { font-weight: 600; text-align: end; white-space: nowrap; }
+.lp-row .px small { color: var(--text-3); font-weight: 400; }
+.lp-row .arrow { font-size: 9px; margin-inline-start: 6px; }
+.lp-row .arrow.up { color: var(--ok); }
+.lp-row .arrow.down { color: var(--bad); }
+.lp-row .tvl { text-align: end; }
+.lp-foot { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+@media (max-width: 560px) { .lp-row { grid-template-columns: minmax(0, 1fr) auto; } .lp-row .tvl { display: none; } }

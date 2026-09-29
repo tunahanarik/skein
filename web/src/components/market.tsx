@@ -11,6 +11,7 @@ import { linkProps, navigate } from "../router";
 import { actionLabel, contextLine } from "../text";
 import { BridgeForm } from "../pages/Bridge";
 import { useWallet } from "../wallet";
+import { useLive } from "../live";
 import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
 
@@ -177,6 +178,8 @@ export function Ticker() {
   useI18n(); // re-render on language change (number format follows the locale)
   const list = useAssetList();
   const [ticks, setTicks] = useState<Tick[] | null>(tickCache?.ticks ?? null);
+  const keys = useMemo(() => (list ? TICKER.map((s) => list.find((a) => a.symbol === s)).filter((a): a is AssetListItem => !!a).map((a) => a.key) : []), [list]);
+  const live = useLive({ prices: keys });
   useEffect(() => {
     if (!list || (tickCache && Date.now() - tickCache.at < 120_000)) return;
     let live = true;
@@ -202,12 +205,18 @@ export function Ticker() {
       <div className="shell">
         {ticks
           .filter((x) => x.usd !== null)
-          .map((x) => (
+          .map((x) => {
+            const k = list?.find((a) => a.symbol === x.ref)?.key;
+            const lp = k ? live.prices.get(k) : undefined;
+            const mv = k ? live.moves.get(k) : undefined;
+            const flash = mv && Date.now() - mv.at < 1500 ? (mv.dir > 0 ? " up" : " down") : "";
+            return (
             <a key={x.symbol} {...linkProps(`/asset/${x.ref}`)}>
-              <span className="s">{x.symbol}</span> <span className="num">{usd(String(x.usd))}</span>{" "}
+              <span className="s">{x.symbol}</span> <span className={`num${flash}`}>{usd(lp ? lp.usd : String(x.usd))}</span>{" "}
               {x.change !== null && <span className={`num ${x.change > 0 ? "up" : x.change < 0 ? "down" : ""}`}>{`${x.change > 0 ? "+" : ""}${pct(x.change, 2)}`}</span>}
             </a>
-          ))}
+            );
+          })}
       </div>
     </div>
   );

@@ -118,3 +118,15 @@ Alerts live in the browser only (localStorage, at most 20):
 - checked every 2 min while the app is open, against our own API
 - when one fires: an in-app banner and, if the user allowed it, a browser notification
 - no account, no server-side storage
+
+## Live prices — `GET /api/stream`
+
+Server-Sent Events. Query: `pairs=` assets whose most liquid pools to watch (up to 8 per asset, by TVL), `prices=` assets whose Chainlink USD price to watch; symbols, addresses or registry keys, up to 12 each.
+
+Events:
+- `snapshot` `{ pairs: PairTick[], prices: PriceTick[], pollMs }` once, on connect;
+- `pair` a pool's spot price changed: `{ id, venue, feePpm, tvlUsd, a0, a1, price (a1 per a0), inverse, block, t }`;
+- `price` a token's Chainlink answer changed: `{ key, symbol, usd, updatedAt, block }`;
+- `block` heartbeat after every read: `{ block, t }`.
+
+The server (`src/server/live.ts`) reads only what is watched, every 2 s, in one multicall at the latest block: `slot0()` of Uniswap v3 / Ramses pools, `StateView.getSlot0(poolId)` of hookless Uniswap v4 pools, `latestRoundData()` of the Chainlink feeds. Limits: 4 streams per IP, 300 in total. No wallet data is involved.

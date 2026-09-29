@@ -16,6 +16,8 @@ import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
 import { BUCKET_MS, CHART_TTL_MS, deviation, MAX_DEVIATION, RANGE_MS, resample, shareToToken, summarize, type ChainlinkRounds, type PriceChartData } from "./charts.js";
 import { RH_MARKET_BASE, RH_QUERY, type ChartRange, type ShareBar } from "../sources/rhMarket.js";
+import type { LiveFeed, LiveMarket } from "../server/live.js";
+import { chainlinkAggregatorAbi } from "../config/abis.js";
 import type { AssetRef, Opportunity, TokenAmount, UsdAmount } from "../model/opportunity.js";
 import type { TradeMarket, TradeRoute } from "../model/trade.js";
 import { isAuthoritative } from "../model/verification.js";
@@ -555,6 +557,41 @@ export class AssetIntelligenceService {
       const change = first && last && first.answer > 0n ? { from: points[0]!.usd, to: points.at(-1)!.usd, pct: formatFixed(((last.answer - first.answer) * 10n ** 20n) / first.answer, 18) } : null;
       return { asset: ref, kind: "PORTFOLIO_PRICE", source: h ? { provider: "Chainlink", feed: h.feed.name, proxy: h.feed.proxyAddress } : null, points, change, generatedAt: this.now().toISOString() };
     });
+  }
+
+  // ---------------------------------------------------------------- live prices (src/server/live.ts)
+
+  /** The asset's most liquid active pool markets (Uniswap v3/v4, Ramses) by TVL, for live pair prices. */
+  async liveMarkets(assetKey: string, limit: number): Promise<LiveMarket[]> {
+    const s = await this.snapshot();
+    const venue = (id: string) => (id === "uniswap" ? "Uniswap v3" : id === "uniswap-v4" ? "Uniswap v4" : id === "ramses" ? "Ramses" : id);
+    const tvl = (m: TradeMarket) => Number(m.liquidity.tvl?.value.display ?? 0);
+    return [...s.markets.values()]
+      .filter((m) => m.state === "ACTIVE" && m.assets.some((a) => a.key === assetKey) && m.assets.every((a) => a.canonical))
+      .filter((m) => (m.protocol.id === "uniswap-v4" ? /^0x[0-9a-f]{64}$/i.test(m.marketId) : !!m.address))
+      .sort((a, b) => tvl(b) - tvl(a))
+      .slice(0, limit)
+      .map((m) => ({
+        id: m.id,
+        venue: venue(m.protocol.id),
+        kind: m.protocol.id === "uniswap-v4" ? ("V4" as const) : ("V3" as const),
+        target: m.protocol.id === "uniswap-v4" ? m.marketId : m.address!,
+        feePpm: m.fee?.value.ppm ?? null,
+        tvlUsd: m.liquidity.tvl?.value.display ?? null,
+        a0: { key: m.assets[0].key, symbol: m.assets[0].symbol, decimals: m.assets[0].decimals },
+        a1: { key: m.assets[1].key, symbol: m.assets[1].symbol, decimals: m.assets[1].decimals },
+      }));
+  }
+
+  /** The asset's Chainlink feed (proxy + decimals), for live USD prices. */
+  async liveFeed(assetKey: string): Promise<LiveFeed | null> {
+    const s = await this.snapshot();
+    const asset = s.ctx.registry.canonical().find((a) => a.key === assetKey);
+    if (!asset || !this.deps.prices) return null;
+    const feed = await this.deps.prices.feedFor(asset).catch(() => null);
+    if (!feed) return null;
+    const [dec] = await s.ctx.reader.multicall([{ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" }], { blockNumber: s.ctx.blockNumber });
+    return dec?.status === "success" ? { key: asset.key, symbol: asset.symbol, proxy: feed.proxyAddress, decimals: Number(dec.result) } : null;
   }
 
   private readonly chartCache = new TtlCache<PriceChartData>(() => this.now().getTime());

@@ -22,6 +22,11 @@ export function amount(v: string | null | undefined, max = 6): string {
   return n.toLocaleString(locale, { maximumFractionDigits: n !== 0 && Math.abs(n) < 1 ? Math.max(max, 4) : max });
 }
 
+/** Fixed number of decimals in the app's locale (e.g. prices ≥ 1 with two decimals). */
+export function fixed(n: number, digits: number): string {
+  return n.toLocaleString(locale, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
 /** 1e18-scaled fraction string → percent. */
 export function pctE18(v: string | null | undefined, digits = 2): string {
   if (v === null || v === undefined) return "—";

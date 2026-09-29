@@ -14,6 +14,8 @@ import { ago, code } from "../text";
 import { IntentCards, useQuick, usePortfolio } from "../components/market";
 import { INTENT_CAT, INTENTS, type IntentKey } from "../intents";
 import { useWallet } from "../wallet";
+import { LivePairs } from "../components/LivePairs";
+import { useLive } from "../live";
 
 type Cat = "TRADE" | "EARN" | "BORROW" | "LIQUIDITY";
 const CATS: Cat[] = ["TRADE", "EARN", "BORROW", "LIQUIDITY"];
@@ -53,6 +55,7 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
   return (
     <>
       <AssetHeader v={v} name={meta?.name ?? null} assetRef={assetRef} />
+      {v?.asset && <LivePairs assetKey={v.asset.key} symbol={v.asset.symbol} />}
       {v ? (
         <IntentCards v={v} selected={intent} onSelect={setIntent} />
       ) : (
@@ -134,6 +137,10 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
   const { t } = useI18n();
   const watch = useWatchlist();
   const a = v?.asset;
+  const live = useLive({ prices: a ? [a.key] : [] });
+  const lp = a ? live.prices.get(a.key) : undefined;
+  const mv = a ? live.moves.get(a.key) : undefined;
+  const flash = mv && Date.now() - mv.at < 1500 ? (mv.dir > 0 ? " up" : " down") : "";
   return (
     <div className="asset-hero">
       <div className="main">
@@ -158,7 +165,8 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
         {v ? (
           <>
             <div className="price-row">
-              <span className="price num">{v.price?.usd ? usd(v.price.usd) : t("asset.unpriced")}</span>
+              <span className={`price num${flash}`}>{lp ? usd(lp.usd) : v.price?.usd ? usd(v.price.usd) : t("asset.unpriced")}</span>
+              {lp && <span className="live-dot on" title={t("live.price")} aria-label={t("live.price")} />}
               <span className="small muted">
                 {v.price?.usd
                   ? `${v.price.method === "ROBINHOOD_QUOTE_MID" ? t("asset.rhQuote") : t("asset.chainlink")} · ${ago(t, v.price.observedAt)} · ${code(t, "fresh", v.price.freshness)}`
