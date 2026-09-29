@@ -1,8 +1,8 @@
 /** Watchlist of asset keys, kept in this browser only (localStorage; failures ignored). No accounts. */
 import { useCallback, useEffect, useState } from "react";
 
-const KEY = "waypoint.watchlist";
-const EVENT = "waypoint:watchlist";
+const KEY = "hoodmap.watchlist";
+const EVENT = "hoodmap:watchlist";
 
 function read(): string[] {
   try {

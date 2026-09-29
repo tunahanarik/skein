@@ -16,7 +16,7 @@ import { zh } from "../../web/src/i18n/locales/zh.js";
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 const ALL: Record<string, Record<string, string>> = { tr, de, fr, it: itDict, es, pt, ru, zh, ja, ko, ar, hi };
 /** Names that must never be translated. */
-const KEEP = ["Waypoint", "Robinhood", "USDG", "Uniswap", "Morpho", "Pendle", "Chainlink", "Blockscout"];
+const KEEP = ["Hoodmap", "Robinhood", "USDG", "Uniswap", "Morpho", "Pendle", "Chainlink", "Blockscout"];
 
 describe("i18n dictionaries", () => {
   for (const [code, dict] of Object.entries(ALL)) {

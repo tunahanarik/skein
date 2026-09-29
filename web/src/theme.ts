@@ -5,7 +5,7 @@
 import { useCallback, useState } from "react";
 
 export type Theme = "light" | "dark";
-const KEY = "waypoint.theme";
+const KEY = "hoodmap.theme";
 
 function stored(): Theme | null {
   try {

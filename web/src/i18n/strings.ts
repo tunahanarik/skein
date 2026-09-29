@@ -381,7 +381,7 @@ export const en = {
 
   // about
   "about.title": "How it works",
-  "about.p1": "Waypoint answers one question: I hold this asset on Robinhood Chain — what can I actually do with it? It reads protocols directly from the chain and from their public APIs, checks what it reads, and shows the result with its source and age. Uniswap v3 swaps can be made from the app, signed in your own wallet.",
+  "about.p1": "Hoodmap answers one question: I hold this asset on Robinhood Chain — what can I actually do with it? It reads protocols directly from the chain and from their public APIs, checks what it reads, and shows the result with its source and age. Uniswap v3 swaps can be made from the app, signed in your own wallet.",
   "about.h1": "Your wallet, your approval",
   "about.l1": "The server has no wallet and cannot sign anything. Swap transactions are built in your browser and handed to your wallet, which shows each one for you to approve or reject.",
   "about.l2": "Only two kinds of transaction can be built: an approval of the exact amount to Uniswap's SwapRouter02, and a Uniswap v3 swap whose output goes to your own address with a minimum you set through the slippage tolerance. No message signing, no permits, no unlimited approvals.",
@@ -928,7 +928,7 @@ export const tr: Record<StringKey, string> = {
   "coverage.showCan": "Şunları yapabilen varlıkları göster",
 
   "about.title": "Nasıl çalışır",
-  "about.p1": "Waypoint tek bir soruyu yanıtlar: Robinhood Chain'de bu varlığı tutuyorum — onunla gerçekte ne yapabilirim? Protokolleri doğrudan zincirden ve herkese açık API'lerinden okur, okuduğunu kontrol eder ve sonucu kaynağı ve yaşıyla gösterir. Uniswap v3 swap'ları uygulamadan yapılabilir ve kendi cüzdanınızda imzalanır.",
+  "about.p1": "Hoodmap tek bir soruyu yanıtlar: Robinhood Chain'de bu varlığı tutuyorum — onunla gerçekte ne yapabilirim? Protokolleri doğrudan zincirden ve herkese açık API'lerinden okur, okuduğunu kontrol eder ve sonucu kaynağı ve yaşıyla gösterir. Uniswap v3 swap'ları uygulamadan yapılabilir ve kendi cüzdanınızda imzalanır.",
   "about.h1": "Sizin cüzdanınız, sizin onayınız",
   "about.l1": "Sunucunun cüzdanı yoktur ve hiçbir şey imzalayamaz. Swap işlemleri tarayıcınızda hazırlanır ve cüzdanınıza iletilir; cüzdanınız her birini onaylamanız veya reddetmeniz için gösterir.",
   "about.l2": "Yalnızca iki tür işlem hazırlanabilir: Uniswap'ın SwapRouter02 kontratına tam tutar için onay (approve) ve çıktısı kendi adresinize giden, kayma toleransıyla belirlediğiniz bir alt sınırı olan Uniswap v3 swap'ı. Mesaj imzası yok, permit yok, sınırsız onay yok.",

@@ -378,7 +378,7 @@ export const fr: Record<StringKey, string> = {
 
   // about
   "about.title": "Fonctionnement",
-  "about.p1": "Waypoint répond à une question : je détiens cet actif sur Robinhood Chain — que puis-je réellement en faire ? L'application lit les protocoles directement sur la chaîne et via leurs API publiques, vérifie ce qu'elle lit et affiche le résultat avec sa source et son âge. Les swaps Uniswap v3 peuvent être effectués depuis l'application, signés dans votre propre portefeuille.",
+  "about.p1": "Hoodmap répond à une question : je détiens cet actif sur Robinhood Chain — que puis-je réellement en faire ? L'application lit les protocoles directement sur la chaîne et via leurs API publiques, vérifie ce qu'elle lit et affiche le résultat avec sa source et son âge. Les swaps Uniswap v3 peuvent être effectués depuis l'application, signés dans votre propre portefeuille.",
   "about.h1": "Votre portefeuille, votre accord",
   "about.l1": "Le serveur n'a pas de portefeuille et ne peut rien signer. Les transactions de swap sont préparées dans votre navigateur et transmises à votre portefeuille, qui affiche chacune pour que vous l'approuviez ou la refusiez.",
   "about.l2": "Seuls deux types de transaction peuvent être préparés : une approbation du montant exact au SwapRouter02 d'Uniswap, et un swap Uniswap v3 dont le résultat va à votre propre adresse, avec un minimum fixé par votre tolérance de slippage. Aucune signature de message, aucun permit, aucune approbation illimitée.",

@@ -15,7 +15,7 @@ export const LIFI_API = "https://li.quest/v1";
 export const NATIVE: Address = "0x0000000000000000000000000000000000000000";
 /** LI.FI's placeholder for the native coin on some chains. */
 const NATIVE_ALT = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-const INTEGRATOR = "waypoint";
+const INTEGRATOR = "hoodmap";
 
 export interface Chain {
   id: number;

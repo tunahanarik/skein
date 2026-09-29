@@ -379,7 +379,7 @@ export const es: Record<StringKey, string> = {
 
   // about
   "about.title": "Cómo funciona",
-  "about.p1": "Waypoint responde una pregunta: tengo este activo en Robinhood Chain — ¿qué puedo hacer realmente con él? Lee los protocolos directamente de la cadena y de sus API públicas, comprueba lo que lee y muestra el resultado con su fuente y antigüedad. Los swaps de Uniswap v3 se pueden hacer desde la app, firmados en tu propia billetera.",
+  "about.p1": "Hoodmap responde una pregunta: tengo este activo en Robinhood Chain — ¿qué puedo hacer realmente con él? Lee los protocolos directamente de la cadena y de sus API públicas, comprueba lo que lee y muestra el resultado con su fuente y antigüedad. Los swaps de Uniswap v3 se pueden hacer desde la app, firmados en tu propia billetera.",
   "about.h1": "Tu billetera, tu aprobación",
   "about.l1": "El servidor no tiene billetera y no puede firmar nada. Las transacciones de swap se preparan en tu navegador y se entregan a tu billetera, que muestra cada una para que la apruebes o la rechaces.",
   "about.l2": "Solo se pueden preparar dos tipos de transacción: una aprobación del importe exacto al SwapRouter02 de Uniswap y un swap de Uniswap v3 cuyo resultado va a tu propia dirección, con un mínimo que fijas mediante la tolerancia de slippage. Sin firmas de mensajes, sin permits, sin aprobaciones ilimitadas.",

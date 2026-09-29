@@ -52,7 +52,7 @@ async function assetShell(path: string): Promise<string | null> {
   const a = /^0x[0-9a-fA-F]{40}$/.test(ref) ? reg.get(rt.reader.chainId, ref.toLowerCase() as `0x${string}`) : reg.canonicalBySymbol(ref).length === 1 ? reg.canonicalBySymbol(ref)[0] : undefined;
   if (!a?.canonical) return null;
   return shellWithMeta(readFileSync(index, "utf8"), {
-    title: `${a.symbol} · Waypoint`,
+    title: `${a.symbol} · Hoodmap`,
     description: `What ${a.symbol} (${a.name.slice(0, 60)}) can do on Robinhood Chain: trade, earn, borrow and provide liquidity. Read-only; sources and ages for every number.`,
   });
 }

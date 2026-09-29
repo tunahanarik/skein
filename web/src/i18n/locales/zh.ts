@@ -378,7 +378,7 @@ export const zh: Record<StringKey, string> = {
 
   // about
   "about.title": "运作方式",
-  "about.p1": "Waypoint 回答一个问题：我在 Robinhood Chain 上持有这个资产——我实际能用它做什么？它直接从链上和协议的公开 API 读取数据，核对所读内容，并显示结果及其来源和时效。可以在应用内进行 Uniswap v3 兑换，并在您自己的钱包中签名。",
+  "about.p1": "Hoodmap 回答一个问题：我在 Robinhood Chain 上持有这个资产——我实际能用它做什么？它直接从链上和协议的公开 API 读取数据，核对所读内容，并显示结果及其来源和时效。可以在应用内进行 Uniswap v3 兑换，并在您自己的钱包中签名。",
   "about.h1": "您的钱包，由您批准",
   "about.l1": "服务器没有钱包，无法签署任何内容。兑换交易在您的浏览器中构建并交给您的钱包，钱包会逐笔显示，由您批准或拒绝。",
   "about.l2": "只能构建两类交易：向 Uniswap 的 SwapRouter02 授权确切金额，以及输出发送到您自己地址的 Uniswap v3 兑换，其最低数量由您设置的滑点容差决定。不签署消息，不使用 permit，不做无限授权。",

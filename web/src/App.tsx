@@ -54,7 +54,7 @@ function Header() {
     <header className="top">
       <div className="shell">
         <a className="brand" {...linkProps("/")}>
-          waypoint<span className="dot-accent">.</span>
+          hoodmap<span className="dot-accent">.</span>
         </a>
         <nav className="main" aria-label="Main">
           <a className={is("home", "asset")} {...linkProps("/")}>
@@ -105,7 +105,7 @@ function Footer() {
       <div className="shell">
         <div className="row" style={{ gap: 18, marginBottom: 10 }}>
           <span className="brand small">
-            waypoint<span className="dot-accent">.</span>
+            hoodmap<span className="dot-accent">.</span>
           </span>
           <a {...linkProps("/bridge")}>{t("nav.bridge")}</a>
           <a {...linkProps("/compare")}>{t("nav.compare")}</a>
@@ -124,7 +124,7 @@ function Page() {
   const route = useRoute();
   useEffect(() => {
     const title = route.name === "asset" ? route.ref.slice(0, 16) : t(`title.${route.name}`);
-    document.title = `${title} · Waypoint`;
+    document.title = `${title} · Hoodmap`;
   }, [route, t]);
   switch (route.name) {
     case "home":
