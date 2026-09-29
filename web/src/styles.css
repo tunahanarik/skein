@@ -567,3 +567,74 @@ table.data th { color: var(--text-3); }
 .pf-feat .ico { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--surface-2); color: var(--accent); margin-bottom: 4px; }
 .pf-feat .t { font-weight: 600; }
 .pf-feat { align-content: start; }
+
+/* =====================================================================
+ * Controls, style A ("solid and clear"): filled buttons with a slight press,
+ * segmented tabs whose selected option is inverted, filled chips and pickers,
+ * switch toggles. Change the look here and in the --btn-* tokens.
+ * ===================================================================== */
+:root { --btn-radius: 12px; --btn-2: #1f2421; --btn-2-hover: #2a302c; --seg-bg: #1a1e1c; }
+:root[data-theme="light"] { --btn-2: #eceee9; --btn-2-hover: #e2e5de; --seg-bg: #eef0eb; }
+
+/* buttons */
+.btn { border: 0; background: var(--btn-2); color: var(--text); border-radius: var(--btn-radius); padding: 10px 18px; font-weight: 500; transition: background 0.15s ease, transform 0.1s ease; }
+.btn:hover { background: var(--btn-2-hover); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn.primary:hover:not(:disabled) { background: var(--accent-2); transform: translateY(-1px); }
+.btn.primary:active:not(:disabled) { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--text-2); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn.small { padding: 7px 13px; font-size: 13px; border-radius: 10px; }
+.btn.round, .btn.big { border-radius: var(--btn-radius); }
+.btn.big { padding: 13px 20px; font-size: 15px; }
+.btn:disabled { opacity: 0.5; transform: none; }
+@media (prefers-reduced-motion: reduce) { .btn, .btn:hover, .btn:active { transform: none !important; } }
+
+/* header quick actions and small pills become filled secondary buttons */
+.pill { border: 0; background: var(--btn-2); border-radius: 10px; padding: 7px 13px; transition: background 0.15s ease; }
+.pill:hover { background: var(--btn-2-hover); color: var(--text); }
+.pill.on { background: var(--text); color: var(--bg); }
+.pill.on:hover { color: var(--bg); background: var(--text); }
+.pill[aria-pressed="true"] { background: var(--warn-soft); color: var(--warn); }
+.icon-btn { border: 0; background: var(--btn-2); border-radius: 10px; }
+.icon-btn:hover { background: var(--btn-2-hover); }
+.icon-btn.round { background: var(--btn-2); border: 3px solid var(--surface); border-radius: 12px; }
+.theme-toggle, .lang select { border: 0; background: var(--btn-2); border-radius: 10px; }
+.theme-toggle:hover { background: var(--btn-2-hover); }
+
+/* segmented tabs: selected option inverted */
+.seg, .seg-tabs { display: inline-flex; gap: 2px; border: 0; background: var(--seg-bg); border-radius: var(--btn-radius); padding: 4px; overflow: visible; }
+.seg button, .seg-tabs button { border: 0; background: transparent; color: var(--text-2); padding: 7px 14px; border-radius: 9px; font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.seg button + button { border-inline-start: 0; }
+.seg button:hover, .seg-tabs button:hover { color: var(--text); }
+.seg button.on, .seg-tabs button.on, .seg button[aria-checked="true"] { background: var(--text); color: var(--bg); box-shadow: none; }
+
+/* filter chips (tabs lists) */
+.tabs { gap: 6px; }
+.tabs button { border: 0; background: var(--btn-2); color: var(--text); border-radius: 10px; padding: 6px 12px; font-weight: 500; }
+.tabs button:hover { background: var(--btn-2-hover); }
+.tabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.quick a { border: 0; background: var(--btn-2); border-radius: 10px; }
+.quick a:hover { background: var(--btn-2-hover); }
+
+/* pickers */
+.picker-btn, .tok-btn { border: 0; background: var(--btn-2); border-radius: var(--btn-radius); transition: background 0.15s ease; }
+.picker-btn:hover, .tok-btn:hover { background: var(--btn-2-hover); }
+.hero h1.hold .picker-btn { border-radius: 16px; }
+.wallet-opt { border: 0; background: var(--btn-2); border-radius: var(--btn-radius); }
+.wallet-opt:hover { background: var(--btn-2-hover); border: 0; }
+
+/* inputs match the filled look */
+.input { border: 1px solid transparent; background: var(--btn-2); border-radius: var(--btn-radius); }
+.input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); border-color: transparent; }
+
+/* switch toggle for checkboxes in .toggle labels */
+.toggle input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 38px; height: 22px; border-radius: 99px; background: var(--btn-2-hover); position: relative; cursor: pointer; margin: 0; flex: none; transition: background 0.15s ease; }
+.toggle input[type="checkbox"]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--text-2); transition: transform 0.15s ease, background 0.15s ease; }
+.toggle input[type="checkbox"]:checked { background: var(--accent); }
+.toggle input[type="checkbox"]:checked::after { transform: translateX(16px); background: var(--on-accent); }
+.toggle input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* intent cards: lift on hover, inverted ring when selected */
+.intent.sel { box-shadow: 0 0 0 2px currentColor inset; }
