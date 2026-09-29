@@ -541,3 +541,11 @@ table.data th { color: var(--text-3); }
 .wallet-opt img { width: 32px; height: 32px; border-radius: 9px; }
 .modal:has(.tmodal) { overflow: hidden; }
 .qs-amt.ph { color: var(--text-3); }
+/* bridge form must fit narrow containers (quick panel, phones) */
+.bx, .bx-row { grid-template-columns: minmax(0, 1fr); }
+.bx-mid { min-width: 0; }
+.bx-amt { width: 100%; }
+.tok-btn { max-width: 62%; min-width: 0; }
+.drawer-body .bx-row { padding: 12px; }
+.drawer-body .bx-amt { font-size: 26px; }
+@media (max-width: 560px) { .bx-amt, .drawer-body .bx-amt { font-size: 22px; } .tok-btn { max-width: 56%; padding-right: 8px; } .tok-btn .c { max-width: 90px; } }

@@ -444,7 +444,7 @@ export function BridgeForm() {
         <details className="bx-quote">
           <summary>
             <span>
-              {t("bridge.via")} <strong>{q.toolName}</strong> · {q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "—"} · {t("bridge.feeShort", { x: usd(String(q.feesUsd + q.gasUsd)) })}
+              {t("bridge.via")} <strong>{q.toolName}</strong> · {q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "—"} · {t("bridge.feeShort", { x: usd((q.feesUsd + q.gasUsd).toFixed(2)) })}
             </span>
           </summary>
           <div className="kv">
