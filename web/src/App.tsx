@@ -73,11 +73,11 @@ function Header() {
         </nav>
         <span className="spacer" />
         <div className="quick-actions">
-          <button className="pill" onClick={() => quick.open("swap", from)}>
-            <Icon name="swap" size={16} /> {t("quick.swap")}
+          <button className="qa" onClick={() => quick.open("swap", from)}>
+            {t("quick.swap")}
           </button>
-          <button className={`pill${route.name === "bridge" ? " on" : ""}`} onClick={() => quick.open("bridge")}>
-            <Icon name="bridge" size={16} /> {t("quick.bridge")}
+          <button className={`qa${route.name === "bridge" ? " on" : ""}`} onClick={() => quick.open("bridge")}>
+            {t("quick.bridge")}
           </button>
         </div>
         <ThemeToggle />

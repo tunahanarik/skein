@@ -1106,7 +1106,7 @@ export const tr: Record<StringKey, string> = {
   "nav.markets": "Piyasalar",
   "nav.portfolio": "Portföy",
   "quick.swap": "Swap",
-  "quick.bridge": "Köprü",
+  "quick.bridge": "Bridge",
   "quick.pay": "Ödediğiniz",
   "quick.get": "Alacağınız",
   "quick.getQuote": "Teklif al",
