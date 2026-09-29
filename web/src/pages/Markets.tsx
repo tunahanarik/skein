@@ -232,15 +232,15 @@ function Table({ rows, sort, setSort }: { rows: Market[]; sort: { k: SortKey; de
       <table className="mk-table">
         <thead>
           <tr>
-            <th className="n">#</th>
-            {th("symbol", t("markets.col.asset"))}
-            {th("usd", t("markets.col.price"), "r")}
-            {th("changePct", t("markets.col.today"), "r")}
-            <th className="hide-s">{t("markets.col.chart")}</th>
-            {th("bestApy", t("markets.col.yield"), "r")}
-            {th("liquidityUsd", t("markets.col.liq"), "r hide-s")}
-            <th className="hide-m">{t("markets.col.can")}</th>
-            <th />
+            <th className="n w-n">#</th>
+            {th("symbol", t("markets.col.asset"), "w-asset")}
+            {th("usd", t("markets.col.price"), "r w-price")}
+            {th("changePct", t("markets.col.today"), "r w-today")}
+            <th className="c hide-s w-chart">{t("markets.col.chart")}</th>
+            {th("bestApy", t("markets.col.yield"), "r w-yield")}
+            {th("liquidityUsd", t("markets.col.liq"), "r hide-s w-liq")}
+            <th className="hide-m w-can">{t("markets.col.can")}</th>
+            <th className="w-star" />
           </tr>
         </thead>
         <tbody>
@@ -262,7 +262,7 @@ function Table({ rows, sort, setSort }: { rows: Market[]; sort: { k: SortKey; de
                 <td className="r">
                   <Change v={r.changePct} />
                 </td>
-                <td className="hide-s">
+                <td className="c hide-s">
                   <Spark address={r.address} up={r.changePct === null ? null : r.changePct >= 0} />
                 </td>
                 <td className="r">

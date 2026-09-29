@@ -1217,3 +1217,21 @@ header.top > .btn, header.top > .row { flex: none; }
   .mk-body { grid-template-columns: 1fr; }
 }
 .fseg .dotc { display: inline-block; vertical-align: 1px; }
+/* table: fixed, balanced column widths (the asset column takes the rest) */
+.mk-table { table-layout: fixed; }
+.mk-table th, .mk-table td { padding-left: 12px; padding-right: 12px; }
+.mk-table .w-n { width: 48px; }
+.mk-table .w-price { width: 11%; }
+.mk-table .w-today { width: 10%; }
+.mk-table .w-chart { width: 12%; }
+.mk-table .w-yield { width: 11%; }
+.mk-table .w-liq { width: 11%; }
+.mk-table .w-can { width: 16%; padding-left: 24px; }
+.mk-table td:nth-last-child(2) { padding-left: 24px; }
+.mk-table .w-star { width: 56px; }
+.mk-table th.c, .mk-table td.c { text-align: center; }
+.mk-table td.c .spark { display: inline-block; vertical-align: middle; }
+.mk-table .mk-asset .nn { max-width: 100%; }
+.mk-table td { overflow: hidden; }
+@media (max-width: 1200px) { .mk-table .w-price, .mk-table .w-today, .mk-table .w-yield, .mk-table .w-liq, .mk-table .w-chart { width: 14%; } }
+@media (max-width: 600px) { .mk-table .w-price, .mk-table .w-today, .mk-table .w-yield { width: 24%; } .mk-table .w-n { width: 30px; } .mk-table .w-star { width: 40px; } }
