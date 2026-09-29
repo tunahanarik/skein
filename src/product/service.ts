@@ -23,6 +23,7 @@ import type { TradeMarket, TradeRoute } from "../model/trade.js";
 import { isAuthoritative } from "../model/verification.js";
 import type { AdapterContext } from "../opportunities/adapter.js";
 import { priceCanonicalAssets } from "../opportunities/assetPricing.js";
+import { headlineMetric } from "../opportunities/headline.js";
 import type { EngineResult, OpportunityEngine, OpportunityQuery } from "../opportunities/engine.js";
 import type { Portfolio, PortfolioAsset } from "../portfolio/types.js";
 import type { AssetRegistry } from "../registry/registry.js";
@@ -87,6 +88,48 @@ export interface MarketRow {
   usd: number | null;
   /** Today's change in percent units, or null. */
   changePct: number | null;
+  /** Highest headline yield (percent) among usable earn, fixed-yield and LP opportunities, and its protocol. */
+  bestApy: number | null;
+  bestApyProtocol: string | null;
+  /** What a holder can do with it (usable = actionable or limited opportunities). */
+  caps: { earn: boolean; fixed: boolean; borrow: boolean; lp: boolean };
+  /** USD value locked in the trade pools that hold this asset (display only), or null. */
+  liquidityUsd: number | null;
+}
+
+const EARN_SIDE = new Set(["LEND", "VAULT", "YIELD", "FIXED_YIELD", "LP"]);
+/** Per-asset summary of its opportunities for the Markets page. */
+function marketExtras(opps: Opportunity[]): Pick<MarketRow, "bestApy" | "bestApyProtocol" | "caps" | "liquidityUsd"> {
+  const caps = { earn: false, fixed: false, borrow: false, lp: false };
+  let bestApy: number | null = null;
+  let bestApyProtocol: string | null = null;
+  let liq = 0n;
+  let liqSeen = false;
+  for (const o of opps) {
+    if (o.category === "TRADE") {
+      const usdE18 = o.tvl?.value.usd?.e18 ?? null;
+      if (usdE18 !== null) {
+        liq += usdE18;
+        liqSeen = true;
+      }
+      continue;
+    }
+    const st = classifyOpportunity(o).status;
+    if (st !== "ACTIONABLE" && st !== "LIMITED") continue;
+    if (o.category === "LEND" || o.category === "VAULT" || o.category === "YIELD") caps.earn = true;
+    if (o.category === "FIXED_YIELD") caps.fixed = true;
+    if (o.category === "COLLATERAL") caps.borrow = true;
+    if (o.category === "LP") caps.lp = true;
+    if (!EARN_SIDE.has(o.category)) continue;
+    const h = headlineMetric(o);
+    if (!h || h.side !== "EARN") continue;
+    const v = Number(h.value) / 1e16;
+    if (Number.isFinite(v) && v > 0 && (bestApy === null || v > bestApy)) {
+      bestApy = v;
+      bestApyProtocol = o.protocol.name;
+    }
+  }
+  return { bestApy, bestApyProtocol, caps, liquidityUsd: liqSeen ? Number(liq / 10n ** 14n) / 1e4 : null };
 }
 
 export interface PriceHistory {
@@ -633,7 +676,7 @@ export class AssetIntelligenceService {
           const c = await this.getPriceChart(a.key, "1D").catch(() => null);
           change = c?.changePct != null ? Number(c.changePct) : null;
         }
-        rows.push({ key: a.key, symbol: a.symbol, name: a.name, type: a.type, address: a.address!, usd: prices.get(a.key) ?? null, changePct: change });
+        rows.push({ key: a.key, symbol: a.symbol, name: a.name, type: a.type, address: a.address!, usd: prices.get(a.key) ?? null, changePct: change, ...marketExtras(s.byPrimary.get(a.key) ?? []) });
       }
       return rows;
     });

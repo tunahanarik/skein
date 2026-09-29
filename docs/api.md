@@ -23,9 +23,10 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 |---|---|---|
 | `/api/health` | `{ chainId, readOnly: true, rpc }` (RPC endpoint redacted) | no-store |
 | `/api/assets` | canonical asset list `{ key, symbol, name, type, address, decimals }` | 5 min |
-| `/api/assets/:ref?mode=product\|debug&to=&amount=` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key | 10 s; `no-store` with an amount |
+| `/api/assets/:ref?mode=product\|debug&to=&amount=&exec=1` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key; `exec=1` (with an amount) quotes only venues the app can execute | 10 s; `no-store` with an amount |
 | `/api/portfolio/:address?mode=` | `PortfolioIntelligence` | no-store |
 | `/api/coverage` | `{ rows: CoverageRow[] }` | 15 s |
+| `/api/markets` | `{ rows: MarketRow[] }`, one per canonical asset. Fields: `usd` and `changePct` (today vs the previous close). `bestApy` and `bestApyProtocol`: the highest earn-side headline yield among actionable or limited opportunities. `caps`: `earn`, `fixed`, `borrow` and `lp` flags. `liquidityUsd`: TVL of the trade pools holding the asset, display only | 30 s |
 | `/api/assets/:ref/history` | the Chainlink feed's last 49 rounds (`getRoundData`, one multicall), oldest first, with an exact change. Stock Token feeds include the multiplier | 60 s |
 | `/api/rates/history?id=` | locally recorded headline-rate history of one opportunity, with `recordingSince` (history exists only while this server runs) | 60 s |
 | `/api/logo/:address` | token logo for a canonical asset, proxied from the registry's `logoUrl` | 1 day |
