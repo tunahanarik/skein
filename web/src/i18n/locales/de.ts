@@ -557,4 +557,13 @@ export const de: Record<StringKey, string> = {
   "bridge.feeShort": "Gebühren {x}",
   "quick.note": "Uniswap v3 · Sie signieren in Ihrer eigenen Wallet",
   "picker.install": "Installieren",
+  "pf.title": "Ihr Portfolio auf einen Blick",
+  "pf.lead": "Verbinden Sie Ihre Wallet, um zu sehen, was Sie auf Robinhood Chain halten, was ungenutzt liegt und wo jedes Asset Ertrag bringen kann.",
+  "pf.or": "oder eine beliebige Adresse ansehen",
+  "pf.f1t": "Alle Bestände",
+  "pf.f1d": "Stock Tokens, USDG und ETH mit ihrem Wert.",
+  "pf.f2t": "Ungenutztes Geld",
+  "pf.f2d": "Was Ertrag bringen könnte, und der aktuell höchste Satz.",
+  "pf.f3t": "Offene Positionen",
+  "pf.f3d": "Morpho-, Pendle- und Liquiditätspositionen mit ihrem Zustand.",
 };

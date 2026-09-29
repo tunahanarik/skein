@@ -4,25 +4,74 @@ import { CardView } from "../components/CardView";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, useAsync } from "../components/common";
 import { amount, date, pctE18, shortAddr, usd } from "../format";
 import { useI18n } from "../i18n";
-import { linkProps } from "../router";
+import { linkProps, navigate } from "../router";
 import { code } from "../text";
 import { useWallet } from "../wallet";
-import { WalletEntry } from "./Home";
 
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 
 export function WalletPage() {
   const { t } = useI18n();
   const w = useWallet();
-  if (!w.address) {
-    return (
-      <div style={{ maxWidth: 560 }}>
-        <h1 style={{ marginBottom: 14 }}>{t("wallet.title")}</h1>
-        <WalletEntry compact />
-      </div>
-    );
-  }
+  if (!w.address) return <PortfolioEmpty />;
   return <WalletView key={w.address} address={w.address} />;
+}
+
+/** Before a wallet is connected: one clear action, an address fallback, and what the page will show. */
+function PortfolioEmpty() {
+  const { t } = useI18n();
+  const w = useWallet();
+  const [text, setText] = useState("");
+  const feats = [
+    { icon: "◐", title: t("pf.f1t"), body: t("pf.f1d") },
+    { icon: "↗", title: t("pf.f2t"), body: t("pf.f2d") },
+    { icon: "▤", title: t("pf.f3t"), body: t("pf.f3d") },
+  ];
+  return (
+    <div className="pf-empty">
+      <div className="panel pf-card">
+        <div className="pf-icon" aria-hidden="true">
+          ◎
+        </div>
+        <h1>{t("pf.title")}</h1>
+        <p className="muted">{t("pf.lead")}</p>
+        <button className="btn primary big" disabled={w.connecting} onClick={w.openPicker}>
+          {w.connecting ? t("walletEntry.waiting") : t("walletEntry.use")}
+        </button>
+        <div className="pf-or">
+          <span>{t("pf.or")}</span>
+        </div>
+        <form
+          className="pf-addr"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (w.usePasted(text)) navigate("/wallet");
+          }}
+        >
+          <label className="sr-only" htmlFor="addr">
+            {t("walletEntry.label")}
+          </label>
+          <input id="addr" className="input mono" placeholder={t("walletEntry.placeholder")} spellCheck={false} autoComplete="off" value={text} onChange={(e) => setText(e.target.value)} />
+          <button className="btn" type="submit">
+            {t("walletEntry.view")}
+          </button>
+        </form>
+        {w.error && <div className="small" style={{ color: "var(--bad)" }}>{t(w.error)}</div>}
+        <div className="faint small">{t("walletEntry.footnote")}</div>
+      </div>
+      <div className="pf-feats">
+        {feats.map((f) => (
+          <div key={f.title} className="pf-feat">
+            <span className="ico" aria-hidden="true">
+              {f.icon}
+            </span>
+            <div className="t">{f.title}</div>
+            <div className="muted small">{f.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function WalletView({ address }: { address: string }) {

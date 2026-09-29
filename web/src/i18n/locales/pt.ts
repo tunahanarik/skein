@@ -558,4 +558,13 @@ export const pt: Record<StringKey, string> = {
   "bridge.feeShort": "taxas {x}",
   "quick.note": "Uniswap v3 · você assina na sua própria carteira",
   "picker.install": "Instalar",
+  "pf.title": "Seu portfólio em uma tela",
+  "pf.lead": "Conecte sua carteira para ver o que você tem na Robinhood Chain, o que está parado e onde cada ativo pode render.",
+  "pf.or": "ou veja qualquer endereço",
+  "pf.f1t": "Todos os ativos",
+  "pf.f1d": "Stock tokens, USDG e ETH com seu valor.",
+  "pf.f2t": "Dinheiro parado",
+  "pf.f2d": "O que poderia render, e a maior taxa agora.",
+  "pf.f3t": "Posições abertas",
+  "pf.f3d": "Posições na Morpho, Pendle e de liquidez, com sua saúde.",
 };

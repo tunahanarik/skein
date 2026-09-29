@@ -534,4 +534,13 @@ export const ko: Record<StringKey, string> = {
   "bridge.feeShort": "수수료 {x}",
   "quick.note": "Uniswap v3 · 본인 지갑에서 서명",
   "picker.install": "설치",
+  "pf.title": "한눈에 보는 내 포트폴리오",
+  "pf.lead": "지갑을 연결하면 Robinhood Chain에서 보유한 자산, 놀고 있는 자산, 그리고 각 자산을 활용할 곳을 볼 수 있습니다.",
+  "pf.or": "또는 아무 주소나 보기",
+  "pf.f1t": "모든 보유 자산",
+  "pf.f1d": "주식 토큰, USDG, ETH와 그 가치.",
+  "pf.f2t": "놀고 있는 자금",
+  "pf.f2d": "수익을 낼 수 있는 자산과 현재 가장 높은 이율.",
+  "pf.f3t": "열린 포지션",
+  "pf.f3d": "Morpho, Pendle, 유동성 포지션과 그 상태.",
 };

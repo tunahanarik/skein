@@ -558,4 +558,13 @@ export const es: Record<StringKey, string> = {
   "bridge.feeShort": "comisiones {x}",
   "quick.note": "Uniswap v3 · firmas en tu propia billetera",
   "picker.install": "Instalar",
+  "pf.title": "Tu cartera de un vistazo",
+  "pf.lead": "Conecta tu billetera para ver lo que tienes en Robinhood Chain, lo que está inactivo y dónde puede rendir cada activo.",
+  "pf.or": "o ve cualquier dirección",
+  "pf.f1t": "Todos tus activos",
+  "pf.f1d": "Stock tokens, USDG y ETH con su valor.",
+  "pf.f2t": "Dinero inactivo",
+  "pf.f2d": "Lo que podría rendir y la tasa más alta ahora.",
+  "pf.f3t": "Posiciones abiertas",
+  "pf.f3d": "Posiciones en Morpho, Pendle y de liquidez, con su salud.",
 };

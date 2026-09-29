@@ -560,6 +560,15 @@ export const en = {
   "bridge.feeShort": "fees {x}",
   "quick.note": "Uniswap v3 · you sign in your own wallet",
   "picker.install": "Install",
+  "pf.title": "Your portfolio, in one view",
+  "pf.lead": "Connect your wallet to see what you hold on Robinhood Chain, what is sitting idle, and where each asset can earn.",
+  "pf.or": "or view any address",
+  "pf.f1t": "Every holding",
+  "pf.f1d": "Stock tokens, USDG and ETH with their value.",
+  "pf.f2t": "Idle money",
+  "pf.f2d": "What could be earning, and the highest rate for it now.",
+  "pf.f3t": "Open positions",
+  "pf.f3d": "Morpho, Pendle and liquidity positions with their health.",
 };
 
 export type StringKey = keyof typeof en;
@@ -1097,4 +1106,13 @@ export const tr: Record<StringKey, string> = {
   "bridge.feeShort": "ücret {x}",
   "quick.note": "Uniswap v3 · kendi cüzdanınızda imzalarsınız",
   "picker.install": "Kur",
+  "pf.title": "Portföyün tek ekranda",
+  "pf.lead": "Cüzdanını bağla; Robinhood Chain'de neler tuttuğunu, neyin boşta durduğunu ve her varlığın nerede kazandırabileceğini gör.",
+  "pf.or": "veya herhangi bir adresi görüntüle",
+  "pf.f1t": "Tüm varlıkların",
+  "pf.f1d": "Hisse tokenları, USDG ve ETH, değerleriyle.",
+  "pf.f2t": "Boştaki para",
+  "pf.f2d": "Neyin kazanç getirebileceği ve şu anki en yüksek oran.",
+  "pf.f3t": "Açık pozisyonlar",
+  "pf.f3d": "Morpho, Pendle ve likidite pozisyonların, sağlık durumuyla.",
 };

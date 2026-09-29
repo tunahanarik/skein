@@ -557,4 +557,13 @@ export const zh: Record<StringKey, string> = {
   "bridge.feeShort": "费用 {x}",
   "quick.note": "Uniswap v3 · 在您自己的钱包中签名",
   "picker.install": "安装",
+  "pf.title": "一屏看清您的资产组合",
+  "pf.lead": "连接钱包，查看您在 Robinhood Chain 上持有什么、哪些资金闲置，以及每项资产可以在哪里赚取收益。",
+  "pf.or": "或查看任意地址",
+  "pf.f1t": "全部持仓",
+  "pf.f1d": "股票代币、USDG 和 ETH 及其价值。",
+  "pf.f2t": "闲置资金",
+  "pf.f2d": "哪些资产可以生息，以及当前最高的利率。",
+  "pf.f3t": "未平仓位",
+  "pf.f3d": "Morpho、Pendle 和流动性仓位及其健康状况。",
 };

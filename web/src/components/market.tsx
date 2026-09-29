@@ -174,6 +174,7 @@ type Tick = { symbol: string; ref: string; usd: number | null; change: number | 
 let tickCache: { at: number; ticks: Tick[] } | null = null;
 
 export function Ticker() {
+  useI18n(); // re-render on language change (number format follows the locale)
   const list = useAssetList();
   const [ticks, setTicks] = useState<Tick[] | null>(tickCache?.ticks ?? null);
   useEffect(() => {

@@ -557,4 +557,13 @@ export const ja: Record<StringKey, string> = {
   "bridge.feeShort": "手数料 {x}",
   "quick.note": "Uniswap v3 · ご自身のウォレットで署名",
   "picker.install": "インストール",
+  "pf.title": "ポートフォリオをひと目で",
+  "pf.lead": "ウォレットを接続すると、Robinhood Chain で保有している資産、眠っている資産、そして各資産の活用先がわかります。",
+  "pf.or": "または任意のアドレスを表示",
+  "pf.f1t": "すべての保有資産",
+  "pf.f1d": "株式トークン、USDG、ETH とその評価額。",
+  "pf.f2t": "眠っている資金",
+  "pf.f2d": "利回りを得られる資産と、現在の最も高い利率。",
+  "pf.f3t": "オープンポジション",
+  "pf.f3d": "Morpho、Pendle、流動性のポジションと健全性。",
 };
