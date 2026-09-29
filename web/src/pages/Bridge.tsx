@@ -360,12 +360,6 @@ export function BridgeForm() {
     <div className="bx">
       {chainErr && <div className="notice bad small">{t("bridge.unavailable")}</div>}
 
-      <div className="bx-head">
-        <span className="muted small">{t("bridge.poweredBy")}</span>
-        <button className="icon-btn" aria-label={t("bridge.settings")} aria-expanded={settings} title={t("bridge.settings")} onClick={() => setSettings(!settings)}>
-          ⚙
-        </button>
-      </div>
       {settings && (
         <div className="bx-settings">
           <div>
@@ -394,14 +388,19 @@ export function BridgeForm() {
       <div className="bx-row">
         <div className="bx-top">
           <span className="muted small">{t("bridge.from")}</span>
-          {balance !== null && fromTok && (
-            <span className="muted small">
-              {t("swap.balance", { x: amount(formatUnits(balance, fromTok.decimals), 6) })}{" "}
-              <button className="linkish" onClick={() => setAmt(formatUnits(balance, fromTok.decimals))} disabled={busy}>
-                {t("bridge.max")}
-              </button>
-            </span>
-          )}
+          <span className="muted small bx-tools">
+            {balance !== null && fromTok && (
+              <>
+                {t("swap.balance", { x: amount(formatUnits(balance, fromTok.decimals), 6) })}{" "}
+                <button className="linkish" onClick={() => setAmt(formatUnits(balance, fromTok.decimals))} disabled={busy}>
+                  {t("bridge.max")}
+                </button>
+              </>
+            )}
+            <button className="linkish bx-set" aria-expanded={settings} onClick={() => setSettings(!settings)} disabled={busy}>
+              {t("bridge.settings")}
+            </button>
+          </span>
         </div>
         <div className="bx-mid">
           <input className="bx-amt num" inputMode="decimal" placeholder="0" aria-label={t("bridge.amount")} value={amt} onChange={(e) => setAmt(e.target.value.replace(",", ".").replace(/[^0-9.]/g, ""))} disabled={busy} />

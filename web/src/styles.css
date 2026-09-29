@@ -869,3 +869,17 @@ table.data tbody tr:hover { background: transparent; }
 .qa:hover { background: var(--surface-2); color: var(--text); }
 .qa.on { background: var(--text); color: var(--bg); }
 .qa:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+
+/* bridge panel matches the swap panel: same boxes, spacing, type sizes */
+.bx { gap: 12px; }
+.bx-row, .qs-box, .drawer-body .bx-row { padding: 14px 16px; border-radius: 20px; gap: 6px; }
+.bx-amt, .drawer-body .bx-amt, .qs-amt { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+.bx-flip { margin: -22px 0; }
+.bx-flip .icon-btn.round { width: 34px; height: 34px; font-size: 15px; }
+.bx-top { align-items: center; }
+.bx-tools { display: inline-flex; align-items: center; gap: 10px; }
+.bx-set { font-size: 12.5px; color: var(--text-2); }
+.bx-set[aria-expanded="true"] { color: var(--text); }
+@media (max-width: 560px) { .bx-amt, .drawer-body .bx-amt, .qs-amt { font-size: 22px; } }
+.qs-box .picker-btn { background: var(--surface-3); border-radius: 99px; padding: 6px 12px 6px 6px; font-size: 15px; }
+.qs-box .picker-btn:hover { background: var(--btn-2-hover); }
