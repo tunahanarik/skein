@@ -1237,3 +1237,9 @@ header.top > .btn, header.top > .row { flex: none; }
 @media (max-width: 600px) { .mk-table .w-price, .mk-table .w-today, .mk-table .w-yield { width: 24%; } .mk-table .w-n { width: 30px; } .mk-table .w-star { width: 40px; } }
 .tm-sep { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 8px 4px; }
 .tm-sep:first-child { padding-top: 2px; }
+/* token modal: both columns scroll inside the fixed-height dialog */
+.tmodal { grid-template-rows: minmax(0, 1fr); }
+.tm-chains, .tm-tokens, .tm-list { min-height: 0; }
+.tm-chains { overscroll-behavior: contain; scrollbar-width: thin; }
+.tm-list { overscroll-behavior: contain; }
+@media (max-width: 600px) { .tmodal { grid-template-rows: 150px minmax(0, 1fr); } }
