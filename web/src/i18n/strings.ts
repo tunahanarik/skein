@@ -676,6 +676,9 @@ export const en = {
   "markets.reset": "Reset",
   "bridge.mainNets": "Main networks",
   "bridge.otherNets": "Other networks",
+  "nav.rewards": "Rewards",
+  "nav.soon": "Soon",
+  "nav.rewardsSoon": "Rewards are coming soon",
 };
 
 export type StringKey = keyof typeof en;
@@ -1329,4 +1332,7 @@ export const tr: Record<StringKey, string> = {
   "markets.reset": "Sıfırla",
   "bridge.mainNets": "Ana ağlar",
   "bridge.otherNets": "Diğer ağlar",
+  "nav.rewards": "Ödüller",
+  "nav.soon": "Yakında",
+  "nav.rewardsSoon": "Ödüller yakında geliyor",
 };

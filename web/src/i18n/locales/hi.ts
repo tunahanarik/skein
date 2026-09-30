@@ -650,4 +650,7 @@ export const hi: Record<StringKey, string> = {
   "markets.reset": "रीसेट",
   "bridge.mainNets": "मुख्य नेटवर्क",
   "bridge.otherNets": "अन्य नेटवर्क",
+  "nav.rewards": "रिवॉर्ड",
+  "nav.soon": "जल्द",
+  "nav.rewardsSoon": "रिवॉर्ड जल्द आ रहे हैं",
 };

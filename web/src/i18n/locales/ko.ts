@@ -650,4 +650,7 @@ export const ko: Record<StringKey, string> = {
   "markets.reset": "초기화",
   "bridge.mainNets": "주요 네트워크",
   "bridge.otherNets": "기타 네트워크",
+  "nav.rewards": "리워드",
+  "nav.soon": "곧 출시",
+  "nav.rewardsSoon": "리워드가 곧 출시됩니다",
 };

@@ -674,4 +674,7 @@ export const ru: Record<StringKey, string> = {
   "markets.reset": "Сбросить",
   "bridge.mainNets": "Основные сети",
   "bridge.otherNets": "Другие сети",
+  "nav.rewards": "Награды",
+  "nav.soon": "Скоро",
+  "nav.rewardsSoon": "Награды скоро появятся",
 };

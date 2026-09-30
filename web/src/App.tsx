@@ -195,6 +195,11 @@ function Rail() {
           <Icon name="bridge" size={21} />
           <span>{t("quick.bridge")}</span>
         </button>
+        <span className="rail-i soon" aria-disabled="true" title={t("nav.rewardsSoon")}>
+          <Icon name="gift" size={21} />
+          <span>{t("nav.rewards")}</span>
+          <span className="soon-tag">{t("nav.soon")}</span>
+        </span>
       </nav>
       <div className="rail-foot">
         <ThemeToggle />

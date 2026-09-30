@@ -673,4 +673,7 @@ export const zh: Record<StringKey, string> = {
   "markets.reset": "重置",
   "bridge.mainNets": "主要网络",
   "bridge.otherNets": "其他网络",
+  "nav.rewards": "奖励",
+  "nav.soon": "即将推出",
+  "nav.rewardsSoon": "奖励即将推出",
 };

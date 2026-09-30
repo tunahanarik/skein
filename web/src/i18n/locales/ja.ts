@@ -673,4 +673,7 @@ export const ja: Record<StringKey, string> = {
   "markets.reset": "リセット",
   "bridge.mainNets": "主要ネットワーク",
   "bridge.otherNets": "その他のネットワーク",
+  "nav.rewards": "リワード",
+  "nav.soon": "近日",
+  "nav.rewardsSoon": "リワードは近日公開",
 };

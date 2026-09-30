@@ -674,4 +674,7 @@ export const es: Record<StringKey, string> = {
   "markets.reset": "Restablecer",
   "bridge.mainNets": "Redes principales",
   "bridge.otherNets": "Otras redes",
+  "nav.rewards": "Recompensas",
+  "nav.soon": "Pronto",
+  "nav.rewardsSoon": "Las recompensas llegan pronto",
 };

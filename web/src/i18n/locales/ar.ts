@@ -674,4 +674,7 @@ export const ar: Record<StringKey, string> = {
   "markets.reset": "إعادة تعيين",
   "bridge.mainNets": "الشبكات الرئيسية",
   "bridge.otherNets": "شبكات أخرى",
+  "nav.rewards": "المكافآت",
+  "nav.soon": "قريبًا",
+  "nav.rewardsSoon": "المكافآت قادمة قريبًا",
 };

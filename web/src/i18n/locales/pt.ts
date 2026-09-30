@@ -674,4 +674,7 @@ export const pt: Record<StringKey, string> = {
   "markets.reset": "Redefinir",
   "bridge.mainNets": "Redes principais",
   "bridge.otherNets": "Outras redes",
+  "nav.rewards": "Recompensas",
+  "nav.soon": "Em breve",
+  "nav.rewardsSoon": "As recompensas chegam em breve",
 };

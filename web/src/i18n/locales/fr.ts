@@ -673,4 +673,7 @@ export const fr: Record<StringKey, string> = {
   "markets.reset": "Réinitialiser",
   "bridge.mainNets": "Réseaux principaux",
   "bridge.otherNets": "Autres réseaux",
+  "nav.rewards": "Récompenses",
+  "nav.soon": "Bientôt",
+  "nav.rewardsSoon": "Les récompenses arrivent bientôt",
 };
