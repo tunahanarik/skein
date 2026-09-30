@@ -671,4 +671,6 @@ export const fr: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "Taille = liquidité du pool ; couleur = variation du jour.",
   "markets.reset": "Réinitialiser",
+  "bridge.mainNets": "Réseaux principaux",
+  "bridge.otherNets": "Autres réseaux",
 };

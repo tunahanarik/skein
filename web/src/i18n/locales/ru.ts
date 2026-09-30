@@ -672,4 +672,6 @@ export const ru: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "Размер = ликвидность пула, цвет = изменение за сегодня.",
   "markets.reset": "Сбросить",
+  "bridge.mainNets": "Основные сети",
+  "bridge.otherNets": "Другие сети",
 };

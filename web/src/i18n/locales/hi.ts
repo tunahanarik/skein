@@ -648,4 +648,6 @@ export const hi: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "टाइल का आकार पूल तरलता, रंग आज का बदलाव दिखाता है।",
   "markets.reset": "रीसेट",
+  "bridge.mainNets": "मुख्य नेटवर्क",
+  "bridge.otherNets": "अन्य नेटवर्क",
 };

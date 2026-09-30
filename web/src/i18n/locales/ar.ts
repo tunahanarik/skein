@@ -672,4 +672,6 @@ export const ar: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "حجم المربع = سيولة المجمع، واللون = تغيّر اليوم.",
   "markets.reset": "إعادة تعيين",
+  "bridge.mainNets": "الشبكات الرئيسية",
+  "bridge.otherNets": "شبكات أخرى",
 };

@@ -648,4 +648,6 @@ export const ko: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "타일 크기는 풀 유동성, 색은 오늘의 변동을 나타냅니다.",
   "markets.reset": "초기화",
+  "bridge.mainNets": "주요 네트워크",
+  "bridge.otherNets": "기타 네트워크",
 };

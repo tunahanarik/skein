@@ -1235,3 +1235,5 @@ header.top > .btn, header.top > .row { flex: none; }
 .mk-table td { overflow: hidden; }
 @media (max-width: 1200px) { .mk-table .w-price, .mk-table .w-today, .mk-table .w-yield, .mk-table .w-liq, .mk-table .w-chart { width: 14%; } }
 @media (max-width: 600px) { .mk-table .w-price, .mk-table .w-today, .mk-table .w-yield { width: 24%; } .mk-table .w-n { width: 30px; } .mk-table .w-star { width: 40px; } }
+.tm-sep { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 8px 4px; }
+.tm-sep:first-child { padding-top: 2px; }

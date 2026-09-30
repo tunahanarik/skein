@@ -671,4 +671,6 @@ export const ja: Record<StringKey, string> = {
   "markets.tag.lp": "LP",
   "markets.mapNote": "タイルの大きさはプール流動性、色は今日の変動を表します。",
   "markets.reset": "リセット",
+  "bridge.mainNets": "主要ネットワーク",
+  "bridge.otherNets": "その他のネットワーク",
 };

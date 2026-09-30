@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { formatUnits, parseUnits, type Address, type Hex } from "viem";
 import { allowanceData, approveData, balanceData, chains as fetchChains, checkBridgeQuote, NATIVE, quote as fetchQuote, scanUrl, status as fetchStatus, tokens as fetchTokens, validRecipient, type Chain, type Quote, type QuoteRequest, type Token } from "../bridge/lifi";
 import { LIFI_DIAMONDS } from "../bridge/diamonds";
@@ -10,6 +10,15 @@ import { chainIdOf, errorKind, switchChain, waitReceipt } from "../swap/rpc";
 import { useWallet, type Eip1193 } from "../wallet";
 
 const RH = 4663;
+/**
+ * Main networks, shown first in this order (by volume and how often people bridge from them);
+ * every other network follows alphabetically.
+ */
+const MAIN_CHAINS = [RH, 1, 8453, 42161, 10, 56, 137, 1151111081099710, 20000000000001, 43114, 324, 59144, 534352, 130, 146];
+const mainRank = (id: number) => {
+  const i = MAIN_CHAINS.indexOf(id);
+  return i < 0 ? Infinity : i;
+};
 const SLIPPAGES = [10, 50, 100, 300] as const; // bps
 /** Shown first in token lists, in this order (by symbol). */
 const MAJOR = ["ETH", "WETH", "USDC", "USDT", "USDG", "DAI", "WBTC", "cbBTC", "USDe", "BNB", "POL", "AVAX", "SOL", "BTC", "SUI"];
@@ -87,15 +96,20 @@ function TokenModal({ title, side, chains, chainId, canonical, onPick, onClose }
     <Modal title={title} onClose={onClose}>
       <div className="tmodal">
         <div className="tm-chains" role="listbox" aria-label={t("bridge.network")}>
-          {chains.map((c) => {
+          {chains.map((c, i) => {
             // A bridge starts only where a transaction can be signed (EVM, pinned diamond).
             const off = side === "from" && !c.source;
+            const firstOther = mainRank(c.id) === Infinity && (i === 0 || mainRank(chains[i - 1]!.id) !== Infinity);
             return (
+              <Fragment key={c.id}>
+              {i === 0 && mainRank(c.id) !== Infinity && <div className="tm-sep">{t("bridge.mainNets")}</div>}
+              {firstOther && <div className="tm-sep">{t("bridge.otherNets")}</div>}
               <button key={c.id} role="option" aria-selected={c.id === cid} aria-disabled={off} disabled={off} title={off ? t("bridge.destOnly") : undefined} className={c.id === cid ? "on" : undefined} onClick={() => setCid(c.id)}>
                 <ChainIcon chain={c} size={20} />
                 <span className="cn">{c.name}</span>
                 {!c.source && <span className="dest-tag">{t("bridge.destOnlyShort")}</span>}
               </button>
+              </Fragment>
             );
           })}
         </div>
@@ -162,7 +176,7 @@ export function BridgeForm() {
   useEffect(() => {
     const ac = new AbortController();
     fetchChains(ac.signal)
-      .then((c) => setChains(c.sort((a, b) => (a.id === RH ? -1 : b.id === RH ? 1 : a.name.localeCompare(b.name)))))
+      .then((c) => setChains(c.sort((a, b) => mainRank(a.id) - mainRank(b.id) || a.name.localeCompare(b.name))))
       .catch((e) => (e as Error).name !== "AbortError" && setChainErr(true));
     return () => ac.abort();
   }, []);
