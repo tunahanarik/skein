@@ -1539,3 +1539,6 @@ footer.bottom { border-top: 1px solid var(--border); }
 .tc-open { font-size: 12px; margin-left: 6px; }
 .tchart .pchart { background: transparent; padding: 0; }
 .tchart .pc-foot { display: none; }
+/* rail has no Swap / Bridge: the header shortcuts stay reachable on narrow screens as icons */
+@media (max-width: 900px) { .hq { display: inline-flex; margin-left: 8px; padding-left: 8px; } .hq button, .hq a { font-size: 0; gap: 0; padding: 7px 8px; } .hq .icon { width: 16px; height: 16px; } }
+@media (max-width: 720px) { .hq { border-left: 0; margin-left: 0; padding-left: 0; } .hq a { display: none; } }

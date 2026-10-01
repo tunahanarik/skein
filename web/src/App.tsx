@@ -95,8 +95,6 @@ function ThemeToggle() {
 function Rail() {
   const { t } = useI18n();
   const route = useRoute();
-  const quick = useQuick();
-  const from = route.name === "asset" ? route.ref : undefined;
   const on = (...n: string[]) => (n.includes(route.name) ? " on" : "");
   return (
     <aside className="rail" aria-label="Main">
@@ -120,14 +118,6 @@ function Rail() {
           <Icon name="wallet" size={21} />
           <span>{t("nav.portfolio")}</span>
         </a>
-        <button className="rail-i" onClick={() => quick.open("swap", from)}>
-          <Icon name="swap" size={21} />
-          <span>{t("quick.swap")}</span>
-        </button>
-        <button className={`rail-i${on("bridge")}`} onClick={() => quick.open("bridge")}>
-          <Icon name="bridge" size={21} />
-          <span>{t("quick.bridge")}</span>
-        </button>
         <span className="rail-i soon" aria-disabled="true" title={t("nav.rewardsSoon")}>
           <Icon name="gift" size={21} />
           <span>{t("nav.rewards")}</span>
