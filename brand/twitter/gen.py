@@ -44,11 +44,10 @@ pages["header-wallet"] = (1500, 500, BASE + """
  <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent 10%,#000 55%)"></div>
  <div style="position:absolute;right:-60px;top:-200px;width:820px;height:820px;border-radius:50%;background:radial-gradient(circle,#C8F16912,transparent 62%)"></div>
 
- <div style="position:absolute;left:96px;top:70px;width:640px">
+ <div style="position:absolute;left:96px;top:52px;width:640px">
   <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; WALLET RESEARCH · ROBINHOOD CHAIN</div>
   <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
   <div style="font-size:40px;font-weight:700;letter-spacing:-1px;line-height:1.12;margin-top:22px">See what any wallet<br>could be <span class=l>doing.</span></div>
-  <div class=mu style="font-size:18.5px;line-height:1.5;margin-top:16px;width:560px">Paste an address. Skein reads every asset it holds, spots idle money and finds where each one can earn, lend, pool or be borrowed against.</div>
  </div>
 
  <div style="position:absolute;right:84px;top:56px;width:610px;border:1px solid #2A2F28;background:#090B09f2;box-shadow:0 30px 80px #0008">
@@ -86,7 +85,7 @@ pages["header-map"] = (1500, 500, BASE + f"""
 <div style="position:relative;width:1500px;height:500px">
  <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent 25%,#000 70%)"></div>
  <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke-width=1.5>{''.join(paths)}</svg>
- <div style="position:absolute;left:96px;top:110px;width:440px">
+ <div style="position:absolute;left:96px;top:52px;width:440px">
   <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN</div>
   <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
   <div style="font-size:34px;font-weight:700;letter-spacing:-.8px;line-height:1.15;margin-top:22px">Every asset.<br>Every way to <span class=l>use it.</span></div>
@@ -116,11 +115,10 @@ pages["header-map-lime"] = (1500, 500, BASE + f"""
 <div style="position:relative;width:1500px;height:500px;background:radial-gradient(120% 140% at 0% 0%,#D3F57E,#C8F169 45%,#BDE85C);color:{D}">
  <div style="position:absolute;inset:0;background-image:linear-gradient({D}0d 1px,transparent 1px),linear-gradient(90deg,{D}0d 1px,transparent 1px);background-size:50px 50px;-webkit-mask:linear-gradient(90deg,transparent 25%,#000 70%)"></div>
  <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke-width=1.4 stroke-linecap=round>{''.join(lpaths)}</svg>
- <div style="position:absolute;left:96px;top:84px;width:440px">
+ <div style="position:absolute;left:96px;top:52px;width:440px">
   <div class=m style="font-size:12px;letter-spacing:3.2px;font-weight:500;color:{OLIVE}"><span style="display:inline-block;width:7px;height:7px;background:{D};vertical-align:1px;margin-right:12px"></span>ROBINHOOD CHAIN</div>
   <div class=m style="font-size:80px;font-weight:700;letter-spacing:-4.5px;line-height:1;margin-top:20px">skein<span style="color:{OLIVE}">/</span></div>
   <div style="font-size:35px;font-weight:600;letter-spacing:-1.1px;line-height:1.14;margin-top:24px">Every asset.<br><span style="color:{OLIVE}">Every way to use it.</span></div>
-  <div style="font-size:16.5px;font-weight:500;line-height:1.55;margin-top:16px;color:{D}a8">Stock tokens, stablecoins and crypto,<br>mapped across 7 protocols.</div>
  </div>
  {lnode(W_X,227,210,"WALLET","0x ····",True)}
  {''.join(lnode(A_X,y,200,s_,k) for s_,k,y in assets)}
@@ -135,9 +133,9 @@ pages["header-terminal-lime"] = (1500, 500, BASE + f"""
 <style>body{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}}</style>
 <div style="position:relative;width:1500px;height:500px;background:radial-gradient(120% 140% at 0% 0%,#D3F57E,#C8F169 45%,#BDE85C);color:{D}">
  <div style="position:absolute;inset:0;background-image:linear-gradient({D}0d 1px,transparent 1px),linear-gradient(90deg,{D}0d 1px,transparent 1px);background-size:50px 50px;-webkit-mask:linear-gradient(90deg,transparent 30%,#000 70%)"></div>
- <div style="position:absolute;left:110px;top:94px;width:640px">
+ <div style="position:absolute;left:96px;top:46px;width:640px">
   <div class=m style="font-size:12px;letter-spacing:3.2px;font-weight:500;color:{OLIVE}"><span style="display:inline-block;width:7px;height:7px;background:{D};vertical-align:1px;margin-right:12px"></span>ROBINHOOD CHAIN · 4663</div>
-  <div class=m style="font-size:104px;font-weight:700;letter-spacing:-6px;line-height:1;margin-top:18px">skein<span style="color:{OLIVE}">/</span></div>
+  <div class=m style="font-size:88px;font-weight:700;letter-spacing:-5px;line-height:1;margin-top:18px">skein<span style="color:{OLIVE}">/</span></div>
   <div style="font-size:34px;font-weight:600;letter-spacing:-1px;line-height:1.16;margin-top:24px">Read any wallet.<br><span style="color:{OLIVE}">Find what every asset can do.</span></div>
  </div>
  <div style="position:absolute;right:110px;top:74px;width:570px;background:{D};border:1.5px solid {D};box-shadow:0 24px 50px #3A4D0F45">
@@ -199,7 +197,7 @@ pages["header-braid"] = (1500, 500, BASE + AA + f"""
  <div class=m style="position:absolute;left:600px;top:96px;display:flex;gap:30px;font-size:11.5px;letter-spacing:2.4px;color:#8D948A">
   <span>{sw(L_)}STOCK TOKENS</span><span>{sw(C_)}STABLECOINS</span><span>{sw(O_)}CRYPTO</span>
  </div>
- <div style="position:absolute;left:96px;top:96px;width:460px">
+ <div style="position:absolute;left:96px;top:50px;width:460px">
   <div class=m style="font-size:84px;font-weight:700;letter-spacing:-5px;line-height:1">skein<span class=l>/</span></div>
   <div style="font-size:44px;font-weight:600;letter-spacing:-1.4px;line-height:1.08;margin-top:26px">Untangle<br>any <span class=l>wallet.</span></div>
  </div>
@@ -223,7 +221,7 @@ pages["header-orbit"] = (1500, 500, BASE + AA + f"""
  {ring(95, ["NVDA", "USDG", "WETH", "cbBTC"], "asset", -math.pi / 2 + 0.4)}
  {ring(190, ["EARN", "LEND", "BORROW", "POOL", "FIXED", "TRADE"], "act", -math.pi / 2)}
  <div class=m style="position:absolute;left:{CX}px;top:{CY}px;transform:translate(-50%,-50%);width:84px;height:84px;display:grid;place-items:center;background:{L_};color:#0A0F04;font-size:34px;font-weight:800;letter-spacing:-3px;box-shadow:0 0 60px {L_}55">s/</div>
- <div style="position:absolute;left:96px;top:104px;width:520px">
+ <div style="position:absolute;left:96px;top:46px;width:520px">
   <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; WALLET RESEARCH</div>
   <div class=m style="font-size:84px;font-weight:700;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
   <div style="font-size:38px;font-weight:600;letter-spacing:-1.2px;line-height:1.12;margin-top:24px">One wallet.<br><span class=mu>Every option</span> <span class=l>around it.</span></div>
@@ -232,7 +230,7 @@ pages["header-orbit"] = (1500, 500, BASE + AA + f"""
 
 # E. Asset wall: tickers on the chain, a few lit up; the wordmark on top.
 TICK = [t for t in "AAOI AAPL ABCL ADBE AEHR AEIS ALAB AMAT AMBA AMC AMD AMKR AMZN ANET APLD APP ASML ASTS AUR AVAV AVGO AXON AXTI BABA BND BULL CBRS CCL CEG CELH CIEN CLOV CLSK COHR COIN COST CRCL CRDO CRM CRWD CRWV CSCO CTSH CVNA DDOG DELL DJT DOCN ELF EWT EWY FICO FIG FISV FLNC FTNT FUTU GEV GLD GLW GLXY GME GOOGL HIMS HPE HWM IBM INDA INTC INTU IONQ IREN JNJ JOBY KLAC KTOS LLY LMT LRCX LULU LUNR MDB META MRNA MRVL MSFT MSTR MU NBIS NET NFLX NOW NVDA OKLO ORCL PANW PLTR QBTS QCOM QQQ RBLX RDDT RGTI RIVN RKLB SHOP SLV SMCI SMH SNOW SOFI SOUN SPY TSLA TSM TTD UNH USDG WETH cbBTC USDe VRT VST VTI WDAY XOM ZM".split()]
-LITS = {(1, 2): "NVDA", (2, 11): "USDG", (3, 4): "TSLA", (6, 1): "WETH", (7, 12): "cbBTC", (8, 4): "SPY", (1, 13): "AAPL", (6, 10): "GLD", (8, 9): "COIN", (2, 0): "PLTR"}
+LITS = {(1, 2): "NVDA", (2, 11): "USDG", (3, 4): "TSLA", (4, 13): "WETH", (7, 12): "cbBTC", (8, 4): "SPY", (1, 13): "AAPL", (6, 10): "GLD", (8, 9): "COIN", (2, 0): "PLTR"}
 def wall():
     cells = []
     for r in range(10):
@@ -244,7 +242,7 @@ def wall():
 
 pages["header-wall"] = (1500, 500, BASE + AA + f"""
 <div style="position:relative;width:1500px;height:500px;overflow:hidden">
- <div style="position:absolute;inset:0">{wall()}</div>
+ <div style="position:absolute;inset:0;-webkit-mask:radial-gradient(circle at 229px 530px,transparent 250px,#000 360px)">{wall()}</div>
  <div style="position:absolute;inset:0;background:radial-gradient(42% 70% at 50% 50%,#060706f2 45%,#06070600)"></div>
  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-54%);text-align:center;white-space:nowrap">
   <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN</div>
@@ -257,7 +255,7 @@ pages["header-wall"] = (1500, 500, BASE + AA + f"""
 pages["header-search"] = (1500, 500, BASE + AA + f"""
 <div style="position:relative;width:1500px;height:500px;background:radial-gradient(120% 140% at 0% 0%,#D3F57E,#C8F169 45%,#BDE85C);color:{D}">
  <div style="position:absolute;inset:0;background-image:linear-gradient({D}0d 1px,transparent 1px),linear-gradient(90deg,{D}0d 1px,transparent 1px);background-size:50px 50px;-webkit-mask:radial-gradient(70% 90% at 50% 50%,transparent 30%,#000)"></div>
- <div style="position:absolute;left:50%;top:104px;transform:translateX(-50%);width:900px;text-align:center">
+ <div style="position:absolute;left:50%;top:58px;transform:translateX(-50%);width:900px;text-align:center">
   <div class=m style="font-size:76px;font-weight:700;letter-spacing:-4.5px;line-height:1">skein<span style="color:{OLIVE}">/</span></div>
   <div style="font-size:26px;font-weight:600;letter-spacing:-.6px;margin-top:16px;color:{OLIVE}">See what any wallet could be doing.</div>
   <div style="margin-top:30px;display:flex;align-items:stretch;background:{D};box-shadow:0 24px 50px #3A4D0F45;text-align:left">
@@ -272,6 +270,11 @@ pages["header-search"] = (1500, 500, BASE + AA + f"""
  </div>
 </div>""")
 
+PREVIEW = '<div style="position:absolute;left:16px;top:317px;width:426px;height:426px;border-radius:50%;border:8px solid #000;overflow:hidden;background:#000;z-index:9"><img src="profile-lime.png" style="width:100%;height:100%;display:block"></div>'
+(pathlib.Path(__file__).parent / "preview").mkdir(exist_ok=True)
 for name, (w, h, html) in pages.items():
+    if name.startswith("header"):
+        head, body = html.split('</style>', 1)
+        (pathlib.Path(__file__).parent / "preview" / f"{name}.html").write_text(f"<!doctype html><html><head>{head}</style></head><body style='width:{w}px;height:{h}px;position:relative'>{body}{PREVIEW.replace('src="profile-lime.png', 'src="data:image/png;base64,' + __import__('base64').b64encode((pathlib.Path(__file__).parent / 'profile-lime.png').read_bytes()).decode())}</body></html>", encoding="utf-8")
     (pathlib.Path(__file__).parent / f"{name}.html").write_text(f"<!doctype html><html><head>{html.split('</style>',1)[0]}</style></head><body style='width:{w}px;height:{h}px'>{html.split('</style>',1)[1]}</body></html>", encoding="utf-8")
     print(name, w, h)
