@@ -1,7 +1,8 @@
 import { api } from "../api";
 import { AlertList } from "../components/AlertForm";
 import { Avatar, useAssetList, useAsync } from "../components/common";
-import { CommandHero } from "../components/CommandHero";
+import { StatusLine, WalletResearch } from "../components/CommandHero";
+import { Icon, ProtocolLogo } from "../components/icons";
 import { usePortfolio, WalletSummary } from "../components/market";
 import { useI18n } from "../i18n";
 import { linkProps } from "../router";
@@ -10,7 +11,14 @@ import { useWatchlist } from "../watchlist";
 
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 
-/** Home: the wallet-first hero, then what belongs to this viewer (wallet summary, watchlist, alerts). */
+const STEPS = [
+  { n: "01", title: "home.how.s1t", text: "home.how.s1d" },
+  { n: "02", title: "home.how.s2t", text: "home.how.s2d" },
+  { n: "03", title: "home.how.s3t", text: "home.how.s3d" },
+] as const;
+const PROTOCOLS = ["Morpho", "Pendle", "Beefy", "Uniswap", "Ramses", "Spark", "Steer"];
+
+/** Home: information and wallet search only; the command terminal has its own page. */
 export function HomePage() {
   const { t } = useI18n();
   const list = useAssetList();
@@ -22,7 +30,10 @@ export function HomePage() {
 
   return (
     <div className="home-wide">
-      <CommandHero protocols={rows ? new Set(rows.flatMap((r) => r.protocols)).size : null} />
+      <section className="cmd-hero home-hero">
+        <StatusLine protocols={rows ? new Set(rows.flatMap((r) => r.protocols)).size : null} />
+        <WalletResearch />
+      </section>
 
       {portfolio && (
         <section className="section">
@@ -32,6 +43,41 @@ export function HomePage() {
           <WalletSummary p={portfolio} />
         </section>
       )}
+
+      <section className="section how">
+        <div className="section-head">
+          <h2>{t("home.how.title")}</h2>
+        </div>
+        <div className="how-steps">
+          {STEPS.map((x) => (
+            <div key={x.n} className="how-step">
+              <span className="n">{x.n}</span>
+              <b>{t(x.title)}</b>
+              <span>{t(x.text)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head">
+          <h2>{t("home.proto.title")}</h2>
+          <span className="spacer" />
+          <a className="small" {...linkProps("/terminal")}>
+            <Icon name="terminal" size={14} /> {t("home.proto.terminal")}
+          </a>
+        </div>
+        <div className="proto-strip">
+          {PROTOCOLS.map((p) => (
+            <span key={p} className="proto">
+              <ProtocolLogo name={p} size={22} />
+              {p}
+            </span>
+          ))}
+        </div>
+        <p className="cmd-note">{t("home.proto.note")}</p>
+      </section>
+
 
       {watch.keys.length > 0 && (
         <section className="section">

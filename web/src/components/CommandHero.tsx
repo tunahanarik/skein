@@ -73,7 +73,7 @@ const WHY: { icon: IconName; title: "home.w.b1t" | "home.w.b2t" | "home.w.b3t" |
 ];
 
 /** Left: why and how to explore a wallet (the main use). */
-function WalletResearch() {
+export function WalletResearch() {
   const { t } = useI18n();
   const w = useWallet();
   const [addr, setAddr] = useState("");
@@ -85,7 +85,7 @@ function WalletResearch() {
   };
   return (
     <div className="hero-card hw">
-      <div className="hero-step">01 · {t("home.w.step")}</div>
+      <div className="hero-step">{t("home.w.step")}</div>
       <h1 className="hw-title">{t("home.w.title")}</h1>
       <p className="hw-lead">{t("home.w.lead")}</p>
       <ul className="hw-why">
@@ -115,7 +115,7 @@ function WalletResearch() {
 }
 
 /** Right: the command terminal; results update live for the asset the user names or picks. */
-function CommandTerminal() {
+export function CommandTerminal() {
   const { t } = useI18n();
   const list = useAssetList();
   const quick = useQuick();
@@ -167,7 +167,7 @@ function CommandTerminal() {
   }
   return (
     <div className="hero-card ht">
-      <div className="hero-step">02 · {t("home.c.step")}</div>
+      <div className="hero-step">{t("home.c.step")}</div>
       <div className="cmd-q">// {t("home.c.question")}</div>
       <form className={`cmd-line${err ? " err" : ""}`} onSubmit={submit}>
         <span className="cmd-prompt" aria-hidden="true">
@@ -272,34 +272,25 @@ function CommandTerminal() {
   );
 }
 
-/**
- * The home hero: why and how to explore a wallet (left), and a command terminal whose results update
- * live for the asset the user chooses (right). Read-only; nothing is signed here.
- */
-export function CommandHero({ protocols }: { protocols: number | null }) {
+/** Status line shared by Home and Terminal: wordmark, live block, asset and protocol counts. */
+export function StatusLine({ protocols }: { protocols: number | null }) {
   const { t } = useI18n();
   const list = useAssetList();
   const live = useLive({});
   return (
-    <section className="cmd-hero">
-      <div className="cmd-status">
-        <span className="wordmark">
-          skein<span className="sl">/</span>
+    <div className="cmd-status">
+      <span className="wordmark">
+        skein<span className="sl">/</span>
+      </span>
+      <span className="spacer" />
+      {live.block && (
+        <span>
+          {t("home.cmd.block")} {Number(live.block).toLocaleString("en-US")}
         </span>
-        <span className="spacer" />
-        {live.block && (
-          <span>
-            {t("home.cmd.block")} {Number(live.block).toLocaleString("en-US")}
-          </span>
-        )}
-        <span>{t("home.cmd.assets", { n: list?.length ?? "…" })}</span>
-        {protocols !== null && <span>{t("home.cmd.protocols", { n: protocols })}</span>}
-        <span className={`cmd-live${live.connected ? " on" : ""}`}>● {t("home.cmd.live")}</span>
-      </div>
-      <div className="hero-grid">
-        <WalletResearch />
-        <CommandTerminal />
-      </div>
-    </section>
+      )}
+      <span>{t("home.cmd.assets", { n: list?.length ?? "…" })}</span>
+      {protocols !== null && <span>{t("home.cmd.protocols", { n: protocols })}</span>}
+      <span className={`cmd-live${live.connected ? " on" : ""}`}>● {t("home.cmd.live")}</span>
+    </div>
   );
 }

@@ -1453,3 +1453,30 @@ footer.bottom { border-top: 1px solid var(--border); }
 @keyframes cr-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .cr-wrap { transition: none; } .cr-row, .cr-scan::after { animation: none; } }
 @media (max-width: 560px) { .cmd-line { flex-wrap: wrap; } .cmd-line input { flex-basis: 70%; } }
+
+/* home (information + wallet search) and the terminal page */
+.home-hero .hw { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 48px; row-gap: 12px; grid-template-areas: "step why" "title why" "lead why" "form why" "err why" "note why"; padding-top: 6px; }
+.home-hero .hw > .hero-step { grid-area: step; }
+.home-hero .hw > .hw-title { grid-area: title; font-size: 32px; }
+.home-hero .hw > .hw-lead { grid-area: lead; font-size: 15px; }
+.home-hero .hw > .hw-form { grid-area: form; }
+.home-hero .hw > .cmd-err { grid-area: err; }
+.home-hero .hw > .cmd-note { grid-area: note; }
+.home-hero .hw > .hw-why { grid-area: why; grid-template-columns: 1fr; align-content: center; gap: 14px; border-left: 1px solid var(--border); padding-left: 32px; }
+.home-hero .hw-form input { font-size: 17px; padding: 13px 0; }
+.how-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.how-step { border: 1px solid var(--border); border-radius: 4px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+.how-step .n { font-family: var(--mono-ui); font-size: 12px; font-weight: 700; color: var(--accent); }
+.how-step b { font-size: 15px; font-weight: 600; }
+.how-step span:last-child { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.proto-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+.proto { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px 7px 8px; font-size: 13px; font-weight: 500; }
+.section-head a .icon { vertical-align: -2px; }
+.term-hero .ht { border-left: 0; padding-left: 0; }
+.term-hero .cmd-line input { font-size: 22px; }
+@media (max-width: 1000px) {
+  .home-hero .hw { grid-template-columns: minmax(0, 1fr); grid-template-areas: "step" "title" "lead" "why" "form" "err" "note"; }
+  .home-hero .hw > .hw-why { border-left: 0; padding-left: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .how-steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) { .home-hero .hw > .hw-why { grid-template-columns: 1fr; } .home-hero .hw > .hw-title { font-size: 24px; } .term-hero .cmd-line input { font-size: 15px; } }

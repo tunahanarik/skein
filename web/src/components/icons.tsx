@@ -48,6 +48,7 @@ const P: Record<string, ReactNode> = {
   home: <path d="M4 10.5l8-6.5 8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" />,
   chart: <path d="M4 4v16h16M8 15l3.5-4 3 2.5L20 7" />,
   sliders: <path d="M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4" />,
+  terminal: <path d="M4 7l5 5-5 5M12 18h8" />,
   gift: <path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.2C7 7 9.5 7 12 7zM12 7c1.5-3 5-3.5 5-1.2C17 7 14.5 7 12 7z" />,
 };
 
