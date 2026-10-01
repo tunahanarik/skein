@@ -131,6 +131,34 @@ pages["header-map-lime"] = (1500, 500, BASE + f"""
  <div class=m style="position:absolute;left:{O_X}px;top:42px;font-size:10.5px;letter-spacing:2.4px;font-weight:500;color:{OLIVE}">FIND</div>
 </div>""")
 
+# Terminal header on lime, same treatment as header-map-lime: dark panel, two tone headline.
+pages["header-terminal-lime"] = (1500, 500, BASE + f"""
+<style>body{{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}}</style>
+<div style="position:relative;width:1500px;height:500px;background:radial-gradient(120% 140% at 0% 0%,#D3F57E,#C8F169 45%,#BDE85C);color:{D}">
+ <div style="position:absolute;inset:0;background-image:linear-gradient({D}0d 1px,transparent 1px),linear-gradient(90deg,{D}0d 1px,transparent 1px);background-size:50px 50px;-webkit-mask:linear-gradient(90deg,transparent 30%,#000 70%)"></div>
+ <div style="position:absolute;left:110px;top:94px;width:640px">
+  <div class=m style="font-size:12px;letter-spacing:3.2px;font-weight:500;color:{OLIVE}"><span style="display:inline-block;width:7px;height:7px;background:{D};vertical-align:1px;margin-right:12px"></span>ROBINHOOD CHAIN · 4663</div>
+  <div class=m style="font-size:104px;font-weight:700;letter-spacing:-6px;line-height:1;margin-top:18px">skein<span style="color:{OLIVE}">/</span></div>
+  <div style="font-size:34px;font-weight:600;letter-spacing:-1px;line-height:1.16;margin-top:24px">Read any wallet.<br><span style="color:{OLIVE}">Find what every asset can do.</span></div>
+ </div>
+ <div style="position:absolute;right:110px;top:74px;width:570px;background:{D};border:1.5px solid {D};box-shadow:0 24px 50px #3A4D0F45">
+  <div class=m style="display:flex;gap:10px;align-items:center;padding:13px 18px;border-bottom:1px solid #1F2A14;font-size:11.5px;letter-spacing:2.2px;color:#8FA36A">
+   <span style="width:9px;height:9px;background:#C8F169"></span>TERMINAL<span style="flex:1"></span><span style="color:#5F7040">READ ONLY</span>
+  </div>
+  <div class=m style="padding:20px 22px 22px;font-size:18.5px;line-height:1.75;color:{INK}">
+   <div><span style="color:#C8F169">&gt;</span> read wallet <span style="color:#8FA36A">0x ····</span></div>
+   <div style="color:#8FA36A">&nbsp; 4 assets · 3 idle</div>
+   <div><span style="color:#C8F169">&gt;</span> earn yield on <b>NVDA</b></div>
+   <div style="color:#8FA36A">&nbsp; scanning 7 protocols</div>
+   <div><span style="color:#C8F169">&nbsp; ✓</span> lend · pool · fixed rate</div>
+   <div><span style="color:#C8F169">&gt;</span> borrow against <b>cbBTC</b><span style="display:inline-block;width:10px;height:21px;background:#C8F169;vertical-align:-4px;margin-left:7px"></span></div>
+  </div>
+ </div>
+ <div class=m style="position:absolute;right:110px;bottom:38px;width:570px;display:flex;justify-content:space-between;font-size:11.5px;letter-spacing:2.4px;font-weight:500;color:{OLIVE}">
+  <span>READ</span><span>EARN</span><span>LEND</span><span>BORROW</span><span>POOL</span><span style="color:{D}">● LIVE</span>
+ </div>
+</div>""")
+
 for name, (w, h, html) in pages.items():
     (pathlib.Path(__file__).parent / f"{name}.html").write_text(f"<!doctype html><html><head>{html.split('</style>',1)[0]}</style></head><body style='width:{w}px;height:{h}px'>{html.split('</style>',1)[1]}</body></html>", encoding="utf-8")
     print(name, w, h)
