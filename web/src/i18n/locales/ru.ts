@@ -730,4 +730,7 @@ export const ru: Record<StringKey, string> = {
   "home.proto.title": "Протоколы, которые читает Skein",
   "home.proto.terminal": "Поиск командой",
   "home.proto.note": "Данные читаются напрямую из контрактов и публичных API каждого протокола; рядом с каждым числом — источник и его возраст.",
+  "picker.move": "выбор",
+  "picker.choose": "выбрать",
+  "picker.close": "закрыть",
 };

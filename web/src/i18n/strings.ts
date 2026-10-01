@@ -732,6 +732,9 @@ export const en = {
   "home.proto.title": "Protocols Skein reads",
   "home.proto.terminal": "Explore by command",
   "home.proto.note": "Read directly from each protocol's contracts and public APIs, with the source and age shown next to every number.",
+  "picker.move": "move",
+  "picker.choose": "choose",
+  "picker.close": "close",
 };
 
 export type StringKey = keyof typeof en;
@@ -1441,4 +1444,7 @@ export const tr: Record<StringKey, string> = {
   "home.proto.title": "Skein'in okuduğu protokoller",
   "home.proto.terminal": "Komutla keşfet",
   "home.proto.note": "Her protokolün kontratlarından ve herkese açık API'lerinden doğrudan okunur; her sayının yanında kaynağı ve ne kadar güncel olduğu gösterilir.",
+  "picker.move": "gez",
+  "picker.choose": "seç",
+  "picker.close": "kapat",
 };

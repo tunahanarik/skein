@@ -730,4 +730,7 @@ export const ar: Record<StringKey, string> = {
   "home.proto.title": "البروتوكولات التي يقرأها Skein",
   "home.proto.terminal": "استكشف بأمر",
   "home.proto.note": "تُقرأ مباشرة من عقود كل بروتوكول وواجهاته العامة، مع المصدر والعمر بجانب كل رقم.",
+  "picker.move": "تنقّل",
+  "picker.choose": "اختيار",
+  "picker.close": "إغلاق",
 };

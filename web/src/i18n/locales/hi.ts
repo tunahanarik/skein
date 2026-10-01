@@ -706,4 +706,7 @@ export const hi: Record<StringKey, string> = {
   "home.proto.title": "Skein जिन प्रोटोकॉल को पढ़ता है",
   "home.proto.terminal": "कमांड से खोजें",
   "home.proto.note": "हर प्रोटोकॉल के कॉन्ट्रैक्ट और सार्वजनिक API से सीधे पढ़ा जाता है; हर संख्या के साथ स्रोत और उसकी ताज़गी दिखती है।",
+  "picker.move": "चलें",
+  "picker.choose": "चुनें",
+  "picker.close": "बंद",
 };

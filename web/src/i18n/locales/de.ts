@@ -729,4 +729,7 @@ export const de: Record<StringKey, string> = {
   "home.proto.title": "Protokolle, die Skein liest",
   "home.proto.terminal": "Per Befehl erkunden",
   "home.proto.note": "Direkt aus den Verträgen und öffentlichen APIs jedes Protokolls gelesen, mit Quelle und Alter neben jeder Zahl.",
+  "picker.move": "bewegen",
+  "picker.choose": "wählen",
+  "picker.close": "schließen",
 };

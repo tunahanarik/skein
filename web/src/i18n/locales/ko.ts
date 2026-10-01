@@ -706,4 +706,7 @@ export const ko: Record<StringKey, string> = {
   "home.proto.title": "Skein이 읽는 프로토콜",
   "home.proto.terminal": "명령으로 탐색",
   "home.proto.note": "각 프로토콜의 컨트랙트와 공개 API에서 직접 읽으며, 모든 숫자 옆에 출처와 최신성을 표시합니다.",
+  "picker.move": "이동",
+  "picker.choose": "선택",
+  "picker.close": "닫기",
 };

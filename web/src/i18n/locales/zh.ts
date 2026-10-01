@@ -729,4 +729,7 @@ export const zh: Record<StringKey, string> = {
   "home.proto.title": "Skein 读取的协议",
   "home.proto.terminal": "用指令探索",
   "home.proto.note": "直接读取每个协议的合约和公开 API，每个数字旁都标明来源和更新时间。",
+  "picker.move": "移动",
+  "picker.choose": "选择",
+  "picker.close": "关闭",
 };

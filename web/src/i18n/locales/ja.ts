@@ -729,4 +729,7 @@ export const ja: Record<StringKey, string> = {
   "home.proto.title": "Skein が読むプロトコル",
   "home.proto.terminal": "コマンドで探す",
   "home.proto.note": "各プロトコルのコントラクトと公開 API から直接読み取り、すべての数値に出所と鮮度を表示します。",
+  "picker.move": "移動",
+  "picker.choose": "選択",
+  "picker.close": "閉じる",
 };
