@@ -97,7 +97,11 @@ export interface MarketRow {
   liquidityUsd: number | null;
 }
 
-const EARN_SIDE = new Set(["LEND", "VAULT", "YIELD", "FIXED_YIELD", "LP"]);
+/**
+ * Categories whose headline yield a holder actually earns. YIELD (Pendle YT "long yield") is left
+ * out: its APY is a leveraged what-if (37,000 % on SGOV, 2026-10-01), not a holder's return.
+ */
+const EARN_SIDE = new Set(["LEND", "VAULT", "FIXED_YIELD", "LP"]);
 /** Per-asset summary of its opportunities for the Markets page. */
 function marketExtras(opps: Opportunity[]): Pick<MarketRow, "bestApy" | "bestApyProtocol" | "caps" | "liquidityUsd"> {
   const caps = { earn: false, fixed: false, borrow: false, lp: false };
