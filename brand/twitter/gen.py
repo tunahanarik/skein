@@ -24,50 +24,80 @@ pages["profile-dark"] = (400, 400, BASE + """
  <div style="position:absolute;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,#C8F16922,transparent 70%)"></div>
  <div class=m style="position:relative;font-size:196px;font-weight:800;letter-spacing:-14px;margin-left:-10px;margin-top:-14px">s<span class=l>/</span></div>
 </div>""")
-# Header A: terminal
-pages["header-terminal"] = (1500, 500, BASE + """
+# Header A: wallet readout (the product's core: read a wallet, find what each asset can do)
+ROWS = [
+  ("NVDA","STOCK TOKEN","IDLE","EARN","Morpho"),
+  ("USDG","STABLECOIN","IDLE","LEND","Spark"),
+  ("WETH","CRYPTO","IN USE","POOL","Uniswap"),
+  ("cbBTC","CRYPTO","IDLE","BORROW AGAINST","Morpho"),
+]
+def row(sym,kind,st,act,proto):
+    idle = st=="IDLE"
+    return f"""<div style="display:grid;grid-template-columns:44px 150px 96px 1fr;align-items:center;gap:0 14px;padding:10px 18px;border-top:1px solid #161A15">
+ <span class=m style="width:34px;height:34px;display:grid;place-items:center;border:1px solid #2A2F28;font-size:11px;font-weight:700;color:#C8F169">{sym[:2].upper()}</span>
+ <span><b class=m style="font-size:17px">{sym}</b><br><span class="m fa" style="font-size:10.5px;letter-spacing:1.6px">{kind}</span></span>
+ <span class=m style="font-size:11px;letter-spacing:1.6px;padding:4px 8px;justify-self:start;{'color:#0A0F04;background:#E8B44C' if idle else 'color:#8D948A;border:1px solid #2A2F28'}">{st}</span>
+ <span class=m style="font-size:14px;text-align:right"><span class=l>→</span> {act} <span class=mu>· {proto}</span></span>
+</div>"""
+pages["header-wallet"] = (1500, 500, BASE + """
 <div style="position:relative;width:1500px;height:500px">
- <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent,#000 45%,#000)"></div>
- <div style="position:absolute;right:-120px;top:-160px;width:760px;height:760px;border-radius:50%;background:radial-gradient(circle,#C8F16914,transparent 65%)"></div>
+ <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent 10%,#000 55%)"></div>
+ <div style="position:absolute;right:-60px;top:-200px;width:820px;height:820px;border-radius:50%;background:radial-gradient(circle,#C8F16912,transparent 62%)"></div>
 
- <div style="position:absolute;left:110px;top:92px;width:640px">
-  <div class=m style="font-size:13px;letter-spacing:3px;color:#8D948A;margin-bottom:18px"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN · 4663</div>
-  <div class=m style="font-size:112px;font-weight:800;letter-spacing:-6px;line-height:1">skein<span class=l>/</span></div>
-  <div style="font-size:30px;font-weight:600;margin-top:22px;letter-spacing:-.4px;line-height:1.25">Read any wallet.<br>Find what every asset can do.</div>
+ <div style="position:absolute;left:96px;top:70px;width:640px">
+  <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; WALLET RESEARCH · ROBINHOOD CHAIN</div>
+  <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
+  <div style="font-size:40px;font-weight:700;letter-spacing:-1px;line-height:1.12;margin-top:22px">See what any wallet<br>could be <span class=l>doing.</span></div>
+  <div class=mu style="font-size:18.5px;line-height:1.5;margin-top:16px;width:560px">Paste an address. Skein reads every asset it holds, spots idle money and finds where each one can earn, lend, pool or be borrowed against.</div>
  </div>
 
- <div style="position:absolute;right:110px;top:78px;width:560px;border:1px solid #2A2F28;background:#0A0C0Aee">
-  <div class=m style="display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #1C201B;font-size:12px;letter-spacing:2px;color:#8D948A">
-   <span style="width:9px;height:9px;background:#C8F169"></span>TERMINAL<span style="flex:1"></span><span class=fa>READ ONLY</span>
+ <div style="position:absolute;right:84px;top:56px;width:610px;border:1px solid #2A2F28;background:#090B09f2;box-shadow:0 30px 80px #0008">
+  <div class=m style="display:flex;gap:12px;align-items:center;padding:13px 18px;font-size:11.5px;letter-spacing:2px;color:#8D948A">
+   <span style="width:9px;height:9px;background:#C8F169"></span>WALLET READOUT<span style="flex:1"></span><span class=fa>0x ···· ····</span>
   </div>
-  <div class=m style="padding:20px 20px 22px;font-size:19px;line-height:1.75">
-   <div><span class=l>&gt;</span> earn yield on <b>NVDA</b></div>
-   <div class=mu>&nbsp; scanning 7 protocols</div>
-   <div><span class=l>&nbsp; ✓</span> lend · lp · fixed rate</div>
-   <div style="margin-top:8px"><span class=l>&gt;</span> swap <b>USDG</b> to <b>WETH</b></div>
-   <div><span class=l>&nbsp; ✓</span> best route · uniswap v3</div>
-   <div style="margin-top:8px"><span class=l>&gt;</span> bridge <b>ETH</b> to <b>base</b><span style="display:inline-block;width:11px;height:22px;background:#C8F169;vertical-align:-4px;margin-left:6px"></span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #1C201B">
+   <div style="padding:12px 18px;border-right:1px solid #1C201B"><div class="m fa" style="font-size:10.5px;letter-spacing:2px">ASSETS</div><div class=m style="font-size:24px;font-weight:700;margin-top:3px">4</div></div>
+   <div style="padding:12px 18px;border-right:1px solid #1C201B"><div class="m fa" style="font-size:10.5px;letter-spacing:2px">IDLE</div><div class=m style="font-size:24px;font-weight:700;margin-top:3px;color:#E8B44C">3</div></div>
+   <div style="padding:12px 18px"><div class="m fa" style="font-size:10.5px;letter-spacing:2px">PROTOCOLS CHECKED</div><div class=m style="font-size:24px;font-weight:700;margin-top:3px" ><span class=l>7</span></div></div>
   </div>
+  """ + "".join(row(*r) for r in ROWS) + """
  </div>
 
- <div class=m style="position:absolute;right:110px;bottom:40px;width:560px;display:flex;justify-content:space-between;font-size:12px;letter-spacing:2.5px;color:#5A6158">
-  <span>EXPLORE</span><span>EARN</span><span>LEND</span><span>SWAP</span><span>BRIDGE</span><span class=l>● LIVE</span>
+ <div class=m style="position:absolute;right:84px;bottom:22px;width:610px;display:flex;justify-content:space-between;font-size:11px;letter-spacing:2.4px;color:#5A6158">
+  <span>CHAINLINK PRICED</span><span>·</span><span>READ ONLY</span><span>·</span><span>NO SIGN UP</span><span>·</span><span class=l>● LIVE</span>
  </div>
 </div>""")
-# Header B: lime, minimal, strands
-pages["header-lime"] = (1500, 500, BASE + """
-<div style="position:relative;width:1500px;height:500px;background:#C8F169;color:#0A0F04;overflow:hidden">
- <div style="position:absolute;inset:0;background-image:linear-gradient(#0A0F040d 1px,transparent 1px),linear-gradient(90deg,#0A0F040d 1px,transparent 1px);background-size:50px 50px"></div>
- <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke=#0A0F04 stroke-width=2 opacity=.2>
-  <path d="M-50 448 C 125 408, 250 488, 425 448 S 775 408, 950 448 S 1300 488, 1550 448"/>
-  <path d="M-50 448 C 125 488, 250 408, 425 448 S 775 488, 950 448 S 1300 408, 1550 448"/>
-  <path d="M-50 448 L 1550 448"/>
- </svg>
- <div style="position:absolute;left:0;right:0;top:96px;text-align:center">
-  <div class=m style="font-size:150px;font-weight:800;letter-spacing:-9px;line-height:1">skein/</div>
-  <div class=m style="font-size:20px;font-weight:600;letter-spacing:5px;margin-top:30px">EXPLORE · EARN · SWAP · BRIDGE</div>
-  <div style="font-size:24px;font-weight:600;margin-top:14px;opacity:.72">The map of every wallet on Robinhood Chain</div>
+
+# Header B: the map. One wallet, its assets, the threads to every way they can be used.
+def node(x,y,w,txt,sub="",hi=False):
+    return f"""<div class=m style="position:absolute;left:{x}px;top:{y}px;width:{w}px;height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid {'#C8F169' if hi else '#2A2F28'};background:{'#C8F169' if hi else '#0A0C0A'};color:{'#0A0F04' if hi else '#DFE4DC'};font-size:15px;font-weight:700;letter-spacing:.5px">{txt}<span style="flex:1"></span><span style="font-size:10.5px;letter-spacing:1.8px;font-weight:500;color:{'#0A0F04aa' if hi else '#5A6158'}">{sub}</span></div>"""
+W_X, A_X, O_X = 560, 830, 1150
+assets = [("NVDA","STOCK",80),("USDG","STABLE",156),("WETH","CRYPTO",232),("TSLA","STOCK",308),("cbBTC","CRYPTO",384)]
+opps = [("EARN","Morpho · Beefy",70),("LEND","Spark",142),("BORROW","Morpho",214),("POOL","Uniswap · Ramses",286),("FIXED","Pendle",358),("TRADE","Uniswap",430)]
+links = [(0,0),(0,2),(0,3),(1,1),(1,0),(1,4),(2,3),(2,2),(2,5),(3,4),(3,0),(4,2),(4,1),(4,5),(0,5)]
+paths = []
+wy = 250
+for _,_,y in assets:
+    paths.append(f'<path d="M{W_X+210} {wy} C {W_X+250} {wy}, {A_X-60} {y+23}, {A_X} {y+23}" stroke="#C8F169" stroke-opacity=".55"/>')
+for a,o in links:
+    y1 = assets[a][2]+23; y2 = opps[o][2]+23
+    paths.append(f'<path d="M{A_X+200} {y1} C {A_X+260} {y1}, {O_X-60} {y2}, {O_X} {y2}" stroke="#C8F169" stroke-opacity="{0.6 if a in (0,1) else 0.22}"/>')
+pages["header-map"] = (1500, 500, BASE + f"""
+<div style="position:relative;width:1500px;height:500px">
+ <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent 25%,#000 70%)"></div>
+ <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke-width=1.5>{''.join(paths)}</svg>
+ <div style="position:absolute;left:96px;top:78px;width:440px">
+  <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN</div>
+  <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
+  <div style="font-size:34px;font-weight:700;letter-spacing:-.8px;line-height:1.15;margin-top:22px">Every asset.<br>Every way to <span class=l>use it.</span></div>
+  <div class=mu style="font-size:17px;line-height:1.5;margin-top:14px">Stock tokens, stablecoins and crypto,<br>mapped across 7 protocols.</div>
  </div>
+ {node(W_X,227,210,"WALLET","0x ····",True)}
+ {''.join(node(A_X,y,200,s,k) for s,k,y in assets)}
+ {''.join(node(O_X,y,250,s,p) for s,p,y in opps)}
+ <div class="m fa" style="position:absolute;left:{W_X}px;top:200px;font-size:10.5px;letter-spacing:2px">PASTE</div>
+ <div class="m fa" style="position:absolute;left:{A_X}px;top:52px;font-size:10.5px;letter-spacing:2px">READ</div>
+ <div class="m fa" style="position:absolute;left:{O_X}px;top:42px;font-size:10.5px;letter-spacing:2px">FIND</div>
 </div>""")
 
 for name, (w, h, html) in pages.items():
