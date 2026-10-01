@@ -119,7 +119,7 @@ export function OpportunityRows({ rows, assetRef }: { rows: { intent: IntentKey;
 /* ---------------- inline asset picker ---------------- */
 
 /** A big inline button showing the asset; opens a searchable list. */
-export function AssetPicker({ value, onChange, label, only }: { value: AssetListItem | null; onChange: (a: AssetListItem) => void; label: string; only?: string[] | null }) {
+export function AssetPicker({ value, onChange, label, only, placeholder }: { value: AssetListItem | null; onChange: (a: AssetListItem) => void; label: string; only?: string[] | null; placeholder?: string }) {
   const { t } = useI18n();
   const list = useAssetList();
   const [open, setOpen] = useState(false);
@@ -167,8 +167,8 @@ export function AssetPicker({ value, onChange, label, only }: { value: AssetList
   return (
     <div className="picker" ref={ref}>
       <button className="picker-btn" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-l`} aria-label={`${label}: ${value?.symbol ?? ""}`} onClick={() => setOpen(!open)}>
-        <Avatar symbol={value?.symbol ?? "?"} address={value?.address ?? null} />
-        <span>{value?.symbol ?? "…"}</span>
+        {(value || !placeholder) && <Avatar symbol={value?.symbol ?? "?"} address={value?.address ?? null} />}
+        <span>{value?.symbol ?? placeholder ?? "…"}</span>
         <span className="chev" aria-hidden="true">
           ▾
         </span>

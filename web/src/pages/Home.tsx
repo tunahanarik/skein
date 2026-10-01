@@ -169,7 +169,7 @@ export function HomePage() {
 
   return (
     <div className="home-wide">
-      <CommandHero onAsset={setSel} />
+      <CommandHero protocols={rows ? new Set(rows.flatMap((r) => r.protocols)).size : null} />
 
       {portfolio && (
         <section className="section">

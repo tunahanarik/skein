@@ -141,8 +141,8 @@ describe("shell", () => {
 
   it("a pasted wallet address never reaches the URL or storage", async () => {
     const { calls } = await mountAt("/");
-    // The home command line takes a wallet address first.
-    fireEvent.change(screen.getByLabelText("Wallet address, asset or command"), { target: { value: WALLET } });
+    // The home hero's wallet research box.
+    fireEvent.change(screen.getByLabelText("Wallet address"), { target: { value: WALLET } });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /Analyze wallet/ }));
     });
