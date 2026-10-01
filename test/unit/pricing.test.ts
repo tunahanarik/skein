@@ -154,3 +154,24 @@ describe("ETH, WETH and USDG pricing", () => {
     expect(q.unpricedReason).toMatch(/no assumed-peg fallback/);
   });
 });
+
+describe("crypto tokens priced by their own Chainlink USD feed", () => {
+  const LINK = "0x492641F648a4986844848E0beFE66D14817bCE34" as const;
+  const FEED_LINK = "0x000000000000000000000000000000000000f00a" as const;
+  const linkFeed = { name: "LINK / USD", path: "link / usd", proxyAddress: FEED_LINK, decimals: 8, heartbeat: 86_400, threshold: 0.5 };
+
+  it("prices LINK from the feed named in the registry, never from another feed", async () => {
+    const world = defaultWorld();
+    world.rounds.set(FEED_LINK.toLowerCase(), { answer: 1_436_505_647n, updatedAt: NOW_S - 120 });
+    const { FEEDS } = await import("../fixtures/world.js");
+    const { q } = await price(await testStack({ world, feeds: [...FEEDS, linkFeed as never] }), LINK);
+    expect(q).toMatchObject({ status: "PRICED", method: "CHAINLINK_USD_FEED", priceUsdDisplay: "14.36505647", freshnessStatus: "FRESH" });
+  });
+
+  it("is UNPRICED (not $0, not ETH/USD) when its feed is missing from the directory", async () => {
+    const { q, batch } = await price(await testStack(), LINK);
+    expect(q).toMatchObject({ status: "UNPRICED", priceUsd: null });
+    expect(q.unpricedReason).toMatch(/LINK \/ USD feed not found/);
+    expect([...q.warnings, ...batch.warnings].map((w) => w.code)).toContain("UNPRICED_ASSET");
+  });
+});

@@ -49,6 +49,59 @@ export const CORE_ASSETS = {
   },
 } as const satisfies Record<string, AssetConfig>;
 
+/** A crypto token priced by its own Chainlink "<SYMBOL> / USD" feed. */
+export interface CryptoAssetConfig extends AssetConfig {
+  /** Name of the feed in the Chainlink directory for Robinhood Chain mainnet. */
+  feedName: string;
+}
+
+/**
+ * Crypto tokens (not Stock Tokens) admitted as canonical, verified 2026-10-01. Each one passes all of:
+ *   - a Chainlink "<SYMBOL> / USD" feed exists on Robinhood Chain mainnet (directory) and answers fresh;
+ *   - two independent lists name the same address: CoinGecko's Robinhood token list
+ *     (tokens.coingecko.com/robinhood/all.json) and LI.FI's token list for chain 4663;
+ *   - onchain symbol(), name() and decimals() match, and the contract has code.
+ * Not admitted yet (one source only, or no USD feed): ENA, weETH, wstETH, sUSDe, syrupUSDC, syrupUSDG.
+ */
+export const CRYPTO_ASSETS: readonly CryptoAssetConfig[] = [
+  {
+    address: "0x492641F648a4986844848E0beFE66D14817bCE34",
+    symbol: "LINK",
+    name: "Chainlink",
+    decimals: 18,
+    kind: "OTHER",
+    verification: "VERIFIED_ONCHAIN",
+    officialSource: "https://tokens.coingecko.com/robinhood/all.json",
+    usdFeed: "0xe86e3422Aa9B5e8ee9f3E41a63975bC387A8bce9",
+    feedName: "LINK / USD",
+    checkedAt: "2026-10-01",
+  },
+  {
+    address: "0xCEC185eB182c47d1bA1EFc84e6959e18cd620Be4",
+    symbol: "cbBTC",
+    name: "Coinbase Wrapped BTC",
+    decimals: 8,
+    kind: "OTHER",
+    verification: "VERIFIED_ONCHAIN",
+    officialSource: "https://tokens.coingecko.com/robinhood/all.json",
+    usdFeed: "0x0009cD492adf8167f9eEBf1293556A673530a21a",
+    feedName: "CBBTC / USD",
+    checkedAt: "2026-10-01",
+  },
+  {
+    address: "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+    symbol: "USDe",
+    name: "Ethena USDe",
+    decimals: 18,
+    kind: "STABLECOIN",
+    verification: "VERIFIED_ONCHAIN",
+    officialSource: "https://tokens.coingecko.com/robinhood/all.json",
+    usdFeed: "0xb9fB4e65744E4178894f7C61CF80E8a48A5f224a",
+    feedName: "USDE / USD",
+    checkedAt: "2026-10-01",
+  },
+];
+
 /** Stock Token beacon / ACCESS_CONTROLLED_REGISTRY shared by all 195 listed tokens. */
 export const STOCK_TOKEN_REGISTRY: Address = "0xe10b6f6b275de231345c20d14ab812db62151b00";
 /** Stock Token factory (emits Deployed(uid, token, name, symbol)); deploying ≠ being listed. */

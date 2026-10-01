@@ -676,4 +676,8 @@ export const de: Record<StringKey, string> = {
   "nav.rewards": "Belohnungen",
   "nav.soon": "Bald",
   "nav.rewardsSoon": "Belohnungen kommen bald",
+  "markets.crypto": "Krypto",
+  "markets.kind.crypto": "Krypto",
+  "markets.kind.stable": "Stable",
+  "home.movers": "Größte Bewegungen heute",
 };

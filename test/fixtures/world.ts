@@ -6,7 +6,7 @@
 import { getAddress, type Address, type Hex } from "viem";
 import type { BlockRef, CallResult, ChainReader, ContractCall, DecodedLog, LogQuery } from "../../src/chain/reader.js";
 import type { RpcHealthSnapshot } from "../../src/chain/health.js";
-import { CORE_ASSETS, STOCK_TOKEN_REGISTRY } from "../../src/config/assets.js";
+import { CORE_ASSETS, CRYPTO_ASSETS, STOCK_TOKEN_REGISTRY } from "../../src/config/assets.js";
 import { HttpClient, type FetchLike } from "../../src/lib/http.js";
 import { PriceService } from "../../src/pricing/priceService.js";
 import { buildFeedIndex, type FeedIndex, type QuoteBook } from "../../src/pricing/sources.js";
@@ -179,6 +179,8 @@ export function defaultWorld(): WorldState {
     nativeFails: false,
   };
   const bal = (token: Address, amount: bigint) => w.balances.set(token.toLowerCase(), new Map([[WALLET.toLowerCase(), amount]]));
+  // Crypto tokens exist (balanceOf answers 0) but the wallet holds none.
+  for (const c of CRYPTO_ASSETS) w.balances.set(c.address.toLowerCase(), new Map());
   bal(WETH, 10n ** 17n); // 0.1 WETH
   bal(USDG, 1_234_560_000n); // 1,234.56 USDG
   bal(NVDA, 2n * ONE); // 2 NVDA tokens

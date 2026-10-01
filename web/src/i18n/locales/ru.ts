@@ -677,4 +677,8 @@ export const ru: Record<StringKey, string> = {
   "nav.rewards": "Награды",
   "nav.soon": "Скоро",
   "nav.rewardsSoon": "Награды скоро появятся",
+  "markets.crypto": "Крипто",
+  "markets.kind.crypto": "Крипто",
+  "markets.kind.stable": "Стейбл",
+  "home.movers": "Крупнейшие движения сегодня",
 };

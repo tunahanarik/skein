@@ -653,4 +653,8 @@ export const ko: Record<StringKey, string> = {
   "nav.rewards": "리워드",
   "nav.soon": "곧 출시",
   "nav.rewardsSoon": "리워드가 곧 출시됩니다",
+  "markets.crypto": "암호화폐",
+  "markets.kind.crypto": "암호화폐",
+  "markets.kind.stable": "스테이블",
+  "home.movers": "오늘 가장 크게 움직인 자산",
 };

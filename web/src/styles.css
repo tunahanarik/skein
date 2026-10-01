@@ -1345,3 +1345,8 @@ footer.bottom { border-top: 1px solid var(--border); }
 .rail-brand:hover .mark-s { background: var(--accent-2); }
 .top-brand .mark-s { display: inline-grid !important; }
 @media (max-width: 720px) { header.top .btn.small { padding: 8px 9px; font-size: 10px; letter-spacing: 0.02em; } header.top { gap: 6px; } .gsearch { padding: 0 10px; } }
+/* asset class tag (crypto / stable) and the small home selector */
+.kind-tag { display: inline-block; font-family: var(--mono-ui); font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--info); border: 1px solid color-mix(in srgb, var(--info) 45%, transparent); border-radius: 2px; padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+.kind-tag.stable { color: var(--text-2); border-color: var(--border-2); }
+.mini-seg { margin-left: 12px; }
+.mini-seg button { padding: 5px 10px; font-size: 10.5px; }

@@ -96,20 +96,30 @@ function AssetStage({ sel, onPick, v }: { sel: AssetListItem | null; onPick: (a:
 function TokenGrid({ list, onPick }: { list: AssetListItem[] | null; onPick: (a: AssetListItem) => void }) {
   const { t } = useI18n();
   const res = useAsync((sig) => api.markets(sig), []);
+  const [kind, setKind] = useState<"all" | "stocks" | "crypto">("all");
   const rows = (Array.isArray(res.data?.rows) ? res.data!.rows : [])
-    .filter((r) => r.type === "STOCK_TOKEN" && r.changePct !== null)
+    // Stablecoins barely move; they stay on the Markets page.
+    .filter((r) => r.changePct !== null && r.type !== "STABLECOIN" && (kind === "all" || (kind === "stocks") === (r.type === "STOCK_TOKEN")))
     .sort((a, b) => Math.abs(b.changePct!) - Math.abs(a.changePct!))
     .slice(0, 24);
-  if (!rows.length) return null;
+  if (!res.data) return null;
   return (
     <section className="section">
       <div className="section-head">
-        <h2>{t("home.allTokens")}</h2>
+        <h2>{t("home.movers")}</h2>
+        <div className="seg mini-seg" role="radiogroup" aria-label={t("markets.type")}>
+          {(["all", "stocks", "crypto"] as const).map((k) => (
+            <button key={k} role="radio" aria-checked={kind === k} className={kind === k ? "on" : undefined} onClick={() => setKind(k)}>
+              {t(`markets.${k}`)}
+            </button>
+          ))}
+        </div>
         <span className="spacer" />
         <a className="small" {...linkProps("/markets")}>
           {t("home.seeAll")}
         </a>
       </div>
+      {!rows.length && <div className="panel empty small">{t("markets.empty")}</div>}
       <div className="tok-grid">
         {rows.map((r) => (
           <button

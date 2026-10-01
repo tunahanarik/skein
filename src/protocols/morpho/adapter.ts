@@ -185,7 +185,7 @@ export class MorphoAdapter implements OpportunityAdapter {
     timingsMs.prices = ms(t);
     const priceOf = (key: string): PricedAsset => {
       const q = priced?.quotes.get(key);
-      return { price: q?.status === "PRICED" ? q.priceUsd : null, isChainlink: q?.method === "CHAINLINK_STOCK_TOKEN_FEED" || q?.method === "CHAINLINK_USDG_USD" || q?.method === "CHAINLINK_ETH_USD", multiplier: multiplierByKey.get(key) ?? null };
+      return { price: q?.status === "PRICED" ? q.priceUsd : null, isChainlink: q?.method === "CHAINLINK_STOCK_TOKEN_FEED" || q?.method === "CHAINLINK_USDG_USD" || q?.method === "CHAINLINK_ETH_USD" || q?.method === "CHAINLINK_USD_FEED", multiplier: multiplierByKey.get(key) ?? null };
     };
     const resolveAsset = (address: Address, reportedSymbol: string, reportedDecimals: number): AssetRef => {
       const a = ctx.registry.get(ctx.chainId, address);

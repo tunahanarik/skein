@@ -23,6 +23,8 @@ export const RHJ_PRICES_URL = `${RHJ_BASE_URL}/prices`;
 export interface FeedIndex {
   ethUsd: ChainlinkFeed | null;
   usdgUsd: ChainlinkFeed | null;
+  /** Every "<X> / USD" feed by its exact name (crypto tokens look theirs up by Asset.usdFeedName). */
+  usdByName: Map<string, ChainlinkFeed>;
   /** Stock feeds by ticker. A ticker with two feeds is ambiguous and left out. */
   stockByTicker: Map<string, ChainlinkFeed>;
   ambiguousTickers: string[];
@@ -41,7 +43,10 @@ export function buildFeedIndex(feeds: readonly ChainlinkFeed[], fetchedAt: strin
     if (g.length === 1) stockByTicker.set(t, g[0]!);
     else ambiguousTickers.push(t);
   }
+  const usdByName = new Map<string, ChainlinkFeed>();
+  for (const f of feeds) if (/ \/ USD$/.test(f.name) && !usdByName.has(f.name)) usdByName.set(f.name, f);
   return {
+    usdByName,
     ethUsd: findFeedByName(feeds, "ETH / USD") ?? null,
     usdgUsd: findFeedByName(feeds, "USDG / USD") ?? null,
     stockByTicker,

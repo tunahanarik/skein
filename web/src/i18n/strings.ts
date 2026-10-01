@@ -679,6 +679,10 @@ export const en = {
   "nav.rewards": "Rewards",
   "nav.soon": "Soon",
   "nav.rewardsSoon": "Rewards are coming soon",
+  "markets.crypto": "Crypto",
+  "markets.kind.crypto": "Crypto",
+  "markets.kind.stable": "Stable",
+  "home.movers": "Biggest moves today",
 };
 
 export type StringKey = keyof typeof en;
@@ -1335,4 +1339,8 @@ export const tr: Record<StringKey, string> = {
   "nav.rewards": "Ödüller",
   "nav.soon": "Yakında",
   "nav.rewardsSoon": "Ödüller yakında geliyor",
+  "markets.crypto": "Kripto",
+  "markets.kind.crypto": "Kripto",
+  "markets.kind.stable": "Stabil",
+  "home.movers": "Bugün en çok hareket edenler",
 };

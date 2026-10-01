@@ -677,4 +677,8 @@ export const ar: Record<StringKey, string> = {
   "nav.rewards": "المكافآت",
   "nav.soon": "قريبًا",
   "nav.rewardsSoon": "المكافآت قادمة قريبًا",
+  "markets.crypto": "عملات مشفرة",
+  "markets.kind.crypto": "مشفرة",
+  "markets.kind.stable": "مستقرة",
+  "home.movers": "أكبر التحركات اليوم",
 };

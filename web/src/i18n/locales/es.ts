@@ -677,4 +677,8 @@ export const es: Record<StringKey, string> = {
   "nav.rewards": "Recompensas",
   "nav.soon": "Pronto",
   "nav.rewardsSoon": "Las recompensas llegan pronto",
+  "markets.crypto": "Cripto",
+  "markets.kind.crypto": "Cripto",
+  "markets.kind.stable": "Estable",
+  "home.movers": "Mayores movimientos de hoy",
 };

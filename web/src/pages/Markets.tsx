@@ -7,12 +7,15 @@ import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
 import { useWatchlist } from "../watchlist";
 
-type Kind = "all" | "stocks" | "etfs" | "saved";
+type Kind = "all" | "stocks" | "etfs" | "crypto" | "saved";
 type Cap = "earn" | "fixed" | "borrow" | "lp";
 type View = "table" | "map" | "cards";
 type SortKey = "symbol" | "usd" | "changePct" | "bestApy" | "liquidityUsd";
 /** Funds among the Stock Tokens, by their registry name. */
 const FUND = /\b(ETF|Trust|Fund|iShares|SPDR|Vanguard|Invesco|Schwab|VanEck|Select Sector)\b/i;
+/** Asset class of a market row: Stock Tokens split into funds and stocks; everything else is crypto. */
+const isCrypto = (r: Market) => r.type !== "STOCK_TOKEN";
+const ofKind = (r: Market, kind: Kind) => (kind === "crypto" ? isCrypto(r) : kind === "etfs" ? !isCrypto(r) && FUND.test(r.name) : kind === "stocks" ? !isCrypto(r) && !FUND.test(r.name) : true);
 const shortName = (n: string) => n.replace(/\s*•\s*Robinhood Token$/i, "").replace(/\s+(Inc\.?|Corp\.?|Corporation|Common Stock|Class [A-Z].*)$/i, "");
 const CAPS: Cap[] = ["earn", "fixed", "borrow", "lp"];
 const MIN_LIQ = [0, 10_000, 100_000, 1_000_000] as const;
@@ -79,7 +82,8 @@ function CapTags({ r }: { r: Market }) {
 /** Four quick lists: biggest gains and losses today, highest yield, deepest pools. */
 function MoverBoard({ rows }: { rows: Market[] }) {
   const { t } = useI18n();
-  const stocks = rows.filter((r) => r.type === "STOCK_TOKEN");
+  // Stablecoins barely move and would crowd the gain/loss lists.
+  const stocks = rows.filter((r) => r.type !== "STABLECOIN");
   const withChange = stocks.filter((r) => r.changePct !== null);
   const boxes: { title: string; list: Market[]; val: (r: Market) => ReactNode }[] = [
     { title: t("markets.gainers"), list: [...withChange].sort((a, b) => b.changePct! - a.changePct!).slice(0, 4), val: (r) => <Change v={r.changePct} /> },
@@ -170,7 +174,7 @@ function Filters({ f, set, onClear, all, saved }: { f: FilterState; set: (p: Par
           <Seg
             label={t("markets.type")}
             value={f.kind === "saved" ? ("" as Kind) : f.kind}
-            options={(["all", "stocks", "etfs"] as const).map((v) => ({ v, text: t(`markets.${v}`) }))}
+            options={(["all", "stocks", "etfs", "crypto"] as const).map((v) => ({ v, text: t(`markets.${v}`) }))}
             onChange={(v) => set({ kind: v })}
           />
           <Toggle on={f.kind === "saved"} onClick={() => set({ kind: f.kind === "saved" ? "all" : "saved" })} icon="star" tone="star" label={t("markets.saved")} count={saved} />
@@ -254,7 +258,9 @@ function Table({ rows, sort, setSort }: { rows: Market[]; sort: { k: SortKey; de
                     <Avatar symbol={r.symbol} address={r.address} />
                     <span className="nm">
                       <span className="nn">{shortName(r.name)}</span>
-                      <span className="s">{r.symbol}</span>
+                      <span className="s">
+                        {r.symbol} {isCrypto(r) && <span className={`kind-tag${r.type === "STABLECOIN" ? " stable" : ""}`}>{t(r.type === "STABLECOIN" ? "markets.kind.stable" : "markets.kind.crypto")}</span>}
+                      </span>
                     </span>
                   </a>
                 </td>
@@ -334,6 +340,7 @@ function HeatMap({ rows }: { rows: Market[] }) {
 }
 
 function Cards({ rows }: { rows: Market[] }) {
+  const { t } = useI18n();
   return (
     <div className="mk-cards">
       {rows.map((r) => (
@@ -341,7 +348,9 @@ function Cards({ rows }: { rows: Market[] }) {
           <span className="top">
             <Avatar symbol={r.symbol} address={r.address} />
             <span className="nm">
-              <span className="s">{r.symbol}</span>
+              <span className="s">
+                {r.symbol} {isCrypto(r) && <span className={`kind-tag${r.type === "STABLECOIN" ? " stable" : ""}`}>{t(r.type === "STABLECOIN" ? "markets.kind.stable" : "markets.kind.crypto")}</span>}
+              </span>
               <span className="nn">{shortName(r.name)}</span>
             </span>
             <span className="spacer" />
@@ -386,7 +395,7 @@ export function MarketsPage() {
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     const out = all
-      .filter((r) => (f.kind === "all" ? true : f.kind === "saved" ? watch.has(r.key) : f.kind === "etfs" ? r.type === "STOCK_TOKEN" && FUND.test(r.name) : r.type === "STOCK_TOKEN" && !FUND.test(r.name)))
+      .filter((r) => (f.kind === "saved" ? watch.has(r.key) : ofKind(r, f.kind)))
       .filter((r) => [...f.caps].every((c) => r.caps?.[c]))
       .filter((r) => (f.dir === "all" ? true : f.dir === "up" ? (r.changePct ?? 0) > 0 : (r.changePct ?? 0) < 0))
       .filter((r) => f.minLiq === 0 || (r.liquidityUsd ?? 0) >= f.minLiq)
@@ -411,7 +420,7 @@ export function MarketsPage() {
       </div>
 
       {res.data ? (
-        <MoverBoard rows={all} />
+        <MoverBoard rows={f.kind === "saved" ? all.filter((r) => watch.has(r.key)) : all.filter((r) => ofKind(r, f.kind))} />
       ) : (
         <div className="mk-board">
           {[0, 1, 2, 3].map((i) => (

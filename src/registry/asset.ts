@@ -10,6 +10,7 @@ export type PriceMethod =
   | "CHAINLINK_ETH_USD" // ETH and WETH
   | "CHAINLINK_USDG_USD" // USDG
   | "CHAINLINK_STOCK_TOKEN_FEED" // token price, multiplier included
+  | "CHAINLINK_USD_FEED" // crypto token with its own "<SYMBOL> / USD" feed (Asset.usdFeedName)
   | "ROBINHOOD_QUOTE_MID"; // underlying share mid × uiMultiplier
 
 export interface StockMetadata {
@@ -41,6 +42,8 @@ export interface Asset {
   verificationStatus: VerificationStatus;
   underlying?: { symbol: string; isin: string | null };
   stockMetadata?: StockMetadata;
+  /** CHAINLINK_USD_FEED only: the feed's name in the Chainlink directory, e.g. "LINK / USD". */
+  usdFeedName?: string;
   priceMethods: PriceMethod[];
   provenance: DataSource[];
 }

@@ -9,6 +9,9 @@ canonical asset, named `<lowercase address>.png`. Each was checked by eye agains
 | USDG (Global Dollar) | 0x5fc5360d0400a0fd4f2af552add042d716f1d168 | CoinGecko `coins/global-dollar` image (lists this Robinhood Chain address) |
 | QNT (Quantinuum) | see registry | Financial Modeling Prep `image-stock/QNT.png` (no ISIN logo on Parqet) |
 | XNDU (Xanadu Quantum) | see registry | Financial Modeling Prep `image-stock/XNDU.png` (no ISIN logo on Parqet) |
+| LINK | 0x492641f648a4986844848e0befe66d14817bce34 | CoinGecko token list `logoURI` (large), fetched 2026-10-01 |
+| cbBTC | 0xcec185eb182c47d1ba1efc84e6959e18cd620be4 | CoinGecko token list `logoURI` (large, WebP content in a .png name; served by sniffed type), fetched 2026-10-01 |
+| USDe | 0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34 | CoinGecko token list `logoURI` (large), fetched 2026-10-01 |
 
 Every other Stock Token uses the Parqet logo for its registry ISIN.
 

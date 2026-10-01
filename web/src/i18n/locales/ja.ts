@@ -676,4 +676,8 @@ export const ja: Record<StringKey, string> = {
   "nav.rewards": "リワード",
   "nav.soon": "近日",
   "nav.rewardsSoon": "リワードは近日公開",
+  "markets.crypto": "暗号資産",
+  "markets.kind.crypto": "暗号資産",
+  "markets.kind.stable": "ステーブル",
+  "home.movers": "今日の大きな値動き",
 };

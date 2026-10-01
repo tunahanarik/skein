@@ -98,6 +98,7 @@ export class PriceService {
     const index = await (this.deps.loadFeedIndex ?? (() => loadFeedIndex(this.deps.http)))();
     if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
     if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+    if (a.priceMethods.includes("CHAINLINK_USD_FEED")) return (a.usdFeedName && index.usdByName.get(a.usdFeedName)) || null;
     if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
     return null;
   }
@@ -153,6 +154,7 @@ export class PriceService {
       if (!index) return null;
       if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
       if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+      if (a.priceMethods.includes("CHAINLINK_USD_FEED")) return (a.usdFeedName && index.usdByName.get(a.usdFeedName)) || null;
       if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
       return null;
     };
@@ -185,7 +187,11 @@ export class PriceService {
 
   private reading(feed: ChainlinkFeed, round: RawRound, asset: Asset, nowS: number): ChainlinkReading {
     const rule: FreshnessRuleId =
-      asset.type === "STOCK_TOKEN" ? "CHAINLINK_STOCK_FEED" : asset.priceMethods.includes("CHAINLINK_USDG_USD") ? "CHAINLINK_USDG_USD" : "CHAINLINK_ETH_USD";
+      asset.type === "STOCK_TOKEN"
+        ? "CHAINLINK_STOCK_FEED"
+        : asset.priceMethods.includes("CHAINLINK_USDG_USD") || (asset.priceMethods.includes("CHAINLINK_USD_FEED") && asset.type === "STABLECOIN")
+          ? "CHAINLINK_USDG_USD" // stable: updates on 0.5 % deviation or the heartbeat, so hours-old answers are normal
+          : "CHAINLINK_ETH_USD"; // 24/7 crypto
     const problem = roundProblem(round, feed.decimals);
     const updatedAt = Number(round.updatedAt);
     const f = classifyFreshness(rule, problem ? null : updatedAt, nowS, feed.heartbeat);
@@ -320,6 +326,16 @@ export class PriceService {
       }
       const q = fromChainlink("CHAINLINK_USDG_USD", "VERIFIED_OFFICIAL_DOCS");
       return { ...q, pegDeviationBps: devBps, confidence: cl!.freshness === "FRESH" && Math.abs(devBps) <= USDG_PEG_WARNING_BPS ? "HIGH" : "MEDIUM" };
+    }
+
+    // ---------- Crypto tokens with their own USD feed ----------
+    if (a.priceMethods.includes("CHAINLINK_USD_FEED")) {
+      const name = a.usdFeedName ?? "?";
+      if (!feed) return unpriced(`${name} feed not found in the Chainlink directory`);
+      if (!clUsable) return unpriced(`${name} feed not usable (${cl?.invalidReason ?? cl?.freshness ?? "unread"})`);
+      if (cl!.freshness === "AGING") w.push(warn("AGING_PRICE", `${name} is ${cl!.ageSeconds}s old`, { assetKey: a.key }));
+      const q = fromChainlink("CHAINLINK_USD_FEED", "VERIFIED_OFFICIAL_DOCS");
+      return { ...q, confidence: cl!.freshness === "FRESH" ? "HIGH" : "MEDIUM" };
     }
 
     // ---------- Stock Tokens ----------

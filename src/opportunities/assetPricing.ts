@@ -45,7 +45,7 @@ export async function priceCanonicalAssets(ctx: AdapterContext, keys: Iterable<s
       const q = priced?.quotes.get(key);
       return {
         price: q?.status === "PRICED" ? q.priceUsd : null,
-        isChainlink: q?.method === "CHAINLINK_STOCK_TOKEN_FEED" || q?.method === "CHAINLINK_USDG_USD" || q?.method === "CHAINLINK_ETH_USD",
+        isChainlink: q?.method === "CHAINLINK_STOCK_TOKEN_FEED" || q?.method === "CHAINLINK_USDG_USD" || q?.method === "CHAINLINK_ETH_USD" || q?.method === "CHAINLINK_USD_FEED",
         multiplier: multiplierByKey.get(key) ?? null,
         quote: q ?? null,
       };

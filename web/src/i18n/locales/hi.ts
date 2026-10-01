@@ -653,4 +653,8 @@ export const hi: Record<StringKey, string> = {
   "nav.rewards": "रिवॉर्ड",
   "nav.soon": "जल्द",
   "nav.rewardsSoon": "रिवॉर्ड जल्द आ रहे हैं",
+  "markets.crypto": "क्रिप्टो",
+  "markets.kind.crypto": "क्रिप्टो",
+  "markets.kind.stable": "स्टेबल",
+  "home.movers": "आज की सबसे बड़ी चालें",
 };

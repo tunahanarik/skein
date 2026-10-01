@@ -65,3 +65,17 @@ A changed contract address is never trusted automatically.
   - `pnpm registry:check` exits non-zero on identity changes (suitable for CI).
 
 Current baseline (2026-09-24): 195 entries, `sha256:c316dd53e1a1e70ede17d0d9732ea19171e8b161e399966174d18141e6f5776c`. Live check: 195/195 onchain identity matches, 0 changes vs the snapshot.
+
+## Crypto tokens (`CRYPTO_ASSETS`, `src/config/assets.ts`)
+
+Besides ETH, WETH, USDG and the Stock Tokens, a crypto token is canonical only if it passes all of these (checked 2026-10-01):
+- **Chainlink feed:** a `<SYMBOL> / USD` feed for it exists in the Chainlink directory for Robinhood Chain mainnet and answers fresh. This is also how the token is priced.
+- **Two independent lists:** CoinGecko's Robinhood token list (`tokens.coingecko.com/robinhood/all.json`) and LI.FI's token list for chain 4663 give the same address.
+- **Onchain:** `symbol()`, `name()` and `decimals()` match, and the contract has code.
+
+Admitted: LINK, cbBTC, USDe.
+
+Not yet admitted:
+- ENA, weETH, wstETH: they have a feed but only one list names their address.
+- sUSDe, syrupUSDC, syrupUSDG: exchange-rate feeds only.
+- Everything else on the chain (meme tokens).

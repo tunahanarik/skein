@@ -676,4 +676,8 @@ export const zh: Record<StringKey, string> = {
   "nav.rewards": "奖励",
   "nav.soon": "即将推出",
   "nav.rewardsSoon": "奖励即将推出",
+  "markets.crypto": "加密货币",
+  "markets.kind.crypto": "加密",
+  "markets.kind.stable": "稳定币",
+  "home.movers": "今日涨跌幅最大",
 };
