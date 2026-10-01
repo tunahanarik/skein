@@ -5,6 +5,7 @@ import { Avatar, Skeleton, useAssetList, useAsync } from "../components/common";
 import { useAggregator } from "../components/AggregatorSwap";
 import { AssetPicker, idleSuggestions, IntentCards, OpportunityRows, usePortfolio, useTodayChange, WalletSummary } from "../components/market";
 import { PriceChart } from "../components/PriceChart";
+import { CommandHero } from "../components/CommandHero";
 import { pct, usd } from "../format";
 import { useI18n } from "../i18n";
 import { topOpportunities } from "../intents";
@@ -168,7 +169,18 @@ export function HomePage() {
 
   return (
     <div className="home-wide">
-      <div className="home-grid">
+      <CommandHero onAsset={setSel} />
+
+      {portfolio && (
+        <section className="section">
+          <div className="section-head">
+            <h2>{t("wsum.title")}</h2>
+          </div>
+          <WalletSummary p={portfolio} />
+        </section>
+      )}
+
+      <div className="home-grid section" id="asset-stage">
         <div className="panel stage-panel">
           <AssetStage sel={sel} onPick={setSel} v={v ?? null} />
         </div>
@@ -192,19 +204,6 @@ export function HomePage() {
       )}
 
       <TokenGrid list={list} onPick={setSel} />
-
-      <section className="section">
-        {portfolio ? (
-          <>
-            <div className="section-head">
-              <h2>{t("wsum.title")}</h2>
-            </div>
-            <WalletSummary p={portfolio} />
-          </>
-        ) : (
-          <WalletEntry />
-        )}
-      </section>
 
       {watch.keys.length > 0 && (
         <section className="section">

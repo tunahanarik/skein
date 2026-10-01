@@ -141,9 +141,10 @@ describe("shell", () => {
 
   it("a pasted wallet address never reaches the URL or storage", async () => {
     const { calls } = await mountAt("/");
-    fireEvent.change(screen.getByLabelText("Wallet address"), { target: { value: WALLET } });
+    // The home command line takes a wallet address first.
+    fireEvent.change(screen.getByLabelText("Wallet address, asset or command"), { target: { value: WALLET } });
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "View" }));
+      fireEvent.click(screen.getByRole("button", { name: /Analyze wallet/ }));
     });
     await waitFor(() => expect(location.pathname).toBe("/wallet"));
     expect(location.href.toLowerCase()).not.toContain(WALLET.slice(2).toLowerCase());
@@ -345,5 +346,24 @@ describe("bridge", () => {
     } finally {
       window.removeEventListener("eip6963:requestProvider", announce);
     }
+  });
+});
+
+describe("home command line", () => {
+  it("reads wallets, assets and short commands", async () => {
+    const { parseCommand } = await import("./components/CommandHero");
+    const list = [
+      { key: "4663:0xa", symbol: "NVDA", name: "NVIDIA • Robinhood Token", address: "0x000000000000000000000000000000000000000a", type: "STOCK_TOKEN", decimals: 18 },
+      { key: "4663:0xb", symbol: "SPY", name: "SPDR S&P 500 ETF Trust", address: "0x000000000000000000000000000000000000000b", type: "STOCK_TOKEN", decimals: 18 },
+    ] as never[];
+    expect(parseCommand("0x00000000000000000000000000000000000000aa", list)).toEqual({ kind: "wallet", address: "0x00000000000000000000000000000000000000aa" });
+    expect(parseCommand("0x000000000000000000000000000000000000000A", list)).toMatchObject({ kind: "asset", asset: { symbol: "NVDA" } });
+    expect(parseCommand("earn yield on nvda", list)).toMatchObject({ kind: "intent", intent: "EARN", asset: { symbol: "NVDA" } });
+    expect(parseCommand("> borrow against SPY", list)).toMatchObject({ kind: "intent", intent: "BORROW", asset: { symbol: "SPY" } });
+    expect(parseCommand("swap 1 NVDA to USDG", list)).toMatchObject({ kind: "swap", asset: { symbol: "NVDA" } });
+    expect(parseCommand("bridge", list)).toEqual({ kind: "bridge" });
+    expect(parseCommand("nvidia", list)).toMatchObject({ kind: "asset", asset: { symbol: "NVDA" } });
+    expect(parseCommand("hello world", list)).toEqual({ kind: "none" });
+    expect(parseCommand("0x123", list)).toEqual({ kind: "none" });
   });
 });

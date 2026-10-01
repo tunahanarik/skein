@@ -683,6 +683,17 @@ export const en = {
   "markets.kind.crypto": "Crypto",
   "markets.kind.stable": "Stable",
   "home.movers": "Biggest moves today",
+  "home.cmd.assets": "{n} assets",
+  "home.cmd.block": "Block",
+  "home.cmd.live": "Live",
+  "home.cmd.question": "paste a wallet address, or type what you want to do",
+  "home.cmd.label": "Wallet address, asset or command",
+  "home.cmd.placeholder": "0x… wallet address  ·  or: earn NVDA",
+  "home.cmd.run": "Run",
+  "home.cmd.analyze": "Analyze wallet",
+  "home.cmd.unknown": "Not understood. Try a wallet address (0x…), an asset (NVDA) or a command (earn NVDA).",
+  "home.cmd.walletLead": "See everything a wallet holds, and what each asset can do.",
+  "home.cmd.try": "Try:",
 };
 
 export type StringKey = keyof typeof en;
@@ -1343,4 +1354,15 @@ export const tr: Record<StringKey, string> = {
   "markets.kind.crypto": "Kripto",
   "markets.kind.stable": "Stabil",
   "home.movers": "Bugün en çok hareket edenler",
+  "home.cmd.assets": "{n} varlık",
+  "home.cmd.block": "Blok",
+  "home.cmd.live": "Canlı",
+  "home.cmd.question": "bir cüzdan adresi yapıştır ya da ne yapmak istediğini yaz",
+  "home.cmd.label": "Cüzdan adresi, varlık ya da komut",
+  "home.cmd.placeholder": "0x… cüzdan adresi  ·  ya da: earn NVDA",
+  "home.cmd.run": "Çalıştır",
+  "home.cmd.analyze": "Cüzdanı analiz et",
+  "home.cmd.unknown": "Anlaşılamadı. Bir cüzdan adresi (0x…), varlık (NVDA) ya da komut (earn NVDA) dene.",
+  "home.cmd.walletLead": "Bir cüzdanın tuttuğu her şeyi ve her varlıkla neler yapılabileceğini gör.",
+  "home.cmd.try": "Dene:",
 };

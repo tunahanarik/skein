@@ -1350,3 +1350,42 @@ footer.bottom { border-top: 1px solid var(--border); }
 .kind-tag.stable { color: var(--text-2); border-color: var(--border-2); }
 .mini-seg { margin-left: 12px; }
 .mini-seg button { padding: 5px 10px; font-size: 10.5px; }
+
+/* =====================================================================
+ * HOME COMMAND HERO — one prompt; a wallet address first, then assets and commands.
+ * ===================================================================== */
+.cmd-hero { border: 1px solid var(--border); border-radius: 4px; background: var(--bg); padding: 18px 22px 20px; display: grid; gap: 14px; margin-top: 8px; position: relative; }
+.cmd-status { display: flex; align-items: center; gap: 16px; font-family: var(--mono-ui); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+.cmd-status .wordmark { font-size: 15px; text-transform: none; letter-spacing: -0.03em; }
+.cmd-live { color: var(--text-3); }
+.cmd-live.on { color: var(--accent); }
+.cmd-q { font-family: var(--mono-ui); font-size: 13px; color: var(--text-3); padding-top: 10px; }
+.cmd-line { position: relative; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-2); border-radius: 3px; background: var(--surface); padding: 6px 6px 6px 16px; }
+.cmd-line:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
+.cmd-line.err { border-color: var(--bad); }
+.cmd-prompt { font-family: var(--mono-ui); font-size: 24px; font-weight: 700; color: var(--accent); line-height: 1; }
+.cmd-line input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); font-family: var(--mono-ui); font-size: 20px; letter-spacing: -0.01em; padding: 12px 0; outline: none; caret-color: var(--accent); }
+.cmd-line input::placeholder { color: var(--text-3); }
+.cmd-go { flex: none; padding: 12px 16px !important; font-size: 12px; }
+.cmd-go.wallet { background: var(--accent) !important; color: var(--on-accent) !important; }
+.cmd-pop { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 50; background: var(--surface); border: 1px solid var(--border-2); border-radius: 4px; padding: 4px; display: grid; gap: 1px; box-shadow: var(--shadow-pop); }
+.cmd-pop button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); font: inherit; padding: 7px 10px; border-radius: 2px; cursor: pointer; text-align: start; }
+.cmd-pop button.on { background: var(--surface-3); }
+.cmd-pop .s { font-family: var(--mono-ui); font-weight: 600; }
+.cmd-pop .n { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmd-err { font-family: var(--mono-ui); font-size: 12px; color: var(--bad); }
+.cmd-wallet { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--border-2); border-radius: 3px; padding: 10px 12px; color: var(--text-2); font-size: 13.5px; }
+.cmd-wallet > .icon { color: var(--accent); }
+.cmd-examples { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: var(--mono-ui); font-size: 12px; }
+.cmd-examples .m { color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+.cmd-examples button { border: 1px solid var(--border); background: transparent; color: var(--text-2); font: inherit; padding: 5px 10px; border-radius: 2px; cursor: pointer; }
+.cmd-examples button:hover { border-color: var(--accent); color: var(--accent); }
+.cmd-note { font-size: 11.5px; color: var(--text-3); }
+@media (max-width: 720px) {
+  .cmd-hero { padding: 14px; }
+  .cmd-status > span:not(.wordmark):not(.cmd-live) { display: none; }
+  .cmd-line input { font-size: 15px; }
+  .cmd-go { padding: 10px !important; font-size: 10.5px; }
+  .cmd-wallet { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: no-preference) { .cmd-live.on { animation: route-pulse 2s ease-in-out infinite; } }
