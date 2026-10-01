@@ -367,3 +367,26 @@ describe("home command line", () => {
     expect(parseCommand("0x123", list)).toEqual({ kind: "none" });
   });
 });
+
+describe("tracked wallets", () => {
+  it("stores a wallet only on an explicit Track, sanitises the label, and removes it", async () => {
+    const { cleanLabel } = await import("./tracked");
+    expect(cleanLabel("  Fund‮ A\u0000  ")).toBe("Fund A");
+    expect(cleanLabel("x".repeat(40))).toHaveLength(24);
+    localStorage.clear();
+    const WALLET2 = "0x00000000000000000000000000000000000000bb";
+    await mountAt("/tracked");
+    expect(localStorage.getItem("skein.tracked")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Wallet address"), { target: { value: WALLET2 } });
+    fireEvent.change(screen.getByLabelText("Label"), { target: { value: "Desk" } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /Track/ }));
+    });
+    expect(JSON.parse(localStorage.getItem("skein.tracked") ?? "[]")).toMatchObject([{ address: WALLET2, label: "Desk" }]);
+    expect(location.href.toLowerCase()).not.toContain(WALLET2.slice(2));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Stop tracking" }));
+    });
+    expect(JSON.parse(localStorage.getItem("skein.tracked") ?? "[]")).toEqual([]);
+  });
+});

@@ -49,6 +49,12 @@ const P: Record<string, ReactNode> = {
   chart: <path d="M4 4v16h16M8 15l3.5-4 3 2.5L20 7" />,
   sliders: <path d="M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4" />,
   terminal: <path d="M4 7l5 5-5 5M12 18h8" />,
+  eye: (
+    <>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
   gift: <path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.2C7 7 9.5 7 12 7zM12 7c1.5-3 5-3.5 5-1.2C17 7 14.5 7 12 7z" />,
 };
 

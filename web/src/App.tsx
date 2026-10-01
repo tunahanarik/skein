@@ -8,6 +8,7 @@ import { ComparePage } from "./pages/Compare";
 import { CoveragePage } from "./pages/Coverage";
 import { MarketsPage } from "./pages/Markets";
 import { TerminalPage } from "./pages/Terminal";
+import { TrackedPage } from "./pages/Tracked";
 import { Icon, Mark, Wordmark } from "./components/icons";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
@@ -136,6 +137,10 @@ function Rail() {
         <a className={`rail-i${on("wallet")}`} {...linkProps("/wallet")} aria-current={on("wallet") ? "page" : undefined}>
           <Icon name="wallet" size={21} />
           <span>{t("nav.portfolio")}</span>
+        </a>
+        <a className={`rail-i${on("tracked")}`} {...linkProps("/tracked")} aria-current={on("tracked") ? "page" : undefined}>
+          <Icon name="eye" size={21} />
+          <span>{t("nav.tracked")}</span>
         </a>
         <span className="rail-i soon" aria-disabled="true" title={t("nav.rewardsSoon")}>
           <Icon name="gift" size={21} />
@@ -286,6 +291,8 @@ function Page() {
       return <MarketsPage />;
     case "terminal":
       return <TerminalPage />;
+    case "tracked":
+      return <TrackedPage />;
     case "about":
       return <AboutPage />;
     case "compare":

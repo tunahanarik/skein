@@ -7,7 +7,8 @@ import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
 import { code } from "../text";
 import { useWallet } from "../wallet";
-import { ProtocolLogo } from "../components/icons";
+import { Icon, ProtocolLogo } from "../components/icons";
+import { useTracked } from "../tracked";
 
 const CATS = ["TRADE", "EARN", "BORROW", "LIQUIDITY"] as const;
 
@@ -80,6 +81,7 @@ function WalletView({ address }: { address: string }) {
   const w = useWallet();
   const res = useAsync((s) => api.portfolio(address, s), [address]);
   const p = res.data;
+  const tracked = useTracked();
   const [open, setOpen] = useState<string | null>(null);
   // Largest holdings first; unpriced last.
   const assets = p ? [...p.assets].sort((a, b) => Number(b.balance?.valueUsd?.display ?? -1) - Number(a.balance?.valueUsd?.display ?? -1)) : [];
@@ -94,6 +96,9 @@ function WalletView({ address }: { address: string }) {
           </h1>
         </div>
         <span className="spacer" />
+        <button className={`btn small${tracked.has(address) ? " primary" : ""}`} onClick={() => (tracked.has(address) ? tracked.remove(address) : tracked.add(address))} aria-pressed={tracked.has(address)}>
+          <Icon name="eye" size={14} /> {tracked.has(address) ? t("tracked.tracking") : t("tracked.track")}
+        </button>
         <button className="btn small" onClick={res.reload} disabled={res.loading}>
           {t("wallet.refresh")}
         </button>
