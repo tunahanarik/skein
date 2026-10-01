@@ -4,7 +4,7 @@ import { CardView } from "../components/CardView";
 import { OpportunityTable } from "../components/OpportunityTable";
 import { RouteTable } from "../components/RouteTable";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, Notice, Skeleton, useAssetList, useAsync } from "../components/common";
-import { amount, pct, usd } from "../format";
+import { amount, pct, prettyId, usd } from "../format";
 import { useI18n } from "../i18n";
 import { AlertForm } from "../components/AlertForm";
 import { PriceChart } from "../components/PriceChart";
@@ -45,7 +45,7 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
   if (res.error) {
     return (
       <div style={{ maxWidth: 640 }}>
-        <h1 style={{ marginBottom: 14 }}>{assetRef}</h1>
+        <h1 className="keep-case" style={{ marginBottom: 14 }}>{assetRef}</h1>
         <ErrorBox error={res.error} onRetry={res.reload} />
         <p className="muted">
           <a {...linkProps("/")}>{t("err.searchOther")}</a>
@@ -152,7 +152,7 @@ function AssetHeader({ v, name, assetRef }: { v: Intelligence | null; name: stri
           <Avatar symbol={a?.symbol ?? assetRef} address={a?.address ?? null} size="lg" />
           <div style={{ minWidth: 0 }}>
             <div className="row" style={{ gap: 8 }}>
-              <h1>{a?.symbol ?? assetRef}</h1>
+              <h1 className="keep-case">{a?.symbol ?? assetRef}</h1>
               {a?.registryType && <span className="tag">{code(t, "type", a.registryType)}</span>}
             </div>
             <div className="muted small" style={{ overflowWrap: "anywhere" }}>
@@ -262,7 +262,7 @@ function QualityNote({ v }: { v: Intelligence }) {
   return (
     <Notice kind={q.status === "UNKNOWN" ? "bad" : "warn"}>
       <span>
-        <strong>{t(`quality.${q.status}`)}.</strong> {q.reasons.map((r) => r.code.replaceAll("_", " ").toLowerCase()).join("; ")}
+        <strong>{t(`quality.${q.status}`)}.</strong> {[...new Set(q.reasons.map((r) => (r.protocol ? r.protocol[0]!.toUpperCase() + r.protocol.slice(1) : prettyId(r.code.toLowerCase()))))].join(", ")}
       </span>
     </Notice>
   );

@@ -15,7 +15,7 @@ import { Avatar, UsabilityBadge, useAssetList } from "./common";
 import { canSwap, SwapBody } from "./SwapDialog";
 import { Badge, Icon, ProtocolMark, type IconName } from "./icons";
 import { AggregatorSwap } from "./AggregatorSwap";
-import { parseUnits } from "viem";
+import { formatUnits, parseUnits } from "viem";
 
 /** Icon and pastel family per intent. */
 export const INTENT_LOOK: Record<IntentKey, { icon: IconName; tone: "earn" | "fixed" | "borrow" | "lp" | "trade" }> = {
@@ -484,6 +484,7 @@ function QuickSwap({ from }: { from?: string }) {
   const [amt, setAmt] = useState("1");
   const [targets, setTargets] = useState<string[] | null>(null);
   const [state, setState] = useState<{ loading: boolean; card: Card | null; none: boolean; err: string | null }>({ loading: false, card: null, none: false, err: null });
+  const [aggOut, setAggOut] = useState<bigint | null>(null);
 
   useEffect(() => {
     if (!list || fromA) return;
@@ -556,7 +557,7 @@ function QuickSwap({ from }: { from?: string }) {
       <div className="qs-box">
         <div className="muted small">{t("quick.get")}</div>
         <div className="row" style={{ flexWrap: "nowrap", justifyContent: "space-between" }}>
-          <span className={`qs-amt num${state.card ? "" : " ph"}`}>{state.card?.trade?.quote ? amount(state.card.trade.quote.expectedOutput.display, 6) : state.loading || !targets ? "…" : "0"}</span>
+          <span className={`qs-amt num${state.card || (state.none && aggOut !== null) ? "" : " ph"}`}>{state.card?.trade?.quote ? amount(state.card.trade.quote.expectedOutput.display, 6) : state.none && aggOut !== null && toA ? amount(formatUnits(aggOut, toA.decimals), 6) : state.loading || !targets || state.none ? "…" : "0"}</span>
           <AssetPicker label={t("quote.into")} only={targets} value={list?.find((a) => a.symbol === to) ?? null} onChange={(a) => (setTo(a.symbol), setState((s) => ({ ...s, card: null, none: false })))} />
         </div>
         {targets && !targets.length && <div className="muted small">{t("quote.noTargets")}</div>}
@@ -575,7 +576,7 @@ function QuickSwap({ from }: { from?: string }) {
       {state.none && fromA && toA && aggAmount !== null && (
         <>
           <div className="muted small">{t("agg.fallback")}</div>
-          <AggregatorSwap key={`${fromA.key}-${toA.key}-${amt}`} from={{ ...fromA, address: fromA.address as `0x${string}` }} to={{ ...toA, address: toA.address as `0x${string}` }} amountRaw={aggAmount} />
+          <AggregatorSwap key={`${fromA.key}-${toA.key}-${amt}`} from={{ ...fromA, address: fromA.address as `0x${string}` }} to={{ ...toA, address: toA.address as `0x${string}` }} amountRaw={aggAmount} onOut={setAggOut} />
         </>
       )}
       {state.err && <div className="notice bad small">{state.err}</div>}

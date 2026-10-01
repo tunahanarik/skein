@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import type { Card } from "../api";
-import { amount, date, feePpm, pctE18, pctText, usd } from "../format";
+import { amount, date, feePpm, humanDates, pctE18, pctText, prettyId, usd } from "../format";
 import { useI18n, type StringKey } from "../i18n";
 import { actionLabel, ago, code, contextLine } from "../text";
 import { ProtocolLink, UsabilityBadge } from "./common";
@@ -153,13 +153,13 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
               <li>{t("card.cond2")}</li>
               {redemption && (
                 <li>
-                  {t("card.redemption")} <span className="faint">{redemption.replace(/^Redemption:\s*/, "")}</span>
+                  {t("card.redemption")} <span className="faint">{humanDates(redemption.replace(/^Redemption:\s*/, ""))}</span>
                 </li>
               )}
             </ul>
           )}
           <dl className="kv">
-            {card.context && <Row label={t("card.context")} value={card.context} />}
+            {card.context && <Row label={t("card.context")} value={humanDates(card.context)} />}
             {card.metrics
               .filter((m) => m.type !== h?.type)
               .map((m) => (
@@ -174,7 +174,7 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
             {q && <Row label={t("card.quotedAt")} value={`${q.blockNumber} · ${code(t, "fresh", q.freshness)} · ${t("card.notGuaranteed")}`} />}
             {tr && <Row label={t("card.volume")} value={t("card.notMeasured")} />}
             <Row label={t("card.verification")} value={card.verification.replaceAll("_", " ").toLowerCase()} />
-            <Row label={t("card.sources")} value={card.sources.map((s) => `${s.provider} (${s.type.toLowerCase()})`).join(", ")} />
+            <Row label={t("card.sources")} value={card.sources.map((s) => `${prettyId(s.provider)} (${prettyId(s.type.toLowerCase())})`).join(", ")} />
             {card.ranking && <Row label={t("card.ordering")} value={`${card.ranking.comparator} · #${card.ranking.position}`} />}
             <Row label={t("card.cardId")} value={<span className="mono">{card.cardId}</span>} />
           </dl>

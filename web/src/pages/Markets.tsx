@@ -321,13 +321,14 @@ function HeatMap({ rows }: { rows: Market[] }) {
         {list.map((r) => {
           const l = r.liquidityUsd ?? 0;
           const size = l > 0 && l >= q1 ? "xl" : l > 0 && l >= q2 ? "l" : l > 0 && l >= q3 ? "m" : "s";
-          const c = r.changePct ?? 0;
+          // Moves that round to 0.0% are flat: neutral tile, no sign (never "−0.0%").
+          const c = Math.abs(r.changePct ?? 0) < 0.05 ? 0 : (r.changePct ?? 0);
           const a = Math.min(1, Math.abs(c) / 4);
-          const bg = r.changePct === null ? "var(--surface-2)" : `color-mix(in srgb, ${c >= 0 ? "#7fae1f" : "#c2453a"} ${Math.round(18 + a * 62)}%, var(--surface))`;
+          const bg = r.changePct === null || c === 0 ? "var(--surface-2)" : `color-mix(in srgb, ${c > 0 ? "#7fae1f" : "#c2453a"} ${Math.round(18 + a * 62)}%, var(--surface))`;
           return (
             <a key={r.key} className={`tile t-${size}`} style={{ background: bg }} {...linkProps(hrefOf(r))} title={`${shortName(r.name)} · ${r.liquidityUsd !== null ? compactUsd(r.liquidityUsd) : "·"}`}>
               <span className="s">{r.symbol}</span>
-              <span className="num c">{r.changePct === null ? "·" : `${c >= 0 ? "+" : ""}${pct(c, 1)}`}</span>
+              <span className="num c">{r.changePct === null ? "·" : `${c > 0 ? "+" : ""}${pct(c, 1)}`}</span>
             </a>
           );
         })}

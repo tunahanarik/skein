@@ -63,7 +63,7 @@ export function ProtocolLink({ name, url }: { name: string; url: string }) {
   if (!/^https:\/\/[a-z0-9.-]+\//i.test(url)) return null;
   return (
     <div className="small">
-      <a href={url} target="_blank" rel="noopener noreferrer" title={t("link.note")}>
+      <a className="proto-link" href={url} target="_blank" rel="noopener noreferrer" title={t("link.note")}>
         {t("link.open", { p: name })} ↗
       </a>
     </div>

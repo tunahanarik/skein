@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { api, type AssetListItem } from "../api";
 import { topOpportunities, type IntentKey } from "../intents";
 import { contextLine } from "../text";
@@ -150,6 +150,13 @@ export function CommandTerminal() {
     const r = rows[i];
     if (r && asset) navigate(`/asset/${encodeURIComponent(asset.symbol)}?i=${r.intent}`);
   };
+  // Enter pressed while the asset's options are still loading: open the first one when they arrive.
+  const [pending, setPending] = useState(false);
+  useEffect(() => {
+    if (!pending || !intel.data) return;
+    setPending(false);
+    if (rows.length) open(0);
+  }, [pending, intel.data, rows]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function complete(a: AssetListItem) {
     const ws = line.trim().split(/\s+/);
@@ -167,6 +174,8 @@ export function CommandTerminal() {
     if (verb === "BRIDGE") return quick.open("bridge");
     if (verb === "SWAP") return quick.open("swap", asset?.symbol);
     if (rows.length) return open(0);
+    if (asset && !intel.data) return setPending(true);
+    if (asset) return;
     setErr(true);
   }
   return (

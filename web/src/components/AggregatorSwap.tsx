@@ -3,7 +3,7 @@ import { formatUnits, parseUnits, type Address, type Hex } from "viem";
 import { api, type AggregatorRow } from "../api";
 import { allowanceData, approveData, balanceData, checkBridgeQuote, quote as lifiQuote, type Quote, type QuoteRequest } from "../bridge/lifi";
 import { LIFI_DIAMONDS } from "../bridge/diamonds";
-import { amount, pct, usd } from "../format";
+import { amount, pct, prettyId, usd } from "../format";
 import { useI18n } from "../i18n";
 import { chainIdOf, errorKind, switchToRobinhood, waitReceipt } from "../swap/rpc";
 import { explorerTx } from "../swap/uniswap";
@@ -86,7 +86,7 @@ type Step = { k: "idle" } | { k: "wallet"; what: "approve" | "swap" } | { k: "pe
  * transaction must pass checkBridgeQuote (pinned diamond, amounts, addresses) and lose at most 3%
  * against the Chainlink prices of both tokens; unverified sources need an acknowledgement.
  */
-export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; amountRaw: bigint }) {
+export function AggregatorSwap({ from, to, amountRaw, onOut }: { from: Tok; to: Tok; amountRaw: bigint; onOut?: (out: bigint | null) => void }) {
   const { t } = useI18n();
   const w = useWallet();
   const user = w.source === "connected" ? (w.address as Address | null) : null;
@@ -101,6 +101,8 @@ export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; am
   const [bal, setBal] = useState<bigint | null>(null);
   const live = useRef(true);
   useEffect(() => () => void (live.current = false), []);
+  // The parent shows the expected output in its own "You receive" box.
+  useEffect(() => onOut?.(q ? q.toAmount : null), [q, onOut]);
 
   const req = (who: Address): QuoteRequest => ({ fromChainId: RH, toChainId: RH, fromToken: from.address, toToken: to.address, fromAmount: amountRaw, user: who, recipient: who, slippage: 0.005, order: "CHEAPEST" });
 
@@ -115,7 +117,7 @@ export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; am
       try {
         const k = await kyberRoute(from.address, to.address, amountRaw);
         if (k.routerAddress.toLowerCase() !== KYBER_ROUTER.toLowerCase()) throw new Error("unexpected contract");
-        return { via: "kyber", toolName: `KyberSwap · ${k.exchanges.join(", ")}`, verified: k.exchanges.length > 0 && k.exchanges.every((x) => VERIFIED_VENUES.has(x.toLowerCase())), toAmount: k.amountOut, toAmountMin: (k.amountOut * BigInt(10_000 - SLIPPAGE_BPS)) / 10_000n, feesUsd: null, spender: KYBER_ROUTER, kyber: k };
+        return { via: "kyber", toolName: `KyberSwap · ${k.exchanges.map(prettyId).join(", ")}`, verified: k.exchanges.length > 0 && k.exchanges.every((x) => VERIFIED_VENUES.has(x.toLowerCase())), toAmount: k.amountOut, toAmountMin: (k.amountOut * BigInt(10_000 - SLIPPAGE_BPS)) / 10_000n, feesUsd: null, spender: KYBER_ROUTER, kyber: k };
       } catch {
         throw e1;
       }
@@ -312,7 +314,7 @@ export function AggregatorPanel({ asset }: { asset: Tok }) {
         <h3>{t("agg.title")}</h3>
         {row && row.cls !== "NO_ROUTE" && (
           <span className={`src-badge ${row.cls === "GOOD" ? "ok" : row.cls === "OK" ? "warn" : "bad"}`}>
-            {t("agg.scan", { s: row.toolName ?? "·", x: row.loss !== null ? pct(row.loss * 100, 2) : "·" })}
+            {t("agg.scan", { s: row.toolName ? prettyId(row.toolName) : "·", x: row.loss !== null ? pct(row.loss * 100, 2) : "·" })}
           </span>
         )}
         {row?.cls === "NO_ROUTE" && <span className="src-badge bad">{t("agg.noRouteScan")}</span>}

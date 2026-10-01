@@ -315,7 +315,7 @@ export function normalizePendleMarket(input: PendleMarketInput, ctx: PendleNorma
   const pendleReward = api?.pendleApy ?? null;
   const lpYields = [
     ...apiYield("NET_APY", api?.aggregatedApy ?? null, "aggregatedApy", "Pendle LP APY: underlying yield + PT fixed yield + swap fees + PENDLE incentives (no boost)"),
-    ...apiYield("COMPONENT_APY", api?.swapFeeApy ?? null, "swapFeeApy", "LP swap-fee APY", { componentOf: "NET_APY", component: "swapFee" }),
+    ...apiYield("COMPONENT_APY", api?.swapFeeApy ?? null, "swapFeeApy", "LP swap fee APY", { componentOf: "NET_APY", component: "swapFee" }),
     ...apiYield("COMPONENT_APY", api?.lpRewardApy ?? null, "lpRewardApy", "LP reward APY (reward token not specified by the API)", { componentOf: "NET_APY", component: "lpReward" }),
     ...(pendleReward !== null && pendleReward > 0
       ? apiYield("REWARD_APY", pendleReward, "pendleApy", "PENDLE incentive APY (paid in PENDLE)", { rewardAsset: rewardTokens.find((r) => sameAddress(r.address, PENDLE_CONTRACTS.PENDLE)) ?? null, compounding: "SIMPLE" })

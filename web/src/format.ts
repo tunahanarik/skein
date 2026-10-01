@@ -35,7 +35,10 @@ export function pctE18(v: string | null | undefined, digits = 2): string {
 
 /** `n` is in percent units (7.28 → "7.28%"); placement and spacing follow the locale. */
 export function pct(n: number, digits = 2, minDigits = digits): string {
-  return new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: minDigits, maximumFractionDigits: digits }).format(n / 100);
+  // A real minus sign, never a hyphen (house style: no dashes anywhere in the UI).
+  const s = new Intl.NumberFormat(locale, { style: "percent", minimumFractionDigits: minDigits, maximumFractionDigits: digits }).format(n / 100).replace(/-/g, "−");
+  // A value that rounds to zero carries no sign ("0.00%", never "−0.00%").
+  return /[1-9١-٩१-९]/.test(s) ? s : s.replace("−", "");
 }
 
 /** Server-formatted percent ("7.28%") → localized. */
@@ -69,6 +72,21 @@ export function shortAddr(a: string): string {
 export function date(iso: string | null | undefined): string {
   if (!iso) return "·";
   return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+}
+
+/** Machine ids shown to people ("uniswap-v4", "beefy-api", "official_api") as words: "Uniswap v4", "Beefy API", "official API". */
+export function prettyId(s: string): string {
+  return s.replace(/\b[a-z0-9]+(?:[-_][a-z0-9]+)+\b/gi, (id) =>
+    id
+      .split(/[-_]/)
+      .map((w, i) => (/^(api|tvl|lp|amm|clm)$/i.test(w) ? w.toUpperCase() : /^v\d+$/i.test(w) ? w.toLowerCase() : i === 0 ? w[0]!.toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase()))
+      .join(" "),
+  );
+}
+
+/** ISO dates inside server text ("matures 2026-10-15", "at or after 2027-03-25T00:00:00Z") in the reader's format. */
+export function humanDates(s: string): string {
+  return s.replace(/\b\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z?)?/g, (iso) => date(iso));
 }
 
 export function feePpm(ppm: number | null | undefined): string {

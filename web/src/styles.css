@@ -1643,3 +1643,19 @@ footer.bottom { border-top: 1px solid var(--border); }
 .tw-none b { color: var(--text); }
 @media (max-width: 640px) { .tw-form { flex-wrap: wrap; } .tw-in-addr { flex-basis: 100%; } .tw-in-label { border-left: 0 !important; padding-left: 0 !important; } }
 .tw-stats .v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Symbols (cbBTC, USDe) and addresses (0x…) keep their own case inside uppercase terminal headings. */
+.keep-case { text-transform: none !important; }
+
+/* Phones: small text controls get a 32px touch target without changing their look. */
+@media (max-width: 760px) {
+  footer a, .mk-ftoggle, .th-sort, .bx-set, .hold-links .linkish, .proto-link, .protocol-link { min-height: 32px; display: inline-flex; align-items: center; }
+  .mk-ftoggle { width: 100%; }
+}
+
+/* Phones: the address gets the whole line; the Analyze button sits under it. */
+@media (max-width: 560px) {
+  .hw-form { flex-wrap: wrap; padding: 5px 5px 5px 12px; }
+  .hw-form input, .home-hero .hw-form input { flex: 1 1 calc(100% - 40px); font-size: 15px; }
+  .hw-form .btn { flex: 1 1 100%; justify-content: center; font-size: 11px; padding: 11px 10px !important; }
+}

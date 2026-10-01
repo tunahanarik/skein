@@ -262,21 +262,35 @@ export class UniswapV4Adapter implements OpportunityAdapter {
     return { data: s.opportunities, status: s.status, issues: s.issues, warnings: s.warnings, timingsMs: s.timingsMs };
   }
 
-  /** INDICATIVE quote through the official V4Quoter (eth_call only), hop by hop, hookless pools only. */
+  /**
+   * INDICATIVE quote through the official V4Quoter (eth_call only), hop by hop, hookless pools only,
+   * at the request's block. Pool identity comes from the latest snapshot; slot0 is read at this block.
+   */
   async quoteRoute(route: TradeRoute, amountInRaw: bigint, ctx: AdapterContext): Promise<QuoteResult> {
     if (amountInRaw <= 0n) return { ok: false, reason: "amount must be positive", retryable: false };
-    const s = await this.snapshot(ctx);
-    const hops = route.hops.map((h) => ({ h, m: s.markets.get(h.marketId), p: s.pools.get(h.marketId) }));
+    const s = this.last ?? (await this.snapshot(ctx));
+    const block = ctx.blockNumber;
+    const hops = route.hops.map((h) => ({ h, m: s.markets.get(h.marketId), p: s.pools.get(h.marketId), sqrtPriceX96: null as bigint | null }));
     for (const x of hops) {
       if (!x.m || !x.p) return { ok: false, reason: `market ${x.h.marketId} is not a known Uniswap v4 hookless market`, retryable: false };
       if (!x.m.assets[0].canonical || !x.m.assets[1].canonical) return { ok: false, reason: "quotes are only produced for canonical assets", retryable: false };
       if (!x.m.originVerified || x.m.verificationStatus !== "VERIFIED_ONCHAIN" || x.m.state !== "ACTIVE") return { ok: false, reason: `market ${x.h.marketId} is not verified or not active`, retryable: false };
       if (x.p.key.hooks !== "0x0000000000000000000000000000000000000000") return { ok: false, reason: "hooked pools are never quoted", retryable: false };
     }
-    const cacheKey = `${route.id}|${amountInRaw}|${s.block}`;
+    if (s.block === block) for (const x of hops) x.sqrtPriceX96 = x.p!.state.sqrtPriceX96 ?? null;
+    else {
+      try {
+        const r = await ctx.reader.multicall(hops.map((x) => ({ address: STATE_VIEW, abi: stateViewAbi, functionName: "getSlot0", args: [poolIdOf(x.p!.key)] })), { blockNumber: block });
+        hops.forEach((x, i) => (x.sqrtPriceX96 = r[i]?.status === "success" ? ((r[i] as { result: readonly bigint[] }).result[0] ?? null) : null));
+      } catch (e) {
+        return { ok: false, reason: `pool state unreadable: ${(e as Error).message?.split("\n")[0] ?? "error"}`, retryable: true };
+      }
+    }
+    if (hops.some((x) => !x.sqrtPriceX96)) return { ok: false, reason: "pool state unreadable", retryable: true };
+    const cacheKey = `${route.id}|${amountInRaw}|${block}`;
     const hit = this.quoteCache.get(cacheKey);
     if (hit && this.clock() - hit.at < CACHE_TTL_MS.QUOTE) return hit.result;
-    const src: DataSource = { type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract: UNISWAP_V4.quoter, method: "V4Quoter.quoteExactInputSingle (eth_call, per hop)", blockNumber: s.block, observedAt: s.generatedAt };
+    const src: DataSource = { type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ctx.chainId, contract: UNISWAP_V4.quoter, method: "V4Quoter.quoteExactInputSingle (eth_call, per hop)", blockNumber: block, observedAt: ctx.now().toISOString() };
     let amount = amountInRaw;
     let gas = 0n;
     const fees: TradeQuote["fees"] = [];
@@ -285,9 +299,9 @@ export class UniswapV4Adapter implements OpportunityAdapter {
       for (const [i, x] of hops.entries()) {
         const k = x.p!.key;
         const zeroForOne = x.h.from.address.toLowerCase() === k.currency0.toLowerCase();
-        const r = (await ctx.reader.readContract({ address: UNISWAP_V4.quoter, abi: v4QuoterAbi, functionName: "quoteExactInputSingle", args: [{ poolKey: k, zeroForOne, exactAmount: amount, hookData: "0x" }] }, { blockNumber: s.block })) as readonly [bigint, bigint];
+        const r = (await ctx.reader.readContract({ address: UNISWAP_V4.quoter, abi: v4QuoterAbi, functionName: "quoteExactInputSingle", args: [{ poolKey: k, zeroForOne, exactAmount: amount, hookData: "0x" }] }, { blockNumber: block })) as readonly [bigint, bigint];
         fees.push({ hop: i, asset: x.h.from, amount: { raw: hopFee(amount, k.fee), decimals: x.h.from.decimals, display: formatFixed(hopFee(amount, k.fee), x.h.from.decimals) } });
-        spots.push({ spot: hopSpotRational(x.p!.state.sqrtPriceX96!, zeroForOne), feePpm: k.fee });
+        spots.push({ spot: hopSpotRational(x.sqrtPriceX96!, zeroForOne), feePpm: k.fee });
         gas += r[1];
         amount = r[0];
       }
@@ -307,9 +321,9 @@ export class UniswapV4Adapter implements OpportunityAdapter {
       fees,
       priceImpact: priceImpact(amountInRaw, amount, spots),
       gasEstimate: gas,
-      quotedAt: s.generatedAt,
-      blockNumber: s.block,
-      freshness: classifyFreshness("ONCHAIN_STATE", Number(ctx.blockTimestamp), s.nowS),
+      quotedAt: ctx.now().toISOString(),
+      blockNumber: block,
+      freshness: classifyFreshness("ONCHAIN_STATE", Number(ctx.blockTimestamp), Math.floor(ctx.now().getTime() / 1000)),
       source: src,
       verification: "VERIFIED_ONCHAIN",
       warnings: [warn("INDICATIVE_QUOTE", "Indicative estimate at one block, not a guaranteed output. No minimum output is given.")],

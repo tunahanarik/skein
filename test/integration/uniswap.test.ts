@@ -399,6 +399,19 @@ describe("indicative quotes", () => {
     expect(await slow.engine.getTradeQuote(r2, ONE)).toMatchObject({ ok: false, retryable: true, reason: expect.stringMatching(/timed out/) });
   });
 
+  it("a quote at a newer block reads only the route's pools at that block, never the whole chain again", async () => {
+    const { engine, uni } = await setup();
+    const r = await route(engine, "DIRECT");
+    const scans = uni.stats.fullScans + uni.stats.incrementalScans;
+    const reads = uni.stats.stateReads ?? 0;
+    const q = await engine.getTradeQuote(r, ONE, { ...(await engine.context()), blockNumber: BLOCK.number + 7n });
+    if (!q.ok) throw new Error(q.reason);
+    expect(q.quote.blockNumber).toBe(BLOCK.number + 7n);
+    expect(q.quote.source.blockNumber).toBe(BLOCK.number + 7n);
+    expect(uni.stats.fullScans + uni.stats.incrementalScans).toBe(scans);
+    expect(uni.stats.stateReads ?? 0).toBe(reads);
+  });
+
   it("quotes are short-lived cache entries per (route, amount, block)", async () => {
     const clock = { t: NOW.getTime() };
     const { engine, control } = await setup({ clock });

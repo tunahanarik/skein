@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api, type Intelligence, type Portfolio } from "../api";
 import { CardView } from "../components/CardView";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, useAsync } from "../components/common";
-import { amount, date, pctE18, shortAddr, usd } from "../format";
+import { amount, date, pctE18, prettyId, shortAddr, usd } from "../format";
 import { useI18n } from "../i18n";
 import { linkProps, navigate } from "../router";
 import { code } from "../text";
@@ -91,7 +91,7 @@ function WalletView({ address }: { address: string }) {
       <div className="row" style={{ alignItems: "flex-end" }}>
         <div>
           <div className="muted small">{w.source === "connected" ? t("wallet.connected") : t("wallet.pasted")}</div>
-          <h1 className="mono" style={{ fontSize: 24 }} title={address}>
+          <h1 className="mono keep-case" style={{ fontSize: 24 }} title={address}>
             {shortAddr(address)}
           </h1>
         </div>
@@ -142,7 +142,7 @@ function WalletView({ address }: { address: string }) {
           </div>
           {p.dataQuality.status !== "COMPLETE" && (
             <p className="small" style={{ color: "var(--warn)" }}>
-              {t(`quality.${p.dataQuality.status}`)}: {p.dataQuality.reasons.map((r) => r.detail ?? r.code).join("; ")}
+              {t(`quality.${p.dataQuality.status}`)}: {[...new Set(p.dataQuality.reasons.map((r) => ("protocol" in r && r.protocol ? r.protocol[0]!.toUpperCase() + r.protocol.slice(1) : prettyId(r.code.toLowerCase()))))].join(", ")}
             </p>
           )}
 
