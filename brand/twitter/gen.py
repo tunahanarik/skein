@@ -100,6 +100,35 @@ pages["header-map"] = (1500, 500, BASE + f"""
  <div class="m fa" style="position:absolute;left:{O_X}px;top:42px;font-size:10.5px;letter-spacing:2px">FIND</div>
 </div>""")
 
+
+# Header B on lime: same map, on the profile's lime.
+D = "#0A0F04"
+def lnode(x,y,w,txt,sub="",hi=False):
+    return f"""<div class=m style="position:absolute;left:{x}px;top:{y}px;width:{w}px;height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1.5px solid {D};background:{D if hi else '#D6F58E'};color:{'#C8F169' if hi else D};font-size:15px;font-weight:700;letter-spacing:.5px">{txt}<span style="flex:1"></span><span style="font-size:10.5px;letter-spacing:1.8px;font-weight:500;color:{'#C8F169b0' if hi else D+'99'}">{sub}</span></div>"""
+lpaths = []
+for _,_,y in assets:
+    lpaths.append(f'<path d="M{W_X+210} {wy} C {W_X+250} {wy}, {A_X-60} {y+23}, {A_X} {y+23}" stroke="{D}" stroke-opacity=".7"/>')
+for a,o in links:
+    y1 = assets[a][2]+23; y2 = opps[o][2]+23
+    lpaths.append(f'<path d="M{A_X+200} {y1} C {A_X+260} {y1}, {O_X-60} {y2}, {O_X} {y2}" stroke="{D}" stroke-opacity="{0.75 if a in (0,1) else 0.3}"/>')
+pages["header-map-lime"] = (1500, 500, BASE + f"""
+<div style="position:relative;width:1500px;height:500px;background:#C8F169;color:{D}">
+ <div style="position:absolute;inset:0;background-image:linear-gradient({D}12 1px,transparent 1px),linear-gradient(90deg,{D}12 1px,transparent 1px);background-size:50px 50px;-webkit-mask:linear-gradient(90deg,transparent 25%,#000 70%)"></div>
+ <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke-width=1.6>{''.join(lpaths)}</svg>
+ <div style="position:absolute;left:96px;top:78px;width:440px">
+  <div class=m style="font-size:12.5px;letter-spacing:3px;color:{D}b0">●&nbsp; ROBINHOOD CHAIN</div>
+  <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein/</div>
+  <div style="font-size:34px;font-weight:700;letter-spacing:-.8px;line-height:1.15;margin-top:22px">Every asset.<br>Every way to <span style="background:{D};color:#C8F169;padding:0 8px">use it.</span></div>
+  <div style="font-size:17px;line-height:1.5;margin-top:14px;color:{D}b8">Stock tokens, stablecoins and crypto,<br>mapped across 7 protocols.</div>
+ </div>
+ {lnode(W_X,227,210,"WALLET","0x ····",True)}
+ {''.join(lnode(A_X,y,200,s_,k) for s_,k,y in assets)}
+ {''.join(lnode(O_X,y,250,s_,p) for s_,p,y in opps)}
+ <div class=m style="position:absolute;left:{W_X}px;top:200px;font-size:10.5px;letter-spacing:2px;color:{D}99">PASTE</div>
+ <div class=m style="position:absolute;left:{A_X}px;top:52px;font-size:10.5px;letter-spacing:2px;color:{D}99">READ</div>
+ <div class=m style="position:absolute;left:{O_X}px;top:42px;font-size:10.5px;letter-spacing:2px;color:{D}99">FIND</div>
+</div>""")
+
 for name, (w, h, html) in pages.items():
     (pathlib.Path(__file__).parent / f"{name}.html").write_text(f"<!doctype html><html><head>{html.split('</style>')[0]}</style></head><body style='width:{w}px;height:{h}px'>{html.split('</style>')[1]}</body></html>", encoding="utf-8")
     print(name, w, h)
