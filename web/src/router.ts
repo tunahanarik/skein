@@ -1,14 +1,19 @@
-/** Minimal history router: /, /asset/:ref, /wallet, /coverage. The wallet address is never in the URL. */
+/** Minimal history router: /, /terminal, /asset/:ref, /wallet, /markets, /bridge, /coverage, /compare?a=&b=, /about. The wallet address is never in the URL. */
 import { useEffect, useState } from "react";
 
-export type Route = { name: "home" } | { name: "asset"; ref: string } | { name: "wallet" } | { name: "coverage" } | { name: "about" } | { name: "notfound" };
+export type Route = { name: "home" } | { name: "terminal" } | { name: "tracked" } | { name: "asset"; ref: string } | { name: "wallet" } | { name: "markets" } | { name: "bridge" } | { name: "coverage" } | { name: "compare" } | { name: "about" } | { name: "notfound" };
 
 export function parse(pathname: string): Route {
   const p = pathname.replace(/\/+$/, "") || "/";
   if (p === "/") return { name: "home" };
   if (p === "/wallet") return { name: "wallet" };
+  if (p === "/terminal") return { name: "terminal" };
+  if (p === "/tracked") return { name: "tracked" };
+  if (p === "/bridge") return { name: "bridge" };
+  if (p === "/markets") return { name: "markets" };
   if (p === "/coverage") return { name: "coverage" };
   if (p === "/about") return { name: "about" };
+  if (p === "/compare") return { name: "compare" };
   const m = /^\/asset\/([^/]+)$/.exec(p);
   if (m) {
     try {

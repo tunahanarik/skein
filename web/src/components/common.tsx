@@ -57,9 +57,52 @@ export function ExplorerLink({ address, children }: { address: string; children?
   );
 }
 
-export function Avatar({ symbol, size }: { symbol: string; size?: "lg" }) {
+/** Link to a protocol's own app (URL already passed the server allowlist; re-checked here). */
+export function ProtocolLink({ name, url }: { name: string; url: string }) {
+  const { t } = useI18n();
+  if (!/^https:\/\/[a-z0-9.-]+\//i.test(url)) return null;
   return (
-    <span className={`avatar${size === "lg" ? " lg" : ""}`} aria-hidden="true">
+    <div className="small">
+      <a className="proto-link" href={url} target="_blank" rel="noopener noreferrer" title={t("link.note")}>
+        {t("link.open", { p: name })} ↗
+      </a>
+    </div>
+  );
+}
+
+const failedLogos = new Set<string>();
+/** Bumped when the server's logo sources change, so browsers drop logos cached under the old ones. */
+const LOGO_VERSION = 2;
+
+/** Token logo served by our own API (canonical assets only); falls back to a monogram. */
+/** Static icons that read better than the source logo (WETH shows the ETH mark, as bridges and wallets do). */
+const STATIC_LOGOS: Record<string, string> = { "0x0bd7d308f8e1639fab988df18a8011f41eacad73": "/tokens/weth.svg" };
+
+export function Avatar({ symbol, address, size }: { symbol: string; address?: string | null; size?: "lg" }) {
+  // Failure is remembered per address, so an avatar that first renders without an address
+  // (data still loading) still shows the logo once the address arrives.
+  const [failedFor, setFailedFor] = useState<string | null>(null);
+  const failed = !address || failedLogos.has(address.toLowerCase()) || failedFor === address.toLowerCase();
+  const cls = `avatar${size === "lg" ? " lg" : ""}`;
+  const fixed = address ? STATIC_LOGOS[address.toLowerCase()] : undefined;
+  if (fixed) return <img className={`${cls} logo`} src={fixed} alt="" decoding="async" />;
+  if (!failed && address && /^0x[0-9a-fA-F]{40}$/.test(address)) {
+    return (
+      <img
+        className={`${cls} logo`}
+        src={`/api/logo/${address.toLowerCase()}?v=${LOGO_VERSION}`}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => {
+          failedLogos.add(address.toLowerCase());
+          setFailedFor(address.toLowerCase());
+        }}
+      />
+    );
+  }
+  return (
+    <span className={cls} aria-hidden="true">
       {symbol.slice(0, 4)}
     </span>
   );

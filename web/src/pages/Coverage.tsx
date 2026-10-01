@@ -84,10 +84,10 @@ export function CoveragePage() {
                 </tr>
               ))}
             {rows.map((r) => (
-              <tr key={r.asset.key} style={{ cursor: "pointer" }} onClick={() => navigate(`/asset/${r.asset.address}`)}>
+              <tr key={r.asset.key} className="clickable" onClick={() => navigate(`/asset/${r.asset.address}`)}>
                 <td>
                   <div className="row" style={{ gap: 10, flexWrap: "nowrap" }}>
-                    <Avatar symbol={r.asset.symbol} />
+                    <Avatar symbol={r.asset.symbol} address={r.asset.address} />
                     <div>
                       <a {...linkProps(`/asset/${r.asset.address}`)} style={{ fontWeight: 600, color: "var(--text)" }}>
                         {r.asset.symbol}
@@ -105,7 +105,7 @@ export function CoveragePage() {
                 <td className="num" style={{ textAlign: "right" }}>
                   {r.actionable} / {r.limited}
                 </td>
-                <td className="small muted">{r.protocols.join(", ") || "—"}</td>
+                <td className="small muted">{r.protocols.join(", ") || "·"}</td>
               </tr>
             ))}
           </tbody>

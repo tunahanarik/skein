@@ -10,11 +10,12 @@ import { MemoryPoolListStore } from "../../src/protocols/uniswap/poolStore.js";
 import { FakeMorphoApi, fixtureMarkets, installMorpho } from "./morpho.js";
 import { FakePendleApi, fixturePendleMarkets, installPendle } from "./pendle.js";
 import { fixtureUniswapPools, installUniswap, type FixturePool } from "./uniswap.js";
+import type { VolumeSource } from "../../src/sources/geckoterminal.js";
 import { defaultWorld, NOW, testStack } from "./world.js";
 
 export type Protocol = "morpho" | "pendle" | "uniswap";
 
-export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { t: number }; mutateWorld?: (w: ReturnType<typeof defaultWorld>) => void; mutatePools?: (p: Record<string, FixturePool>) => void; pendleBalances?: Parameters<typeof installPendle>[2]; maxStaleMs?: number } = {}) {
+export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { t: number }; mutateWorld?: (w: ReturnType<typeof defaultWorld>) => void; mutatePools?: (p: Record<string, FixturePool>) => void; pendleBalances?: Parameters<typeof installPendle>[2]; maxStaleMs?: number; volumes?: VolumeSource } = {}) {
   const world = defaultWorld();
   const pools = fixtureUniswapPools();
   opts.mutatePools?.(pools);
@@ -44,6 +45,8 @@ export async function intelligenceStack(opts: { failing?: Protocol[]; clock?: { 
       return getPortfolio(w, { ...s.deps, now });
     },
     now,
+    prices: s.prices,
+    ...(opts.volumes ? { volumes: opts.volumes } : {}),
     ...(opts.maxStaleMs !== undefined ? { maxStaleMs: opts.maxStaleMs } : {}),
   });
   return { s, world, pools, mm, pm, engine, service, clock, portfolioCalls: () => portfolioCalls };

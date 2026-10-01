@@ -378,6 +378,28 @@ export type OpportunityDetails =
       totalAssets: Measured<TokenAmount> | null;
       performanceFee: Fixed18 | null;
       managementFee: Fixed18 | null;
+    }
+  | {
+      /** ERC-4626 savings vault whose rate is a per-second compounding factor (e.g. Spark vsr). */
+      kind: "ERC4626_SAVINGS";
+      vault: Address;
+      share: AssetRef;
+      /** Per-second rate, ray (1e27): assets per share grow by this factor every second. */
+      rateRay: bigint;
+      totalAssets: Measured<TokenAmount> | null;
+      depositCap: TokenAmount | null;
+    }
+  | {
+      /** Managed Uniswap v3 liquidity (Beefy CLM, Steer vault) over an official v3 pool. */
+      kind: "MANAGED_LP";
+      manager: "BEEFY_CLM" | "STEER";
+      vault: Address;
+      pool: Address;
+      feePpm: number;
+      tokens: [AssetRef, AssetRef];
+      /** The manager's onchain token amounts at the block (raw, order as in `tokens`). */
+      amounts: [bigint, bigint];
+      apiId: string;
     };
 
 export interface Opportunity {

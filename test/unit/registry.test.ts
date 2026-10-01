@@ -1,3 +1,4 @@
+import { CRYPTO_ASSETS, USDG_RATE_ASSETS } from "../../src/config/assets.js";
 import { describe, expect, it } from "vitest";
 import { getAddress } from "viem";
 import { diffRegistries } from "../../src/registry/diff.js";
@@ -143,7 +144,7 @@ describe("loadAssetRegistry", () => {
   it("LIVE mode: canonical = core assets + listed Stock Tokens; lookup is case-insensitive", async () => {
     const { registry } = await testStack();
     expect(registry.status.mode).toBe("LIVE");
-    expect(registry.canonical()).toHaveLength(3 + RHJ_ASSETS.length);
+    expect(registry.canonical()).toHaveLength(3 + CRYPTO_ASSETS.length + USDG_RATE_ASSETS.length + RHJ_ASSETS.length);
     expect(registry.get(4663, NVDA.toLowerCase() as never)?.symbol).toBe("NVDA");
     expect(registry.get(4663, null)?.type).toBe("NATIVE");
     expect(registry.get(4663, getAddress("0x0000000000000000000000000000000000000abc"))).toBeUndefined();

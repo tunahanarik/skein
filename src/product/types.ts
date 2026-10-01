@@ -71,6 +71,7 @@ export type ProductNote =
   | "UNDERLYING_UNVERIFIED"
   | "YIELD_TOKEN_DECAYS_TO_ZERO"
   | "RESERVES_INCLUDE_UNCOLLECTED_FEES"
+  | "RESERVES_LOWER_BOUND"
   | "MARKET_PRICE_DIVERGENCE"
   | "REWARDS_MAY_BE_INCOMPLETE"
   | "VOLUME_UNKNOWN";
@@ -121,6 +122,11 @@ export interface BorrowCapacity {
   formula: string;
   caveat: string;
   unavailableReason: string | null;
+  /**
+   * What could be borrowed right now: min(protocol limit, the market's available liquidity), exact
+   * integer math. Still at the liquidation threshold — not a recommendation.
+   */
+  borrowableNow: { amount: TokenAmount; usd: UsdAmount | null; cappedBy: "PROTOCOL_LIMIT" | "MARKET_LIQUIDITY" } | null;
 }
 
 export interface FixedYieldView {
@@ -137,7 +143,14 @@ export interface TradeRouteView {
   routeId: string;
   kind: RouteKind;
   path: AssetRef[];
-  markets: { marketId: string; protocol: string; feePpm: number | null; tvlUsd: UsdAmount | null }[];
+  markets: {
+    marketId: string;
+    protocol: string;
+    feePpm: number | null;
+    tvlUsd: UsdAmount | null;
+    /** 24h volume from a THIRD-PARTY indexer (GeckoTerminal), when available. Never used for ranking. */
+    volume24h?: { usd: number | null; txs: number | null; observedAt: string; source: "GeckoTerminal"; url: string } | null;
+  }[];
   combinedFeePpm: number | null;
   routeLiquidityUsd: UsdAmount | null;
   allVerified: boolean;
@@ -187,6 +200,8 @@ export interface ProductCard {
   trade?: { route: TradeRouteView; quote: TradeQuoteView | null; quoteUnavailableReason?: string };
   /** Raw opportunities behind this card (RAW mode ids). */
   sourceOpportunityIds: string[];
+  /** The protocol's own app (home page), only when its host passed the verified allowlist. */
+  protocolApp: { url: string; host: string } | null;
 }
 
 export interface CategoryView {
@@ -267,6 +282,8 @@ export interface AssetIntelligence {
   categories: CategoryView[];
   /** Other trade destinations beyond the default targets (counts only; RAW has them all). */
   otherTradeDestinations: { direct: number; oneHop: number };
+  /** Every asset reachable from this one through verified routes (DIRECT or ONE_HOP), for a target picker. Empty = no route at all. */
+  tradeTargets: { key: string; symbol: string; kind: "DIRECT" | "ONE_HOP" }[];
   summary: {
     capabilities: Capabilities;
     counts: OpportunityCounts;
@@ -283,6 +300,31 @@ export interface AssetIntelligence {
   generatedAt: string;
 }
 
+/** A position the wallet already holds (read onchain; the wallet never reaches a protocol API). */
+export interface PositionView {
+  id: string;
+  protocol: { id: string; name: string };
+  kind: "LENDING_MARKET" | "VAULT" | "PRINCIPAL_TOKEN" | "YIELD_TOKEN" | "LIQUIDITY_POOL";
+  /** Title of the related opportunity (protocol-supplied), if known. */
+  label: string | null;
+  assets: AssetRef[];
+  supplied: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  borrowed: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  collateral: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } | null;
+  /** Morpho definition; null without debt. 1e18-scaled. */
+  healthFactor: Fixed18 | null;
+  ltv: Fixed18 | null;
+  liquidationLtv: Fixed18 | null;
+  liquidatable: boolean | null;
+  maturity: { at: string; expired: boolean } | null;
+  venueAddress: string | null;
+  observedAt: string | null;
+  freshness: FreshnessStatus;
+  warnings: string[];
+  /** Cards for the same venue in this response (for "view market"). */
+  relatedCardIds: string[];
+}
+
 export interface PortfolioIntelligence {
   chainId: number;
   /** Address is only echoed back to the caller; it is never logged, persisted or sent to protocol APIs. */
@@ -293,6 +335,8 @@ export interface PortfolioIntelligence {
   unsupportedAssetValueUsd: string;
   unpricedAssetCount: number;
   assets: AssetIntelligence[];
+  /** Open positions across protocols (lending, vault shares, PT/YT/LP). */
+  positions: PositionView[];
   unsupportedAssets: { asset: AssetRef | { symbol: string; key: string }; reason: string; valueUsd: string | null }[];
   opportunityCounts: OpportunityCounts;
   dataQuality: DataQuality;

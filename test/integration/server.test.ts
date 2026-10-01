@@ -133,10 +133,21 @@ describe("static web app", () => {
     expect(shell.status).toBe(200);
     expect(shell.headers.get("content-security-policy")).toBe(CSP);
     expect(CSP).toContain("script-src 'self'");
-    expect(CSP).toContain("connect-src 'self'");
+    expect(CSP).toContain("connect-src 'self' https://li.quest https://aggregator-api.kyberswap.com;");
     const js = await get("/assets/app-abc.js");
     expect(js.headers.get("cache-control")).toMatch(/immutable/);
     expect((await get("/assets/missing.js")).status).toBe(404);
     expect((await get("/..%2f..%2fpackage.json")).status).toBe(404);
+  });
+});
+
+describe("asset shell meta", () => {
+  it("escapes values and replaces the generic title", async () => {
+    const { shellWithMeta } = await import("../../src/server/static.js");
+    const html = shellWithMeta('<html><head><title>Skein</title><meta name="description" content="x" /></head><body></body></html>', { title: 'A<b>"', description: "d & e" });
+    expect(html).toContain("<title>A&lt;b&gt;&quot;</title>");
+    expect(html).toContain('property="og:description" content="d &amp; e"');
+    expect(html.match(/<title>/g)).toHaveLength(1);
+    expect(html.match(/name="description"/g)).toHaveLength(1);
   });
 });

@@ -15,6 +15,7 @@
  *   USDG:        Chainlink USDG/USD → else UNPRICED (never an assumed $1). pegDeviationBps exposed.
  */
 import { ROBINHOOD_CHAIN_ID } from "../config/chains.js";
+import { chainlinkAggregatorAbi } from "../config/abis.js";
 import {
   classifyFreshness,
   STOCK_PRICE_CONFLICT_PCT,
@@ -85,11 +86,57 @@ function chainlinkSource(feed: ChainlinkFeed, blockNumber: bigint, fetchedAt: st
   };
 }
 
+/** Selects the USDG freshness rule for USDG and exchange-rate feeds read for USDG_RATE assets. */
+const USDG_RULE_ASSET = { type: "STABLECOIN", priceMethods: ["CHAINLINK_USDG_USD"] } as unknown as Asset;
+const erc4626RateAbi = [{ type: "function", name: "convertToAssets", stateMutability: "view", inputs: [{ name: "shares", type: "uint256" }], outputs: [{ name: "", type: "uint256" }] }] as const;
+
 export class PriceService {
   private readonly now: () => Date;
 
   constructor(private readonly deps: PriceServiceDeps) {
     this.now = deps.now ?? (() => new Date());
+  }
+
+  /** The Chainlink feed that prices `a`, if the directory has one (same rule as priceAssets). */
+  async feedFor(a: Asset): Promise<ChainlinkFeed | null> {
+    const index = await (this.deps.loadFeedIndex ?? (() => loadFeedIndex(this.deps.http)))();
+    if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
+    if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+    if (a.priceMethods.includes("CHAINLINK_USD_FEED")) return (a.usdFeedName && index.usdByName.get(a.usdFeedName)) || null;
+    if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
+    return null;
+  }
+
+  /**
+   * The feed's last `n` rounds (one multicall of getRoundData, same phase), oldest first. Display
+   * history only: points are Chainlink answers as published (Stock Token feeds already include the
+   * multiplier — pricing.md); rounds that fail or look invalid are dropped.
+   */
+  async feedHistory(a: Asset, blockNumber: bigint, n = 48): Promise<{ feed: ChainlinkFeed; points: { updatedAt: number; answer: bigint; decimals: number }[] } | null> {
+    const feed = await this.feedFor(a);
+    if (!feed) return null;
+    const [latest, dec] = await this.deps.reader.multicall(
+      [
+        { address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "latestRoundData" },
+        { address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" },
+      ],
+      { blockNumber },
+    );
+    if (latest?.status !== "success" || dec?.status !== "success") return { feed, points: [] };
+    const roundId = (latest.result as readonly bigint[])[0]!;
+    const decimals = Number(dec.result);
+    const phase = roundId >> 64n;
+    const agg = roundId & ((1n << 64n) - 1n);
+    const ids: bigint[] = [];
+    for (let i = 1n; i <= BigInt(n) && agg - i >= 1n; i++) ids.push((phase << 64n) | (agg - i));
+    const rs = ids.length ? await this.deps.reader.multicall(ids.map((id) => ({ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "getRoundData", args: [id] })), { blockNumber }) : [];
+    const rows = [latest, ...rs]
+      .filter((r) => r?.status === "success")
+      .map((r) => r!.status === "success" ? (r!.result as readonly bigint[]) : [])
+      .filter((r) => r.length >= 4 && r[1]! > 0n && r[3]! > 0n)
+      .map((r) => ({ updatedAt: Number(r[3]), answer: r[1]!, decimals }));
+    const uniq = [...new Map(rows.map((p) => [p.updatedAt, p])).values()].sort((x, y) => x.updatedAt - y.updatedAt);
+    return { feed, points: uniq };
   }
 
   async priceAssets(requests: readonly PriceRequest[], ctx: PriceContext): Promise<PriceBatch> {
@@ -111,12 +158,16 @@ export class PriceService {
       if (!index) return null;
       if (a.priceMethods.includes("CHAINLINK_ETH_USD")) return index.ethUsd;
       if (a.priceMethods.includes("CHAINLINK_USDG_USD")) return index.usdgUsd;
+      if (a.priceMethods.includes("CHAINLINK_USD_FEED")) return (a.usdFeedName && index.usdByName.get(a.usdFeedName)) || null;
       if (a.type === "STOCK_TOKEN" && a.stockMetadata) return index.stockByTicker.get(a.stockMetadata.rhSymbol) ?? null;
       return null;
     };
     const feeds = new Map(requests.map((r) => [r.asset.key, feedFor(r.asset)] as const));
+    const rated = requests.filter((r) => r.asset.priceMethods.includes("USDG_RATE"));
+    const rateFeed = (a: Asset): ChainlinkFeed | null => (a.usdgRate?.kind === "CHAINLINK_FEED" && index?.byName.get(a.usdgRate.feedName)) || null;
+    const extra = rated.length && index ? [index.usdgUsd, ...rated.map((r) => rateFeed(r.asset))].filter((f): f is ChainlinkFeed => !!f) : [];
     const t1 = performance.now();
-    const proxies = [...feeds.values()].filter((f): f is ChainlinkFeed => !!f).map((f) => f.proxyAddress);
+    const proxies = [...new Set([...[...feeds.values()].filter((f): f is ChainlinkFeed => !!f), ...extra].map((f) => f.proxyAddress))];
     const rounds = proxies.length ? await readFeedRounds(this.deps.reader, proxies, ctx.blockNumber) : new Map<string, RawRound>();
     const roundsMs = performance.now() - t1;
 
@@ -131,8 +182,28 @@ export class PriceService {
     }
     const quotesMs = performance.now() - t2;
 
+    // ERC-4626 rates (one multicall): value of one whole share in the vault's asset, at the valuation block.
+    const vaultRates = new Map<string, bigint | null>();
+    const vaults = rated.filter((r) => r.asset.usdgRate?.kind === "ERC4626" && r.asset.address);
+    if (vaults.length) {
+      const res = await this.deps.reader
+        .multicall(vaults.map((r) => ({ address: r.asset.address!, abi: erc4626RateAbi, functionName: "convertToAssets", args: [10n ** BigInt(r.asset.decimals)] })), { blockNumber: ctx.blockNumber })
+        .catch(() => vaults.map(() => null));
+      vaults.forEach((r, i) => vaultRates.set(r.asset.key, res[i]?.status === "success" ? (res[i]!.result as bigint) : null));
+    }
+
     const quotes = new Map<string, PriceQuote>();
     for (const r of requests) {
+      if (r.asset.priceMethods.includes("USDG_RATE")) {
+        const usdgFeed = index?.usdgUsd ?? null;
+        const usdgRound = usdgFeed ? rounds.get(usdgFeed.proxyAddress.toLowerCase()) ?? null : null;
+        const usdgReading = usdgFeed && usdgRound ? this.reading(usdgFeed, usdgRound, USDG_RULE_ASSET, nowS) : null;
+        const rf = rateFeed(r.asset);
+        const rateRound = rf ? rounds.get(rf.proxyAddress.toLowerCase()) ?? null : null;
+        const rateReading = rf && rateRound ? this.reading(rf, rateRound, USDG_RULE_ASSET, nowS) : null;
+        quotes.set(r.asset.key, this.priceUsdgRate(r, usdgFeed, usdgReading, rf, rateReading, vaultRates.get(r.asset.key) ?? null, ctx, fetchedAt));
+        continue;
+      }
       const feed = feeds.get(r.asset.key) ?? null;
       const round = feed ? rounds.get(feed.proxyAddress.toLowerCase()) ?? null : null;
       const reading = feed && round ? this.reading(feed, round, r.asset, nowS) : null;
@@ -141,9 +212,75 @@ export class PriceService {
     return { quotes, warnings, timings: { directoryMs, roundsMs, quotesMs } };
   }
 
+  /**
+   * A yield-bearing USDG token: rate (Chainlink exchange-rate feed, or ERC-4626 convertToAssets read
+   * onchain) × Chainlink USDG/USD. Both inputs must be usable; there is no assumed rate or peg.
+   */
+  private priceUsdgRate(
+    r: PriceRequest,
+    usdgFeed: ChainlinkFeed | null,
+    usdg: ChainlinkReading | null,
+    rateFeed: ChainlinkFeed | null,
+    rateCl: ChainlinkReading | null,
+    vaultAssets: bigint | null,
+    ctx: PriceContext,
+    fetchedAt: string,
+  ): PriceQuote {
+    const a = r.asset;
+    const w: Warning[] = [];
+    const provenance: DataSource[] = [];
+    const out: PriceQuote = {
+      assetKey: a.key, symbol: a.symbol, status: "UNPRICED", priceUsd: null, priceUsdDisplay: null, method: null, sourceType: null, source: null,
+      observedAt: null, fetchedAt, ageSeconds: null, freshnessStatus: "UNKNOWN", confidence: null, verificationStatus: "UNVERIFIED",
+      chainlink: usdg, robinhoodQuote: null, crossCheck: null, pegDeviationBps: null, unpricedReason: null, warnings: w, provenance,
+    };
+    const unpriced = (reason: string): PriceQuote => {
+      w.push(warn("UNPRICED_ASSET", `${a.symbol}: ${reason}`, { assetKey: a.key }));
+      return { ...out, unpricedReason: reason };
+    };
+    const usable = (c: ChainlinkReading | null) => !!c && c.valid && (c.freshness === "FRESH" || c.freshness === "AGING");
+    if (!usdgFeed || !usable(usdg)) return unpriced("USDG / USD feed not usable; no assumed peg");
+    const usdgSrc = chainlinkSource(usdgFeed, ctx.blockNumber, fetchedAt, usdg!.updatedAt);
+    provenance.push(usdgSrc);
+    let rate: { raw: bigint; decimals: number } | null = null;
+    let observedAt = usdg!.updatedAt;
+    if (a.usdgRate?.kind === "CHAINLINK_FEED") {
+      if (!rateFeed) return unpriced(`${a.usdgRate.feedName} feed not found in the Chainlink directory`);
+      if (!usable(rateCl)) return unpriced(`${a.usdgRate.feedName} feed not usable (${rateCl?.invalidReason ?? rateCl?.freshness ?? "unread"})`);
+      provenance.push(chainlinkSource(rateFeed, ctx.blockNumber, fetchedAt, rateCl!.updatedAt));
+      rate = { raw: rateCl!.answer, decimals: rateCl!.decimals };
+      observedAt = Math.min(observedAt, rateCl!.updatedAt);
+    } else if (a.usdgRate?.kind === "ERC4626") {
+      if (vaultAssets === null || vaultAssets <= 0n) return unpriced("convertToAssets(1 share) unreadable");
+      provenance.push({ type: "ONCHAIN", provider: "robinhood-chain-rpc", chainId: ROBINHOOD_CHAIN_ID, contract: a.address!, method: "convertToAssets(1 share) [USDG, 6 decimals]", blockNumber: ctx.blockNumber, observedAt: fetchedAt });
+      rate = { raw: vaultAssets, decimals: 6 };
+    } else return unpriced("no USDG rate source");
+    // price (USDG/USD decimals) = USDG/USD × rate
+    const raw = (usdg!.answer * rate.raw) / 10n ** BigInt(rate.decimals);
+    const fresh = usdg!.freshness === "FRESH" && (rateCl === null || rateCl.freshness === "FRESH") ? "FRESH" : "AGING";
+    return {
+      ...out,
+      status: "PRICED",
+      priceUsd: { raw, decimals: usdg!.decimals },
+      priceUsdDisplay: formatFixed(raw, usdg!.decimals),
+      method: "USDG_RATE",
+      sourceType: "ONCHAIN",
+      source: usdgSrc,
+      observedAt: new Date(observedAt * 1000).toISOString(),
+      ageSeconds: usdg!.ageSeconds,
+      freshnessStatus: fresh,
+      confidence: fresh === "FRESH" ? "HIGH" : "MEDIUM",
+      verificationStatus: "VERIFIED_ONCHAIN",
+    };
+  }
+
   private reading(feed: ChainlinkFeed, round: RawRound, asset: Asset, nowS: number): ChainlinkReading {
     const rule: FreshnessRuleId =
-      asset.type === "STOCK_TOKEN" ? "CHAINLINK_STOCK_FEED" : asset.priceMethods.includes("CHAINLINK_USDG_USD") ? "CHAINLINK_USDG_USD" : "CHAINLINK_ETH_USD";
+      asset.type === "STOCK_TOKEN"
+        ? "CHAINLINK_STOCK_FEED"
+        : asset.priceMethods.includes("CHAINLINK_USDG_USD") || (asset.priceMethods.includes("CHAINLINK_USD_FEED") && asset.type === "STABLECOIN")
+          ? "CHAINLINK_USDG_USD" // stable: updates on 0.5 % deviation or the heartbeat, so hours-old answers are normal
+          : "CHAINLINK_ETH_USD"; // 24/7 crypto
     const problem = roundProblem(round, feed.decimals);
     const updatedAt = Number(round.updatedAt);
     const f = classifyFreshness(rule, problem ? null : updatedAt, nowS, feed.heartbeat);
@@ -278,6 +415,16 @@ export class PriceService {
       }
       const q = fromChainlink("CHAINLINK_USDG_USD", "VERIFIED_OFFICIAL_DOCS");
       return { ...q, pegDeviationBps: devBps, confidence: cl!.freshness === "FRESH" && Math.abs(devBps) <= USDG_PEG_WARNING_BPS ? "HIGH" : "MEDIUM" };
+    }
+
+    // ---------- Crypto tokens with their own USD feed ----------
+    if (a.priceMethods.includes("CHAINLINK_USD_FEED")) {
+      const name = a.usdFeedName ?? "?";
+      if (!feed) return unpriced(`${name} feed not found in the Chainlink directory`);
+      if (!clUsable) return unpriced(`${name} feed not usable (${cl?.invalidReason ?? cl?.freshness ?? "unread"})`);
+      if (cl!.freshness === "AGING") w.push(warn("AGING_PRICE", `${name} is ${cl!.ageSeconds}s old`, { assetKey: a.key }));
+      const q = fromChainlink("CHAINLINK_USD_FEED", "VERIFIED_OFFICIAL_DOCS");
+      return { ...q, confidence: cl!.freshness === "FRESH" ? "HIGH" : "MEDIUM" };
     }
 
     // ---------- Stock Tokens ----------

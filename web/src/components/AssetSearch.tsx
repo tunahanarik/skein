@@ -77,7 +77,7 @@ export function AssetSearch({ autoFocus }: { autoFocus?: boolean }) {
         <div className="panel results" id={`${id}-list`} role="listbox">
           {results.map((a, i) => (
             <div key={a.key} className="result" role="option" aria-selected={i === sel} onMouseDown={() => go(refOf(a))} onMouseEnter={() => setSel(i)}>
-              <Avatar symbol={a.symbol} />
+              <Avatar symbol={a.symbol} address={a.address} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600 }}>{a.symbol}</div>
                 <div className="small muted" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

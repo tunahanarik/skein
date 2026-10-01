@@ -2,6 +2,22 @@
 
 Each item names what would resolve it.
 
+## Resolved after Phase 6
+- **P4-1 (Uniswap v4):** hookless pools only (hooks = 0x0), docs/protocols/coverage-expansion.md.
+- **P4-2 (next DEX):** Ramses CL.
+- **P4-5 (24h volume):** GeckoTerminal as a labelled third-party source, display only.
+- **P5-1 (trade targets):** the picker lists every reachable asset (`tradeTargets`); USDG and WETH stay the default groups.
+- **P5-3 (quote latency):** 3 quotes in flight (`QUOTE_CONCURRENCY`), ≈ 5.4 s → 2.2 s.
+- **P5-4 (borrow capacity):** shown as “could be borrowed now” = min(protocol limit, market liquidity), plus the theoretical limit with a liquidation warning.
+
+Still open:
+- the product name
+- a keyed RPC for any public deployment
+- deep links into protocol apps (only home pages are verified)
+- v4 pools with hooks (needs a hook allowlist)
+- v4 pools with non-standard fees
+- native-ETH v4 pools
+
 ## Added in Phase 5 (decide before Phase 6)
 P5-1. **Default trade targets.** The product view lists routes to USDG and WETH only. Other destinations are counted (`otherTradeDestinations`, 75 one-hop for NVDA) and need an explicit target. Should the frontend offer a target picker, or should Stock Token ↔ Stock Token pairs get a default?
 

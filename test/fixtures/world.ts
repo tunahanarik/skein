@@ -6,7 +6,7 @@
 import { getAddress, type Address, type Hex } from "viem";
 import type { BlockRef, CallResult, ChainReader, ContractCall, DecodedLog, LogQuery } from "../../src/chain/reader.js";
 import type { RpcHealthSnapshot } from "../../src/chain/health.js";
-import { CORE_ASSETS, STOCK_TOKEN_REGISTRY } from "../../src/config/assets.js";
+import { CORE_ASSETS, CRYPTO_ASSETS, STOCK_TOKEN_REGISTRY, USDG_RATE_ASSETS } from "../../src/config/assets.js";
 import { HttpClient, type FetchLike } from "../../src/lib/http.js";
 import { PriceService } from "../../src/pricing/priceService.js";
 import { buildFeedIndex, type FeedIndex, type QuoteBook } from "../../src/pricing/sources.js";
@@ -179,6 +179,8 @@ export function defaultWorld(): WorldState {
     nativeFails: false,
   };
   const bal = (token: Address, amount: bigint) => w.balances.set(token.toLowerCase(), new Map([[WALLET.toLowerCase(), amount]]));
+  // Crypto tokens exist (balanceOf answers 0) but the wallet holds none.
+  for (const c of [...CRYPTO_ASSETS, ...USDG_RATE_ASSETS]) w.balances.set(c.address.toLowerCase(), new Map());
   bal(WETH, 10n ** 17n); // 0.1 WETH
   bal(USDG, 1_234_560_000n); // 1,234.56 USDG
   bal(NVDA, 2n * ONE); // 2 NVDA tokens
@@ -322,6 +324,18 @@ export class FakeChainReader implements ChainReader {
         if (!r || r === "revert") return revert;
         const id = r.roundId ?? 100n;
         return ok([id, r.answer, BigInt(r.updatedAt), BigInt(r.updatedAt), r.answeredInRound ?? id]);
+      }
+      case "getRoundData": {
+        // Deterministic history: each earlier round is 1 h older and 0.1 % lower.
+        const r = this.world.rounds.get(t);
+        if (!r || r === "revert") return revert;
+        const latest = r.roundId ?? 100n;
+        const id = BigInt(c.args?.[0] as bigint);
+        const back = latest - id;
+        if (back <= 0n || back > 1000n) return revert;
+        const answer = (r.answer * (1000n - back)) / 1000n;
+        const at = BigInt(r.updatedAt) - back * 3600n;
+        return ok([id, answer, at, at, id]);
       }
       case "symbol":
         return m?.symbol !== undefined ? ok(m.symbol) : revert;

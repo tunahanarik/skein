@@ -20,19 +20,37 @@ const TYPES: Record<string, string> = {
   ".txt": "text/plain; charset=utf-8",
 };
 
-/** No inline scripts, no third-party origins: the page talks only to its own API. */
+/**
+ * No inline scripts. The page talks to its own API, plus li.quest (LI.FI) and KyberSwap's
+ * aggregator API for bridge/swap quotes: called from the browser so the wallet address never
+ * passes through this server.
+ */
 export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://li.quest https://aggregator-api.kyberswap.com",
   "object-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",
 ].join("; ");
+
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+/** App shell with page-specific title / description / Open Graph tags (for link previews). */
+export function shellWithMeta(html: string, meta: { title: string; description: string }): string {
+  const tags = [
+    `<title>${esc(meta.title)}</title>`,
+    `<meta name="description" content="${esc(meta.description)}" />`,
+    `<meta property="og:title" content="${esc(meta.title)}" />`,
+    `<meta property="og:description" content="${esc(meta.description)}" />`,
+    `<meta property="og:type" content="website" />`,
+  ].join("\n    ");
+  return html.replace(/<title>[^<]*<\/title>/, "").replace(/<meta name="description"[^>]*>/, "").replace("</head>", `    ${tags}\n  </head>`);
+}
 
 export function createStatic(rootDir: string) {
   const root = resolve(rootDir);

@@ -54,6 +54,56 @@ export const erc20Abi = parseAbi(["function balanceOf(address) view returns (uin
  * only through eth_call (never sent), and only for routes whose pools are factory-verified and
  * whose tokens are all canonical (so no untrusted token code runs in the simulation).
  */
+/**
+ * A Uniswap-v3-style concentrated-liquidity DEX ("dialect"). The adapter, identity checks, state
+ * reads and quotes are shared; what differs is here. Uniswap keys pools by FEE tier with a static
+ * fee; Ramses keys them by TICK_SPACING and its pools report a DYNAMIC fee (read every run).
+ */
+export interface V3Dialect {
+  protocol: { id: string; name: string };
+  /** "Uniswap v3", "Ramses CL" — used in titles and warnings. */
+  label: string;
+  /** Name of the factory in identity-check labels (stable strings, asserted by tests). */
+  factoryLabel: string;
+  venueKind: string;
+  factory: Address;
+  quoter: Address;
+  deploymentSource: string;
+  poolKey: "FEE" | "TICK_SPACING";
+  /** FEE: fee ppm → tickSpacing. TICK_SPACING: tickSpacing → initial fee ppm (both measured live). */
+  tiers: Readonly<Record<number, number>>;
+  dynamicFee: boolean;
+  mutability: string;
+  mutabilitySource: string;
+  /** Identity checks (prefixes) that establish origin. Default: pool.factory() + factory.getPool. */
+  originChecks?: [string, string];
+  /** How reserves are measured, for provenance labels. Default: token.balanceOf(pool). */
+  reservesMethod?: string;
+  /** Warning attached to reserves (code + text). Default: v3 balances include uncollected fees. */
+  reservesWarning?: { code: "RESERVES_INCLUDE_UNCOLLECTED_FEES" | "RESERVES_LOWER_BOUND"; text: string };
+}
+
 export const quoterV2Abi = parseAbi([
   "function quoteExactInputSingle((address tokenIn, address tokenOut, uint256 amountIn, uint24 fee, uint160 sqrtPriceLimitX96) params) returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
 ]);
+
+/** QuoterV2 variant keyed by tickSpacing (Ramses CL and other tickSpacing-keyed v3 forks). */
+export const quoterV2TickSpacingAbi = parseAbi([
+  "function quoteExactInputSingle((address tokenIn, address tokenOut, uint256 amountIn, int24 tickSpacing, uint160 sqrtPriceLimitX96) params) returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
+]);
+export const v3FactoryTickSpacingAbi = parseAbi(["function getPool(address,address,int24) view returns (address)"]);
+
+export const UNISWAP_V3: V3Dialect = {
+  protocol: { id: "uniswap", name: "Uniswap" },
+  label: "Uniswap v3",
+  factoryLabel: "v3 factory",
+  venueKind: "uniswap-v3-pool",
+  factory: UNISWAP_READ_CONTRACTS.v3Factory,
+  quoter: UNISWAP_READ_CONTRACTS.quoterV2,
+  deploymentSource: UNISWAP_DEPLOYMENT_SOURCE,
+  poolKey: "FEE",
+  tiers: V3_FEE_TIERS,
+  dynamicFee: false,
+  mutability: "token0, token1 and fee are fixed per v3 pool at creation; the factory owner can only enable fee tiers and set a protocol fee share",
+  mutabilitySource: "https://github.com/Uniswap/v3-core",
+};

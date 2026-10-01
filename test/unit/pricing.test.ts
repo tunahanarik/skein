@@ -154,3 +154,50 @@ describe("ETH, WETH and USDG pricing", () => {
     expect(q.unpricedReason).toMatch(/no assumed-peg fallback/);
   });
 });
+
+describe("crypto tokens priced by their own Chainlink USD feed", () => {
+  const CBBTC = "0xCEC185eB182c47d1bA1EFc84e6959e18cd620Be4" as const;
+  const FEED_CBBTC = "0x000000000000000000000000000000000000f00a" as const;
+  const btcFeed = { name: "CBBTC / USD", path: "cbbtc / usd", proxyAddress: FEED_CBBTC, decimals: 8, heartbeat: 86_400, threshold: 0.5 };
+
+  it("prices cbBTC from the feed named in the registry, never from another feed", async () => {
+    const world = defaultWorld();
+    world.rounds.set(FEED_CBBTC.toLowerCase(), { answer: 8_386_838_224_441n, updatedAt: NOW_S - 120 });
+    const { FEEDS } = await import("../fixtures/world.js");
+    const { q } = await price(await testStack({ world, feeds: [...FEEDS, btcFeed as never] }), CBBTC);
+    expect(q).toMatchObject({ status: "PRICED", method: "CHAINLINK_USD_FEED", priceUsdDisplay: "83868.38224441", freshnessStatus: "FRESH" });
+  });
+
+  it("is UNPRICED (not $0, not ETH/USD) when its feed is missing from the directory", async () => {
+    const { q, batch } = await price(await testStack(), CBBTC);
+    expect(q).toMatchObject({ status: "UNPRICED", priceUsd: null });
+    expect(q.unpricedReason).toMatch(/CBBTC \/ USD feed not found/);
+    expect([...q.warnings, ...batch.warnings].map((w) => w.code)).toContain("UNPRICED_ASSET");
+  });
+});
+
+describe("yield-bearing USDG tokens (rate to USDG × USDG/USD)", () => {
+  const SYRUP = "0x40858070814a57FdF33a613ae84fE0a8b4a874f7" as const;
+  const SP = "0xde770c84FE66E063336b31737cFE9790f18c4087" as const;
+  const FEED_RATE = "0x000000000000000000000000000000000000f00b" as const;
+  const rateFeed = { name: "syrupUSDG / USDG Exchange Rate", path: "syrupusdg-usdg-exchange-rate", proxyAddress: FEED_RATE, decimals: 18, heartbeat: 86_400, threshold: 0.05 };
+
+  it("syrupUSDG = Chainlink exchange rate × Chainlink USDG/USD", async () => {
+    const world = defaultWorld();
+    world.rounds.set(FEED_RATE.toLowerCase(), { answer: 1_013_006_593_724_443_524n, updatedAt: NOW_S - 600, decimals: 18 });
+    const { FEEDS } = await import("../fixtures/world.js");
+    const { q } = await price(await testStack({ world, feeds: [...FEEDS, rateFeed as never] }), SYRUP);
+    // 1.00009 (fixture USDG/USD) × 1.013006593724443524
+    expect(q).toMatchObject({ status: "PRICED", method: "USDG_RATE", priceUsdDisplay: "1.01309776" });
+    expect(q.provenance.length).toBe(2);
+  });
+
+  it("is UNPRICED when the rate cannot be read — never an assumed 1:1", async () => {
+    const a = await price(await testStack(), SYRUP);
+    expect(a.q).toMatchObject({ status: "UNPRICED", priceUsd: null });
+    expect(a.q.unpricedReason).toMatch(/Exchange Rate feed not found/);
+    const b = await price(await testStack(), SP);
+    expect(b.q).toMatchObject({ status: "UNPRICED", priceUsd: null });
+    expect(b.q.unpricedReason).toMatch(/convertToAssets/);
+  });
+});

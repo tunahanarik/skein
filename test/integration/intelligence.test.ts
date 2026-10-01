@@ -383,3 +383,66 @@ describe("server mode: stale-while-revalidate snapshot", () => {
     expect(service.metrics.snapshot().counters["cache_miss{cache=snapshot}"]).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe("improvements: trade targets and borrowable now", () => {
+  it("tradeTargets lists exactly the graph destinations (direct + one hop); none for an asset without routes", async () => {
+    const { service } = await intelligenceStack();
+    const v = await service.getAssetIntelligence(NVDA);
+    const syms = v.tradeTargets.map((x) => `${x.symbol}:${x.kind}`).sort();
+    expect(syms).toEqual(expect.arrayContaining(["USDG:DIRECT", "WETH:DIRECT"]));
+    expect(v.tradeTargets.every((x) => x.key !== v.asset!.key)).toBe(true);
+    const aapl = await service.getAssetIntelligence(AAPL); // only a dust pool: no route
+    expect(aapl.tradeTargets).toEqual([]);
+  });
+
+  it("borrowableNow = min(protocol limit, market liquidity), exact integers", async () => {
+    const { service } = await intelligenceStack();
+    const p = await service.getPortfolioIntelligence(WALLET);
+    const card = sub(p.assets.find((a) => a.asset?.symbol === "NVDA")!, "COLLATERAL")!.cards[0]!;
+    const bc = card.borrowCapacity!;
+    const liq = card.liquidity!;
+    expect(bc.borrowableNow).not.toBeNull();
+    const now = bc.borrowableNow!;
+    expect(now.amount.raw <= bc.maxBorrow!.amount.raw).toBe(true);
+    expect(now.cappedBy).toBe(now.amount.raw === bc.maxBorrow!.amount.raw ? "PROTOCOL_LIMIT" : "MARKET_LIQUIDITY");
+    expect(liq).toBeTruthy();
+  });
+});
+
+describe("portfolio: open positions", () => {
+  it("lists Morpho lending and Pendle PT positions with health factor and LLTV; the wallet reaches no protocol API", async () => {
+    const { marketIdOf } = await import("../../src/protocols/morpho/onchain.js");
+    const { fixtureMarkets } = await import("../fixtures/morpho.js");
+    const id = marketIdOf(fixtureMarkets().nvdaOk.params).toLowerCase();
+    const st = await intelligenceStack({
+      pendleBalances: { nvda: { pt: 5n * ONE } },
+      mutateWorld: (w) => w.morpho!.positions.set(`${id}:${WALLET.toLowerCase()}`, { supplyShares: 0n, borrowShares: 100_000_000_000_000n, collateral: 2n * ONE }),
+    });
+    const p = await st.service.getPortfolioIntelligence(WALLET);
+    const lend = p.positions.find((x) => x.kind === "LENDING_MARKET")!;
+    expect(lend.protocol.name).toBe("Morpho");
+    expect(lend.borrowed?.asset.symbol).toBe("USDG");
+    expect(lend.collateral?.amount?.raw).toBe(2n * ONE);
+    expect(typeof lend.healthFactor).toBe("bigint");
+    expect(lend.liquidationLtv).toBe(625n * 10n ** 15n);
+    expect(lend.liquidatable).toBe(false);
+    expect(p.positions[0]!.kind).toBe("LENDING_MARKET"); // debt first
+    const pt = p.positions.find((x) => x.kind === "PRINCIPAL_TOKEN")!;
+    expect(pt.protocol.name).toBe("Pendle");
+    expect(pt.maturity?.expired).toBe(false);
+    expect(j(st.service.metrics.snapshot())).not.toContain(WALLET.slice(2, 12));
+  });
+});
+
+describe("third-party volume on routes", () => {
+  it("adds GeckoTerminal volume to shown route markets and drops VOLUME_UNKNOWN when every hop has one; ranking unchanged", async () => {
+    const plain = sub(await (await intelligenceStack()).service.getAssetIntelligence(NVDA), "TRADE")!;
+    const volumes = { get: async (pools: readonly string[]) => new Map(pools.map((p) => [p, { usd24h: 1234, txs24h: 9, observedAt: NOW.toISOString(), source: "GeckoTerminal" as const, url: `https://www.geckoterminal.com/robinhood/pools/${p}` }])) };
+    const t = sub(await (await intelligenceStack({ volumes })).service.getAssetIntelligence(NVDA), "TRADE")!;
+    expect(t.cards.map((c) => c.cardId)).toEqual(plain.cards.map((c) => c.cardId));
+    for (const c of t.cards) {
+      expect(c.trade!.route.markets.every((m) => m.volume24h?.usd === 1234)).toBe(true);
+      expect(c.usability.notes).not.toContain("VOLUME_UNKNOWN");
+    }
+  });
+});

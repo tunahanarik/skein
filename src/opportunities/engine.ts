@@ -226,7 +226,7 @@ export class OpportunityEngine {
    * INDICATIVE quote for one route and an explicit input amount. Routed to the single adapter that
    * owns every market of the route; multi-venue routes are not quoted. Bounded by QUOTE_TIMEOUT_MS.
    */
-  async getTradeQuote(route: TradeRoute, amountInRaw: bigint, ctx?: AdapterContext): Promise<QuoteResult> {
+  async getTradeQuote(route: TradeRoute, amountInRaw: bigint, ctx?: AdapterContext, timeoutMs?: number): Promise<QuoteResult> {
     if (amountInRaw <= 0n) return { ok: false, reason: "amount must be positive", retryable: false };
     if (route.properties.protocols.length !== 1) return { ok: false, reason: "routes across several venues are not quoted", retryable: false };
     const a = this.adapters.find((x) => x.protocol.id === route.properties.protocols[0]);
@@ -237,7 +237,7 @@ export class OpportunityEngine {
       return await Promise.race([
         a.quoteRoute(route, amountInRaw, c),
         new Promise<QuoteResult>((resolve) => {
-          const limit = this.deps.quoteTimeoutMs ?? QUOTE_TIMEOUT_MS;
+          const limit = Math.min(timeoutMs ?? Infinity, this.deps.quoteTimeoutMs ?? QUOTE_TIMEOUT_MS);
           timer = setTimeout(() => resolve({ ok: false, reason: `quote timed out after ${limit} ms`, retryable: true }), limit);
         }),
       ]);

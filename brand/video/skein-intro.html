@@ -1,0 +1,251 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Skein intro</title>
+<style>html,body{margin:0;background:#060706;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1080"></canvas>
+<script>
+// Skein intro, 24 s, 1080x1080. draw(t) is a pure function of time, so frames are deterministic.
+const W = 1080, H = 1080, DUR = 24;
+const C = { bg: "#060706", ink: "#DFE4DC", mut: "#8D948A", faint: "#5A6158", line: "#1C201B", line2: "#2A2F28", lime: "#C8F169", amber: "#E8B44C", dark: "#0A0F04", panel: "#0A0C0A" };
+const cv = document.getElementById("c"), x = cv.getContext("2d");
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eo = (p) => 1 - Math.pow(1 - p, 3);
+const eio = (p) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const M = (w, s) => `${w} ${s}px JB`, S = (w, s) => `${w} ${s}px IT`;
+
+function txt(s, X, Y, font, color, { align = "left", alpha = 1, ls = 0 } = {}) {
+  x.save(); x.globalAlpha *= alpha; x.font = font; x.fillStyle = color; x.textAlign = align; x.textBaseline = "alphabetic";
+  if ("letterSpacing" in x) x.letterSpacing = `${ls}px`;
+  x.fillText(s, X, Y); x.restore();
+}
+function width(s, font, ls = 0) { x.save(); x.font = font; if ("letterSpacing" in x) x.letterSpacing = `${ls}px`; const w = x.measureText(s).width; x.restore(); return w; }
+function rect(X, Y, w, h, fill, stroke, alpha = 1) { x.save(); x.globalAlpha *= alpha; if (fill) { x.fillStyle = fill; x.fillRect(X, Y, w, h); } if (stroke) { x.strokeStyle = stroke; x.lineWidth = 1.5; x.strokeRect(X + 0.75, Y + 0.75, w - 1.5, h - 1.5); } x.restore(); }
+function grid(alpha, drift = 0) {
+  x.save(); x.strokeStyle = "#141813"; x.lineWidth = 1; x.globalAlpha = alpha;
+  const o = drift % 54;
+  for (let i = -1; i < 22; i++) { x.beginPath(); x.moveTo(i * 54 + o, 0); x.lineTo(i * 54 + o, H); x.stroke(); x.beginPath(); x.moveTo(0, i * 54 + o); x.lineTo(W, i * 54 + o); x.stroke(); }
+  x.restore();
+}
+function glow(X, Y, r, color, a) { const g = x.createRadialGradient(X, Y, 0, X, Y, r); g.addColorStop(0, color); g.addColorStop(1, "transparent"); x.save(); x.globalAlpha = a; x.fillStyle = g; x.fillRect(X - r, Y - r, 2 * r, 2 * r); x.restore(); }
+function cursor(X, Y, h, t, color = C.lime) { if (Math.floor(t * 2.2) % 2 === 0) rect(X, Y - h, h * 0.5, h, color); }
+function wordmark(X, Y, size, t, { color = C.ink, slash = C.lime, align = "left", cur = false } = {}) {
+  const f = M(800, size), w1 = width("skein", f, -size * 0.06), w2 = width("/", f);
+  const x0 = align === "center" ? X - (w1 + w2) / 2 : X;
+  txt("skein", x0, Y, f, color, { ls: -size * 0.06 }); txt("/", x0 + w1, Y, f, slash);
+  if (cur) cursor(x0 + w1 + w2 + size * 0.12, Y, size * 0.72, t, slash);
+}
+function statusBar(t, a) {
+  rect(0, 0, W, 64, "#070807", null, a); x.save(); x.globalAlpha = a; x.fillStyle = C.line; x.fillRect(0, 64, W, 1); x.restore();
+  wordmark(48, 42, 26, t, {});
+  const block = 77468145 + Math.floor(t * 4);
+  txt(`BLOCK ${block.toLocaleString("en-US")}  ·  201 ASSETS  ·  7 PROTOCOLS`, W - 150, 40, M(500, 14), C.faint, { align: "right", alpha: a, ls: 2 });
+  txt("● LIVE", W - 48, 40, M(600, 14), C.lime, { align: "right", alpha: a * (0.6 + 0.4 * Math.sin(t * 5)), ls: 2 });
+}
+
+// Scene 1: the hook
+function s1(t) {
+  grid(0.6, t * 6);
+  glow(W / 2, H / 2, 520, "rgba(200,241,105,0.10)", seg(t, 0, 1));
+  const cmd = "skein read wallet";
+  const n = Math.floor(cmd.length * seg(t, 0.05, 0.9));
+  txt(">", 120, 330, M(600, 34), C.lime);
+  txt(cmd.slice(0, n), 160, 330, M(500, 34), C.mut);
+  if (t < 1.1) cursor(160 + width(cmd.slice(0, n), M(500, 34)) + 6, 330, 32, t);
+  const a1 = eo(seg(t, 0.15, 0.5)), a2 = eo(seg(t, 0.45, 0.8));
+  txt("Your assets", 116, 520 + (1 - a1) * 40, S(800, 118), C.ink, { alpha: a1, ls: -4 });
+  txt("are sitting", 116, 650 + (1 - a2) * 40, S(800, 118), C.ink, { alpha: a2, ls: -4 });
+  const a3 = eo(seg(t, 0.8, 1.15));
+  txt("idle.", 116, 780 + (1 - a3) * 40, S(800, 118), C.amber, { alpha: a3, ls: -4 });
+  if (a3 > 0) for (let k = 0; k < 3; k++) { const zz = ((t - 1.2 - k * 0.45) % 1.35) / 1.35; if (t < 1.2 + k * 0.45) continue; txt("z", 360 + zz * 70 + k * 6, 760 - zz * 110, M(700, 44 - k * 6), C.amber, { alpha: a3 * Math.sin(Math.PI * zz) }); }
+  txt("Stock tokens, stablecoins and crypto on Robinhood Chain.", 120, 880, S(500, 28), C.mut, { alpha: eo(seg(t, 1.3, 1.8)) });
+}
+
+// Scene 2: reading the chain
+const PROTOS = ["Morpho", "Pendle", "Uniswap", "Beefy", "Spark", "Ramses", "Steer"];
+function s2(t) {
+  grid(0.6, 20 + t * 6);
+  statusBar(t + 3, eo(seg(t, 0, 0.4)));
+  txt("// paste any Robinhood Chain wallet", 90, 170, M(500, 24), C.faint, { alpha: eo(seg(t, 0.1, 0.5)) });
+  rect(90, 200, 900, 96, C.panel, C.lime, eo(seg(t, 0.1, 0.5)));
+  const addr = "0x ···· ···· ···· ····";
+  const n = Math.floor(addr.length * seg(t, 0.4, 1.2));
+  txt(">", 120, 262, M(600, 32), C.lime, { alpha: eo(seg(t, 0.1, 0.5)) });
+  txt(addr.slice(0, n), 160, 262, M(500, 32), C.ink);
+  const pressed = seg(t, 1.25, 1.4);
+  rect(770, 216, 204, 64, pressed > 0 ? C.lime : null, C.lime, eo(seg(t, 0.1, 0.5)));
+  txt("ANALYZE ↵", 872, 257, M(700, 20), pressed > 0 ? C.dark : C.lime, { align: "center", ls: 2, alpha: eo(seg(t, 0.1, 0.5)) });
+  if (t < 1.25) cursor(160 + width(addr.slice(0, n), M(500, 32)) + 6, 262, 30, t);
+
+  const st = 1.5;
+  txt("READING ROBINHOOD CHAIN", 90, 370, M(600, 20), C.mut, { alpha: eo(seg(t, st, st + 0.3)), ls: 4 });
+  PROTOS.forEach((p, i) => {
+    const t0 = st + 0.25 + i * 0.28, a = eo(seg(t, t0, t0 + 0.25)), done = t > t0 + 0.45;
+    const Y = 430 + i * 66;
+    rect(90, Y - 40, 900, 56, null, C.line, a);
+    txt(p, 120, Y - 4, M(600, 26), C.ink, { alpha: a });
+    const dots = ".".repeat(1 + Math.floor((t * 6) % 3));
+    txt(done ? "✓ read" : `reading${dots}`, 960, Y - 4, M(600, 22), done ? C.lime : C.faint, { align: "right", alpha: a, ls: 1 });
+  });
+  const prog = eio(seg(t, st + 0.2, st + 2.5));
+  rect(90, 900, 900, 6, C.line, null, eo(seg(t, st, st + 0.3)));
+  rect(90, 900, 900 * prog, 6, C.lime);
+  txt(`${Math.round(prog * 201)} / 201 assets checked`, 90, 950, M(500, 22), C.mut, { alpha: eo(seg(t, st, st + 0.3)) });
+}
+
+// Scene 3: the readout
+const ROWS = [
+  ["NVDA", "STOCK TOKEN", true, "EARN", "Morpho"],
+  ["USDG", "STABLECOIN", true, "LEND", "Spark"],
+  ["TSLA", "STOCK TOKEN", true, "FIXED RATE", "Pendle"],
+  ["WETH", "CRYPTO", false, "POOL", "Uniswap"],
+  ["cbBTC", "CRYPTO", true, "BORROW AGAINST", "Morpho"],
+];
+function s3(t) {
+  grid(0.5, 40 + t * 6);
+  statusBar(t + 7.5, 1);
+  const a = eo(seg(t, 0, 0.4));
+  txt("WALLET READOUT", 90, 140, M(600, 20), C.mut, { alpha: a, ls: 4 });
+  txt("0x ···· ····", 990, 140, M(500, 20), C.faint, { align: "right", alpha: a });
+  rect(90, 165, 900, 120, C.panel, C.line2, a);
+  const stats = [["ASSETS", 5, C.ink], ["IDLE", 4, C.amber], ["PROTOCOLS", 7, C.lime]];
+  stats.forEach(([k, v, col], i) => {
+    const X = 90 + i * 300;
+    if (i) rect(X, 165, 1.5, 120, C.line2, null, a);
+    txt(k, X + 30, 208, M(500, 16), C.faint, { alpha: a, ls: 3 });
+    txt(String(Math.round(v * eo(seg(t, 0.3, 1.2)))), X + 30, 262, M(800, 44), col, { alpha: a });
+  });
+  ROWS.forEach(([sym, kind, idle, act, proto], i) => {
+    const t0 = 0.6 + i * 0.35, p = eo(seg(t, t0, t0 + 0.35)), Y = 310 + i * 104;
+    x.save(); x.translate((1 - p) * 60, 0); x.globalAlpha = p;
+    rect(90, Y, 900, 92, C.panel, C.line);
+    rect(116, Y + 22, 48, 48, null, C.line2);
+    txt(sym.slice(0, 2).toUpperCase(), 140, Y + 53, M(800, 16), C.lime, { align: "center" });
+    txt(sym, 190, Y + 44, M(800, 28), C.ink);
+    txt(kind, 190, Y + 72, M(500, 14), C.faint, { ls: 2 });
+    if (idle) { rect(450, Y + 30, 92, 34, C.amber); txt("IDLE", 496, Y + 54, M(800, 16), C.dark, { align: "center", ls: 2 }); }
+    else { rect(450, Y + 30, 112, 34, null, C.line2); txt("IN USE", 506, Y + 54, M(700, 16), C.mut, { align: "center", ls: 2 }); }
+    const ap = eo(seg(t, t0 + 0.3, t0 + 0.6));
+    const right = `${act}`, f = M(800, 22);
+    txt("· " + proto, 964, Y + 56, M(500, 20), C.mut, { align: "right", alpha: ap });
+    const pw = width("· " + proto, M(500, 20));
+    txt(right, 964 - pw - 12, Y + 56, f, C.ink, { align: "right", alpha: ap });
+    txt("→", 964 - pw - 12 - width(right, f) - 14, Y + 56, f, C.lime, { align: "right", alpha: ap });
+    x.restore();
+  });
+  const b = eo(seg(t, 2.9, 3.3));
+  rect(90, 850 + (1 - b) * 30, 900, 110, C.lime, null, b);
+  txt("4 assets could be working.", 540, 920 + (1 - b) * 30, S(800, 46), C.dark, { align: "center", alpha: b, ls: -1 });
+}
+
+// Scene 4: the map
+const ASSETS = ["NVDA", "USDG", "TSLA", "WETH", "cbBTC"];
+const ACTS = [["EARN", "Morpho · Beefy"], ["LEND", "Spark"], ["BORROW", "Morpho"], ["POOL", "Uniswap"], ["FIXED", "Pendle"], ["TRADE", "Uniswap"]];
+const LINKS = [[0, 0], [0, 4], [0, 3], [1, 1], [1, 0], [1, 4], [2, 4], [2, 5], [3, 3], [3, 2], [3, 5], [4, 2], [4, 1], [4, 0]];
+function curve(x1, y1, x2, y2, p, color, a, w = 2) {
+  x.save(); x.globalAlpha = a; x.strokeStyle = color; x.lineWidth = w; x.beginPath();
+  const n = 40, m = Math.max(1, Math.floor(n * p));
+  for (let i = 0; i <= m; i++) { const u = i / n, cx = (x1 + x2) / 2; const X = (1 - u) ** 3 * x1 + 3 * (1 - u) ** 2 * u * cx + 3 * (1 - u) * u * u * cx + u ** 3 * x2; const Y = (1 - u) ** 3 * y1 + 3 * (1 - u) ** 2 * u * y1 + 3 * (1 - u) * u * u * y2 + u ** 3 * y2; i ? x.lineTo(X, Y) : x.moveTo(X, Y); }
+  x.stroke(); x.restore();
+}
+function node(X, Y, w, label, sub, hi, a) {
+  rect(X, Y - 28, w, 56, hi ? C.lime : C.panel, hi ? null : C.line2, a);
+  txt(label, X + 18, Y + 8, M(800, 20), hi ? C.dark : C.ink, { alpha: a, ls: 1 });
+  if (sub) txt(sub, X + w - 16, Y + 7, M(500, 13), hi ? C.dark : C.faint, { align: "right", alpha: a, ls: 1 });
+}
+function s4(t) {
+  grid(0.5, 60 + t * 6);
+  const ha = eo(seg(t, 0, 0.4)), hb = eo(seg(t, 0.35, 0.75));
+  txt("Every asset.", 90, 175 + (1 - ha) * 30, S(800, 76), C.ink, { alpha: ha, ls: -2 });
+  txt("Every way to use it.", 90, 260 + (1 - hb) * 30, S(800, 76), C.lime, { alpha: hb, ls: -2 });
+  const wy = 640, ax = 380, ox = 700;
+  const ays = ASSETS.map((_, i) => 410 + i * 115), oys = ACTS.map((_, i) => 380 + i * 104);
+  node(90, wy, 200, "WALLET", "0x ··", true, eo(seg(t, 0.6, 0.9)));
+  ASSETS.forEach((s, i) => { const p = seg(t, 0.9 + i * 0.08, 1.5 + i * 0.08); curve(290, wy, ax, ays[i], eio(p), C.lime, 0.7); node(ax, ays[i], 220, s, "", false, eo(seg(t, 1.2 + i * 0.08, 1.5 + i * 0.08))); });
+  LINKS.forEach(([a, o], i) => { const p = seg(t, 1.7 + i * 0.07, 2.4 + i * 0.07); curve(ax + 220, ays[a], ox, oys[o], eio(p), C.lime, a < 2 ? 0.75 : 0.35, 1.6); });
+  ACTS.forEach(([s, sub], i) => node(ox, oys[i], 290, s, sub, false, eo(seg(t, 1.9 + i * 0.1, 2.2 + i * 0.1))));
+  // a pulse travelling along the brightest thread
+  const pp = (t - 2.8) / 1.2;
+  if (pp > 0 && pp < 1) glow(290 + (ox - 290) * pp, wy + (oys[0] - wy) * pp * pp, 40, "rgba(200,241,105,0.9)", 0.6);
+}
+
+// Scene 5: trust
+const TRUST = [["Read only.", "Nothing to sign to look around."], ["No sign up.", "Paste an address. That's it."], ["Your keys stay yours.", "Every swap is signed in your own wallet."]];
+function s5(t) {
+  grid(0.4, 80 + t * 6);
+  glow(W / 2, H / 2, 500, "rgba(200,241,105,0.08)", 1);
+  TRUST.forEach(([h, sub], i) => {
+    const t0 = i * 0.85, a = eo(seg(t, t0, t0 + 0.3)), Y = 360 + i * 190;
+    x.save(); x.globalAlpha = a; x.translate(0, (1 - a) * 30);
+    rect(90, Y - 62, 64, 64, C.lime);
+    txt("✓", 122, Y - 14, M(800, 38), C.dark, { align: "center" });
+    txt(h, 190, Y - 12, S(800, 64), C.ink, { ls: -2 });
+    txt(sub, 192, Y + 34, S(500, 26), C.mut);
+    x.restore();
+  });
+}
+
+// Scene 6: end card
+function s6(t) {
+  const p = eio(seg(t, 0, 0.5));
+  rect(0, H * (1 - p), W, H * p + 1, C.lime);
+  if (p < 1) return;
+  x.save(); x.globalAlpha = 0.08; x.strokeStyle = C.dark; for (let i = 0; i < 21; i++) { x.beginPath(); x.moveTo(i * 54, 0); x.lineTo(i * 54, H); x.stroke(); x.beginPath(); x.moveTo(0, i * 54); x.lineTo(W, i * 54); x.stroke(); } x.restore();
+  const a = eo(seg(t, 0.5, 0.9));
+  x.save(); x.globalAlpha = a; x.translate(0, (1 - a) * 30);
+  wordmark(W / 2, 520, 190, t, { color: C.dark, slash: "#4A6418", align: "center", cur: false });
+  x.restore();
+  txt("See what any wallet could be doing.", W / 2, 640, S(700, 44), C.dark, { align: "center", alpha: eo(seg(t, 0.9, 1.3)), ls: -1 });
+  txt("EXPLORE  ·  EARN  ·  LEND  ·  BORROW  ·  POOL", W / 2, 720, M(600, 22), "#4A6418", { align: "center", alpha: eo(seg(t, 1.2, 1.6)), ls: 3 });
+  const ca = eo(seg(t, 1.6, 2.0));
+  rect(W / 2 - 200, 820, 400, 76, C.dark, null, ca);
+  txt("ROBINHOOD CHAIN", W / 2 - 14, 868, M(700, 22), C.lime, { align: "center", alpha: ca, ls: 3 });
+  if (ca > 0.9) cursor(W / 2 + 140, 872, 26, t);
+}
+
+const SCENES = [[0, 3.2, s1], [3.2, 7.5, s2], [7.5, 12.6, s3], [12.6, 17.6, s4], [17.6, 20.4, s5], [20.4, DUR, s6]];
+function draw(t) {
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  rect(0, 0, W, H, C.bg);
+  for (const [a, b, f] of SCENES) {
+    if (t >= a && t < b) {
+      x.save(); f(t - a); x.restore();
+      // fade through black between scenes, except into the end card (it wipes)
+      const out = f === s6 ? 0 : seg(t, b - 0.25, b), inn = a === 0 || f === s6 ? 0 : 1 - seg(t, a, a + 0.2);
+      const k = Math.max(out, inn); if (k > 0) rect(0, 0, W, H, C.bg, null, k);
+    }
+  }
+}
+window.draw = draw; window.DUR = DUR;
+
+async function loadFonts(base) {
+  const ff = [new FontFace("JB", `url(${base}/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2)`, { weight: "100 900" }), new FontFace("IT", `url(${base}/inter-tight/files/inter-tight-latin-wght-normal.woff2)`, { weight: "100 900" })];
+  for (const f of ff) document.fonts.add(await f.load());
+}
+window.ready = loadFonts("../../node_modules/@fontsource-variable").then(() => (draw(0), true));
+
+/** Records the whole video in real time with MediaRecorder (MP4, H.264) and keeps the blob. */
+window.record = async function (fps = 30) {
+  const stream = cv.captureStream(0), track = stream.getVideoTracks()[0];
+  const rec = new MediaRecorder(stream, { mimeType: "video/mp4;codecs=avc1.640028", videoBitsPerSecond: 12_000_000 });
+  const chunks = []; rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  const done = new Promise((r) => (rec.onstop = r));
+  rec.start();
+  const n = Math.round(DUR * fps), t0 = performance.now();
+  for (let f = 0; f <= n; f++) {
+    draw(Math.min(f / fps, DUR - 0.001)); track.requestFrame();
+    const wait = t0 + ((f + 1) * 1000) / fps - performance.now();
+    await new Promise((r) => setTimeout(r, Math.max(0, wait)));
+  }
+  rec.stop(); await done;
+  window.blob = new Blob(chunks, { type: "video/mp4" });
+  return window.blob.size;
+};
+window.chunk = async (i, size) => { const b = window.blob.slice(i, i + size); const buf = new Uint8Array(await b.arrayBuffer()); let s = ""; for (let k = 0; k < buf.length; k += 0x8000) s += String.fromCharCode(...buf.subarray(k, k + 0x8000)); return btoa(s); };
+</script>
+</body>
+</html>

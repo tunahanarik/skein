@@ -43,11 +43,26 @@ export const PRODUCT_TRADE_TARGET_KEYS: readonly string[] = [key(CORE_ASSETS.USD
 export const PRODUCT_MAX_ROUTES_PER_TARGET = 5;
 
 /**
- * Quotes in flight at once for one explicit-amount request. Sequential quoting took ≈ 5.4 s for
- * 14 NVDA→USDG routes on the public RPC (2026-09-24); 3 keeps the burst well under the provider's
- * rate limit while cutting the wait roughly threefold. The reader still retries on 429.
+ * Quotes in flight at once for one explicit-amount request. Parallel calls share JSON-RPC batches
+ * of 10 (see reader.ts), so 16 in flight costs about two HTTP requests per hop wave: 18 NVDA→USDG
+ * routes went from ≈ 9 s at 3 to ≈ 1.6 s (2026-09-29), with no rate limiting observed on the
+ * public RPC. The reader still retries on 429.
  */
-export const QUOTE_CONCURRENCY = 3;
+export const QUOTE_CONCURRENCY = 16;
+
+/**
+ * Per-route deadline for a product quote (the swap panel waits on the slowest route). A route
+ * that misses it is shown as not quoted, with a retryable reason; the others are unaffected.
+ * Typical hop latency on the public RPC is 0.2–0.9 s, with rare multi-second outliers.
+ */
+export const PRODUCT_QUOTE_TIMEOUT_MS = 3_000;
+
+/**
+ * Venues the web app can execute (web/src/swap: Uniswap v3 SwapRouter02). A quote request marked
+ * `executable` prices only routes on these, which is all the swap panel can use; Ramses and
+ * Uniswap v4 routes (the slowest to quote) stay in the route view.
+ */
+export const EXECUTABLE_PROTOCOLS: readonly string[] = ["uniswap"];
 
 /**
  * Wall-clock budget for the resumable cold pool-event scan per adapter run. On the public RPC a

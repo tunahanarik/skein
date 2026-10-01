@@ -22,9 +22,13 @@ export interface ProtocolConfig {
   contracts: Record<string, Address>;
   /**
    * Hosts a deep link may point at; anything else from an API is dropped. Empty until the
-   * app domain is confirmed from the protocol's own docs (open question, docs/open-questions.md).
+   * app domain is confirmed from an official source (see appSource).
    */
   linkHosts: string[];
+  /** The protocol's own web app (home page only: chain-specific deep-link formats are not verified). */
+  appUrl: string | null;
+  /** Where appUrl was confirmed (2026-09-24). */
+  appSource: string | null;
   checkedAt: string;
 }
 
@@ -48,7 +52,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       publicAllocator: "0xCe5c1aFa115fF8b1D6913509bfc79D9AE08CC857",
       bundler3: "0x6478e9393d4C5bB4d53ee881d1DE78786A0344a6",
     },
-    linkHosts: [],
+    linkHosts: ["app.morpho.org"],
+    appUrl: "https://app.morpho.org/",
+    appSource: "morpho.org (the verified domain on github.com/morpho-org) links its Vaults/Markets app at app.morpho.org",
     checkedAt: "2026-09-24",
   },
   {
@@ -60,7 +66,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
     docs: "https://docs.spark.finance/products/spark-savings",
     dataSources: [{ kind: "ONCHAIN", url: "spUSDG.vsr() / totalAssets()", covers4663: true, note: "no official rates API found" }],
     contracts: { spUSDG: "0xde770c84FE66E063336b31737cFE9790f18c4087" },
-    linkHosts: [],
+    linkHosts: ["app.spark.finance"],
+    appUrl: "https://app.spark.finance/",
+    appSource: "spark.finance (same domain as the official docs.spark.finance; listed on github.com/sparkdotfi) links “Launch app” at app.spark.finance",
     checkedAt: "2026-09-24",
   },
   {
@@ -81,7 +89,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       marketFactoryV6: "0x544BF81c855AE84c1e8b65d5E38770898D01EeE2",
       yieldContractFactoryV6: "0xa543BF1ac6441822E95eD408076bB53090a0a9d7",
     },
-    linkHosts: [],
+    linkHosts: ["app.pendle.finance"],
+    appUrl: "https://app.pendle.finance/",
+    appSource: "pendle.finance (the verified domain on github.com/pendle-finance) links “V2 App” at app.pendle.finance",
     checkedAt: "2026-09-24",
   },
   {
@@ -106,7 +116,52 @@ export const PROTOCOLS: ProtocolConfig[] = [
       v4Quoter: "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
       v4PositionManager: "0x58daec3116aae6d93017baaea7749052e8a04fa7",
     },
-    linkHosts: [],
+    linkHosts: ["app.uniswap.org"],
+    appUrl: "https://app.uniswap.org/",
+    appSource: "github.com/Uniswap/interface README: “Web: app.uniswap.org”",
+    checkedAt: "2026-09-24",
+  },
+  {
+    id: "uniswap-v4",
+    name: "Uniswap",
+    categories: ["TRADE"],
+    verification: "VERIFIED_ONCHAIN",
+    deploymentSource: "https://github.com/Uniswap/contracts/blob/main/deployments/json/4663.json",
+    docs: "https://developers.uniswap.org/",
+    dataSources: [
+      { kind: "ONCHAIN", url: "hookless pools only: computed PoolKey ids checked with StateView.getSlot0; reserves by StateView tick walk (±4× price window, a lower bound)", covers4663: true },
+      { kind: "ONCHAIN", url: "V4Quoter.quoteExactInputSingle via eth_call (INDICATIVE quotes)", covers4663: true },
+    ],
+    contracts: {
+      v4PoolManager: "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+      v4StateView: "0xf3334192d15450cdd385c8b70e03f9a6bd9e673b",
+      v4Quoter: "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
+    },
+    linkHosts: ["app.uniswap.org"],
+    appUrl: "https://app.uniswap.org/",
+    appSource: "github.com/Uniswap/interface README: “Web: app.uniswap.org”",
+    checkedAt: "2026-09-24",
+  },
+  {
+    id: "ramses",
+    name: "Ramses",
+    categories: ["TRADE"],
+    verification: "VERIFIED_ONCHAIN",
+    deploymentSource: "https://www.ramses.xyz/docs/contract-addresses",
+    docs: "https://www.ramses.xyz/docs/contract-addresses",
+    dataSources: [
+      { kind: "ONCHAIN", url: "RamsesV3Factory PoolCreated logs + pool views + factory.getPool(tickSpacing) round trip (shared v3 adapter)", covers4663: true },
+      { kind: "ONCHAIN", url: "QuoterV2.quoteExactInputSingle (tickSpacing-keyed) via eth_call", covers4663: true },
+    ],
+    contracts: {
+      ramsesV3Factory: "0xE0c4ceb92d08CA985bB70fe0a22fEb121A9854A8",
+      ramsesV3PoolDeployer: "0x4b37359BF291AbE8453692DB58d515a8b013Dca9",
+      quoterV2: "0x4730e03EB4a58A5e20244062D5f9A99bCf5770a6",
+      swapRouter: "0xFCBBe2Af83F94e7E2a9C35a535B3A04719aFD2Ae",
+    },
+    linkHosts: ["www.ramses.xyz"],
+    appUrl: "https://www.ramses.xyz/",
+    appSource: "www.ramses.xyz serves both the official docs (contract addresses) and the app",
     checkedAt: "2026-09-24",
   },
   {
@@ -121,7 +176,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       { kind: "API", url: "https://api.beefy.finance/apy/breakdown", covers4663: true },
     ],
     contracts: {}, // per-vault addresses come from the API and are checked onchain before display
-    linkHosts: [],
+    linkHosts: ["app.beefy.com"],
+    appUrl: "https://app.beefy.com/",
+    appSource: "github.com/beefyfinance/beefy-v2 (the official frontend) README: “app.beefy.com”",
     checkedAt: "2026-09-24",
   },
   {
@@ -141,7 +198,9 @@ export const PROTOCOLS: ProtocolConfig[] = [
       },
     ],
     contracts: { vaultRegistry: "0x5c7d564fA5CE0e874367121E33c1ff10dB2115dC" },
-    linkHosts: [],
+    linkHosts: ["app.steer.finance"],
+    appUrl: "https://app.steer.finance/",
+    appSource: "steer.finance (listed on github.com/SteerProtocol) links its app at app.steer.finance",
     checkedAt: "2026-09-24",
   },
 ];

@@ -12,7 +12,9 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 |---|---|---|
 | `PORT`, `HOST` | 8787, 127.0.0.1 | listen address |
 | `ROBINHOOD_RPC_URL` | public RPC (dev only) | required in production ([rpc.md](rpc.md)) |
-| `SNAPSHOT_MAX_STALE_MS` | 60000 | serve an expired engine snapshot this long while it refreshes in the background |
+| `SNAPSHOT_MAX_STALE_MS` | 300000 | serve an expired engine snapshot this long while it refreshes in the background |
+| `RATE_HISTORY_FILE` | `.cache/history/rates.jsonl` | local rate history (headline rate of eligible opportunities, every 10 min, 30-day retention) |
+| `DISABLE_THIRD_PARTY_VOLUME` | unset | `1` = do not ask GeckoTerminal for 24h volume |
 | `TRUST_PROXY` | unset | `1` = rate-limit by `X-Forwarded-For` (only behind a known proxy) |
 | `WEB_DIST` | `web/dist` | built web app |
 
@@ -21,9 +23,24 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 |---|---|---|
 | `/api/health` | `{ chainId, readOnly: true, rpc }` (RPC endpoint redacted) | no-store |
 | `/api/assets` | canonical asset list `{ key, symbol, name, type, address, decimals }` | 5 min |
-| `/api/assets/:ref?mode=product\|debug&to=&amount=` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key | 10 s; `no-store` with an amount |
+| `/api/assets/:ref?mode=product\|debug&to=&amount=&exec=1` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key; `exec=1` (with an amount) quotes only venues the app can execute | 10 s; `no-store` with an amount |
 | `/api/portfolio/:address?mode=` | `PortfolioIntelligence` | no-store |
 | `/api/coverage` | `{ rows: CoverageRow[] }` | 15 s |
+| `/api/markets` | `{ rows: MarketRow[] }`, one per canonical asset. Fields: `usd` and `changePct` (today vs the previous close). `bestApy` and `bestApyProtocol`: the highest earn-side headline yield among actionable or limited opportunities. `caps`: `earn`, `fixed`, `borrow` and `lp` flags. `liquidityUsd`: TVL of the trade pools holding the asset, display only | 30 s |
+| `/api/assets/:ref/history` | the Chainlink feed's last 49 rounds (`getRoundData`, one multicall), oldest first, with an exact change. Stock Token feeds include the multiplier | 60 s |
+| `/api/rates/history?id=` | locally recorded headline-rate history of one opportunity, with `recordingSince` (history exists only while this server runs) | 60 s |
+| `/api/logo/:address` | token logo for a canonical asset, proxied from the registry's `logoUrl` | 1 day |
+
+Logo proxy rules (`src/server/logos.ts`):
+- Only `https://cdn.robinhood.com`: the only host in the Robinhood registry's `logoUrl` fields.
+- Redirects are refused.
+- Images are PNG/JPEG/WebP detected by magic number; SVG is refused because it can carry script.
+- At most 256 KB.
+- Cached in memory and in `.cache/logos` (gitignored). A failure is remembered for 10 min.
+- Served with `Content-Security-Policy: default-src 'none'; sandbox`.
+- Logos have their own rate-limit bucket (1200/min), because a coverage page shows about 200.
+
+`/asset/:ref` pages get an app shell with the asset's title, description and Open Graph tags, for link previews. The values come from registry data and are HTML-escaped.
 
 Bigints travel as decimal strings (`Wire<T>` in `src/server/wire.ts`), so no precision is lost.
 
@@ -59,10 +76,11 @@ Errors are `{ error: { code, message } }` and never carry stack traces:
 
 ## Web app
 The pages are:
-- **Explore:** asset search and a wallet entry
+- **Explore:** asset search, a wallet entry and the watchlist (starred assets, kept in localStorage)
 - **Asset:** capabilities, categories, a route table, explicit-amount quotes and "show hidden" (DEBUG)
 - **Wallet:** holdings and what each holding can do
 - **Coverage:** the matrix for all assets
+- **Compare:** two assets side by side (`/compare?a=&b=`, public symbols only)
 - **How it works**
 
 Wallet handling (`web/src/wallet.tsx`):
@@ -71,7 +89,7 @@ Wallet handling (`web/src/wallet.tsx`):
 
 Languages: English (default) and Turkish, switchable in the header. The choice is stored in `localStorage` (a UI preference, not personal data). All wording lives in `web/src/i18n/strings.ts`. A test (`test/unit/i18n.test.ts`) checks that both languages have the same keys and placeholders and that neither uses promotional or safety claims. Action labels such as "Supply USDG" are rebuilt on the client from structured card fields, so they translate. Protocol-supplied titles and redemption terms are data and stay in English, labelled as such. Numbers, percentages and dates follow the chosen language's format.
 
-The working name "Waypoint" is a placeholder. The product name is still open, and Robinhood's terms forbid "Robinhood Chain" as a product name.
+The product name is "Skein" (chosen 2026-10-01; earlier "Hoodmap", and before that the placeholder "Waypoint"). Robinhood's terms forbid "Robinhood Chain" as a product name, and the footer states the app is not affiliated with or endorsed by Robinhood.
 
 ## Performance (public RPC, 2026-09-24)
 | Request | Time |
@@ -80,3 +98,36 @@ The working name "Waypoint" is a placeholder. The product name is still open, an
 | NVDA → USDG quote for an explicit amount (14 routes, 3 in flight: `QUOTE_CONCURRENCY`) | ≈ 2.2 s (was ≈ 5.4 s sequential) |
 
 Server start warms the snapshot (≈ 8 s). After that, stale-while-revalidate keeps requests off the cold path.
+
+## Third-party 24h volume
+Swap-log indexing is too heavy for the public RPC (P4-5). Route markets therefore carry an optional `volume24h` from GeckoTerminal's keyless API (`src/sources/geckoterminal.ts`), labelled as third party.
+
+Rules:
+- Only the pools of the routes actually shown are asked for.
+- At most 30 pools go in one request, with a 2.5 s gap between requests.
+- After a 429, requests stop for 60 s.
+- Results are cached for 5 min.
+- A page waits at most 2 s for the source. If it is slow, the page shows no volume.
+- Volume is never used for ordering or usability.
+- When every hop of a route has a figure, the VOLUME_UNKNOWN note is dropped.
+
+Live check (2026-09-24): GeckoTerminal's TVL for NVDA/USDG 0.05 % was $5.666M. Our onchain TVL for the same pool was $5.647M.
+
+## Alerts
+Alerts live in the browser only (localStorage, at most 20):
+- conditions: price above/below, or a card's headline rate above/below
+- checked every 2 min while the app is open, against our own API
+- when one fires: an in-app banner and, if the user allowed it, a browser notification
+- no account, no server-side storage
+
+## Live prices — `GET /api/stream`
+
+Server-Sent Events. Query: `pairs=` assets whose most liquid pools to watch (up to 8 per asset, by TVL), `prices=` assets whose Chainlink USD price to watch; symbols, addresses or registry keys, up to 12 each.
+
+Events:
+- `snapshot` `{ pairs: PairTick[], prices: PriceTick[], pollMs }` once, on connect;
+- `pair` a pool's spot price changed: `{ id, venue, feePpm, tvlUsd, a0, a1, price (a1 per a0), inverse, block, t }`;
+- `price` a token's Chainlink answer changed: `{ key, symbol, usd, updatedAt, block }`;
+- `block` heartbeat after every read: `{ block, t }`.
+
+The server (`src/server/live.ts`) reads only what is watched, every 2 s, in one multicall at the latest block: `slot0()` of Uniswap v3 / Ramses pools, `StateView.getSlot0(poolId)` of hookless Uniswap v4 pools, `latestRoundData()` of the Chainlink feeds. Limits: 4 streams per IP, 300 in total. No wallet data is involved.

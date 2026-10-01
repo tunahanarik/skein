@@ -11,17 +11,24 @@
  */
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
 import { CACHE_TTL_MS } from "../config/freshness.js";
-import { PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
+import { EXECUTABLE_PROTOCOLS, PRODUCT_MAX_ROUTES_PER_TARGET, PRODUCT_QUOTE_TIMEOUT_MS, PRODUCT_TRADE_TARGET_KEYS, QUOTE_CONCURRENCY } from "../config/trade.js";
 import { TtlCache } from "../lib/cache.js";
 import { formatFixed, USD_DECIMALS } from "../lib/units.js";
-import type { AssetRef, Opportunity } from "../model/opportunity.js";
+import { BUCKET_MS, CHART_TTL_MS, deviation, MAX_DEVIATION, RANGE_MS, resample, shareToToken, summarize, type ChainlinkRounds, type PriceChartData } from "./charts.js";
+import { RH_MARKET_BASE, RH_QUERY, type ChartRange, type ShareBar } from "../sources/rhMarket.js";
+import type { LiveFeed, LiveMarket } from "../server/live.js";
+import { chainlinkAggregatorAbi } from "../config/abis.js";
+import type { AssetRef, Opportunity, TokenAmount, UsdAmount } from "../model/opportunity.js";
 import type { TradeMarket, TradeRoute } from "../model/trade.js";
 import { isAuthoritative } from "../model/verification.js";
 import type { AdapterContext } from "../opportunities/adapter.js";
 import { priceCanonicalAssets } from "../opportunities/assetPricing.js";
+import { headlineMetric } from "../opportunities/headline.js";
 import type { EngineResult, OpportunityEngine, OpportunityQuery } from "../opportunities/engine.js";
 import type { Portfolio, PortfolioAsset } from "../portfolio/types.js";
 import type { AssetRegistry } from "../registry/registry.js";
+import type { PriceService } from "../pricing/priceService.js";
+import type { VolumeSource } from "../sources/geckoterminal.js";
 import { buildTradeGraph, destinations, findRoutes, type TradeGraph } from "../trade/graph.js";
 import { opportunityCard, routeCard } from "./cards.js";
 import { PRODUCT_CATEGORY_ORDER, SUBCATEGORY_ORDER, productCategoryOf } from "./categories.js";
@@ -38,6 +45,7 @@ import type {
   EmptyState,
   OpportunityCounts,
   PortfolioIntelligence,
+  PositionView,
   PriceView,
   ProductCard,
   ProductCategory,
@@ -57,6 +65,85 @@ export interface IntelligenceDeps {
    * is evaluated at response time from the data's own timestamps. Default 0 (CLIs, tests).
    */
   maxStaleMs?: number;
+  /** Phase 1 Price Service, for price history (optional; history is unavailable without it). */
+  prices?: PriceService;
+  /** Third-party 24h pool volume (display only). */
+  volumes?: VolumeSource;
+  /** Chainlink round history for charts (full feed history, incremental). */
+  chartRounds?: ChainlinkRounds;
+  /** Underlying share price history for Stock Token charts (Robinhood market data). */
+  shareHistory?: (symbol: string, range: ChartRange) => Promise<ShareBar[]>;
+  /** Latest share price and previous close by ticker (Robinhood market data), for daily change. */
+  shareQuotes?: (symbols: string[]) => Promise<Map<string, { last: number; prevClose: number; at: string | null }>>;
+  /** Called with every new engine snapshot (e.g. to record rate history). Errors are ignored. */
+  onSnapshot?: (opps: readonly Opportunity[], takenAt: number) => void;
+}
+
+export interface MarketRow {
+  key: string;
+  symbol: string;
+  name: string;
+  type: string;
+  address: string;
+  usd: number | null;
+  /** Today's change in percent units, or null. */
+  changePct: number | null;
+  /** Highest headline yield (percent) among usable earn, fixed-yield and LP opportunities, and its protocol. */
+  bestApy: number | null;
+  bestApyProtocol: string | null;
+  /** What a holder can do with it (usable = actionable or limited opportunities). */
+  caps: { earn: boolean; fixed: boolean; borrow: boolean; lp: boolean };
+  /** USD value locked in the trade pools that hold this asset (display only), or null. */
+  liquidityUsd: number | null;
+}
+
+/**
+ * Categories whose headline yield a holder actually earns. YIELD (Pendle YT "long yield") is left
+ * out: its APY is a leveraged what-if (37,000 % on SGOV, 2026-10-01), not a holder's return.
+ */
+const EARN_SIDE = new Set(["LEND", "VAULT", "FIXED_YIELD", "LP"]);
+/** Per-asset summary of its opportunities for the Markets page. */
+function marketExtras(opps: Opportunity[]): Pick<MarketRow, "bestApy" | "bestApyProtocol" | "caps" | "liquidityUsd"> {
+  const caps = { earn: false, fixed: false, borrow: false, lp: false };
+  let bestApy: number | null = null;
+  let bestApyProtocol: string | null = null;
+  let liq = 0n;
+  let liqSeen = false;
+  for (const o of opps) {
+    if (o.category === "TRADE") {
+      const usdE18 = o.tvl?.value.usd?.e18 ?? null;
+      if (usdE18 !== null) {
+        liq += usdE18;
+        liqSeen = true;
+      }
+      continue;
+    }
+    const st = classifyOpportunity(o).status;
+    if (st !== "ACTIONABLE" && st !== "LIMITED") continue;
+    if (o.category === "LEND" || o.category === "VAULT" || o.category === "YIELD") caps.earn = true;
+    if (o.category === "FIXED_YIELD") caps.fixed = true;
+    if (o.category === "COLLATERAL") caps.borrow = true;
+    if (o.category === "LP") caps.lp = true;
+    if (!EARN_SIDE.has(o.category)) continue;
+    const h = headlineMetric(o);
+    if (!h || h.side !== "EARN") continue;
+    const v = Number(h.value) / 1e16;
+    if (Number.isFinite(v) && v > 0 && (bestApy === null || v > bestApy)) {
+      bestApy = v;
+      bestApyProtocol = o.protocol.name;
+    }
+  }
+  return { bestApy, bestApyProtocol, caps, liquidityUsd: liqSeen ? Number(liq / 10n ** 14n) / 1e4 : null };
+}
+
+export interface PriceHistory {
+  asset: AssetRef;
+  kind: "PORTFOLIO_PRICE";
+  source: { provider: "Chainlink"; feed: string; proxy: string } | null;
+  /** Oldest first. Chainlink rounds as published (Stock Token feeds include the multiplier). */
+  points: { t: string; usd: string }[];
+  change: { from: string; to: string; pct: string } | null;
+  generatedAt: string;
 }
 
 export interface AssetQueryOptions {
@@ -65,6 +152,8 @@ export interface AssetQueryOptions {
   tradeTarget?: string;
   /** Decimal amount of the asset to quote (requires tradeTarget). Never inferred from a balance. */
   tradeAmount?: string;
+  /** With an amount: quote only routes the web app can execute (EXECUTABLE_PROTOCOLS). */
+  executableOnly?: boolean;
   /** The holder's row (portfolio view); enables balance and borrow capacity. */
   holding?: PortfolioAsset | null;
 }
@@ -175,7 +264,13 @@ export class AssetIntelligenceService {
       const tradeMarkets = all.data.flatMap((o) => (o.trade ? [o.trade.market] : []));
       const graph = buildTradeGraph(tradeMarkets);
       const hopOpportunities = new Map(all.data.flatMap((o) => (o.trade ? [[`${o.trade.market.id}|${o.primaryAsset.key}`, o.id] as const] : [])));
-      return { ctx, all, byPrimary, graph, markets: new Map(tradeMarkets.map((m) => [m.id, m])), hopOpportunities, takenAt: this.now().getTime() };
+      const takenAt = this.now().getTime();
+      try {
+        this.deps.onSnapshot?.(all.data, takenAt);
+      } catch {
+        /* history is best effort */
+      }
+      return { ctx, all, byPrimary, graph, markets: new Map(tradeMarkets.map((m) => [m.id, m])), hopOpportunities, takenAt };
     });
   }
 
@@ -199,7 +294,7 @@ export class AssetIntelligenceService {
     const t0 = performance.now();
     const mode = opts.mode ?? "PRODUCT";
     const s = await this.snapshot();
-    const cacheKey = [s.ctx.chainId, assetInput.toLowerCase(), mode, opts.tradeTarget?.toLowerCase() ?? "-", opts.tradeAmount ?? "-", opts.holding ? `h${opts.holding.rawBalance}` : "-", s.takenAt].join("|");
+    const cacheKey = [s.ctx.chainId, assetInput.toLowerCase(), mode, opts.tradeTarget?.toLowerCase() ?? "-", opts.tradeAmount ?? "-", opts.executableOnly ? "x" : "-", opts.holding ? `h${opts.holding.rawBalance}` : "-", s.takenAt].join("|");
     const hit = !opts.holding && this.viewCache.get(cacheKey);
     if (hit) {
       this.metrics.inc("cache_hit", 1, { cache: "asset_view" });
@@ -228,7 +323,7 @@ export class AssetIntelligenceService {
     const generatedAt = this.now().toISOString();
     const { ref, empty } = this.resolveAsset(s.ctx.registry, assetInput);
     const emptyStates: EmptyState[] = empty ? [empty] : [];
-    const base: Omit<AssetIntelligence, "categories" | "summary" | "dataQuality" | "freshness" | "otherTradeDestinations"> = {
+    const base: Omit<AssetIntelligence, "categories" | "summary" | "dataQuality" | "freshness" | "otherTradeDestinations" | "tradeTargets"> = {
       mode,
       chainId: s.ctx.chainId,
       asset: ref,
@@ -242,7 +337,7 @@ export class AssetIntelligenceService {
     const statuses = this.adapterStatuses(s);
     if (!ref) {
       const freshness = summarizeFreshness([], nowS);
-      return { ...base, categories: [], otherTradeDestinations: { direct: 0, oneHop: 0 }, summary: { capabilities: capabilitiesOf([]), counts: emptyCounts(), productCards: 0, protocols: [], allDiscoveredProtocols: [] }, dataQuality: summarizeDataQuality(statuses, freshness), freshness };
+      return { ...base, categories: [], otherTradeDestinations: { direct: 0, oneHop: 0 }, tradeTargets: [], summary: { capabilities: capabilitiesOf([]), counts: emptyCounts(), productCards: 0, protocols: [], allDiscoveredProtocols: [] }, dataQuality: summarizeDataQuality(statuses, freshness), freshness };
     }
 
     // ---- price (PORTFOLIO_PRICE) and borrow-asset prices, via the Phase 1 Price Service ----
@@ -309,18 +404,31 @@ export class AssetIntelligenceService {
         const routes: TradeRoute[] = [...found.direct, ...found.oneHop];
         const quoteCard = async (r: TradeRoute): Promise<ProductCard> => {
           const tq = performance.now();
-          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx);
+          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx, PRODUCT_QUOTE_TIMEOUT_MS);
           this.metrics.time("quote_latency_ms", ms(tq), { kind: r.kind });
           if (q.ok) return routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS });
           return routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason);
         };
-        const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(routes, QUOTE_CONCURRENCY, quoteCard);
+        // A route through two venues has no single quoter: it stays in the route view but is not
+        // offered as a quote for an amount (its output cannot be estimated consistently).
+        const quotable = routes.filter((r) => new Set(r.properties.protocols).size === 1 && (!opts.executableOnly || r.properties.protocols.every((p) => EXECUTABLE_PROTOCOLS.includes(p))));
+        const cards: ProductCard[] = amountRaw === null ? routes.map((r) => routeCard(r, s, classifyRoute(r), null)) : await mapLimit(quotable, QUOTE_CONCURRENCY, quoteCard);
         tradeGroups.push({ target, cards });
       }
     }
     const tradeCards = tradeGroups.flatMap((g) => g.cards);
     const dest = ref.canonical ? destinations(s.graph, ref.key) : { direct: [], oneHop: [] };
     const otherTradeDestinations = { direct: dest.direct.filter((d) => !targets.includes(d)).length, oneHop: dest.oneHop.filter((d) => !targets.includes(d)).length };
+    const symbolOf = (key: string) => {
+      const addr = key.split(":")[1];
+      return addr ? (s.ctx.registry.get(s.ctx.chainId, addr as Address)?.symbol ?? null) : null;
+    };
+    const tradeTargets: AssetIntelligence["tradeTargets"] = [
+      ...dest.direct.map((key) => ({ key, kind: "DIRECT" as const })),
+      ...dest.oneHop.map((key) => ({ key, kind: "ONE_HOP" as const })),
+    ]
+      .map((x) => ({ ...x, symbol: symbolOf(x.key) }))
+      .filter((x): x is AssetIntelligence["tradeTargets"][number] => x.symbol !== null);
 
     // ---- categories: rank within each subcategory (and within each trade target) ----
     const visible = (c: ProductCard) => DEFAULT_VISIBLE.has(c.usability.status);
@@ -349,6 +457,21 @@ export class AssetIntelligenceService {
       if (subs.length) categories.push({ category: cat, subcategories: subs });
     }
     const productCards = categories.flatMap((c) => c.subcategories.flatMap((x) => x.cards));
+    // Third-party 24h volume for the pools of the routes actually shown (display only, bounded wait).
+    // Skipped for an amount quote: the swap panel waits on it, and volume is not part of a quote.
+    if (this.deps.volumes && amountRaw === null) {
+      const shown = productCards.filter((c) => c.trade);
+      const poolOf = (marketId: string) => marketId.split(":").at(-1)!.toLowerCase();
+      const pools = [...new Set(shown.flatMap((c) => c.trade!.route.markets.map((m) => poolOf(m.marketId))))];
+      const vols = pools.length ? await this.deps.volumes.get(pools, { timeoutMs: 2_000 }).catch(() => new Map()) : new Map();
+      for (const c of shown) {
+        for (const m of c.trade!.route.markets) {
+          const v = vols.get(poolOf(m.marketId));
+          if (v) m.volume24h = { usd: v.usd24h, txs: v.txs24h, observedAt: v.observedAt, source: v.source, url: v.url };
+        }
+        if (c.trade!.route.markets.every((m) => m.volume24h)) c.usability.notes = c.usability.notes.filter((n) => n !== "VOLUME_UNKNOWN");
+      }
+    }
     const everyCard = [...allCards, ...tradeCards];
     const usable = everyCard.filter((c) => c.usability.status === "ACTIONABLE" || c.usability.status === "LIMITED");
     if (opps.length === 0 && tradeCards.length === 0) emptyStates.push("NO_OPPORTUNITIES");
@@ -375,11 +498,12 @@ export class AssetIntelligenceService {
       price: priceView,
       categories,
       otherTradeDestinations,
+      tradeTargets,
       summary: {
         capabilities: capabilitiesOf(everyCard),
         counts,
         productCards: productCards.length,
-        protocols: [...new Set(usable.map((c) => c.protocol.name))].sort(),
+        protocols: [...new Set(usable.flatMap((c) => c.protocol.name.split(" + ")))].sort(),
         allDiscoveredProtocols: [...new Set(opps.map((o) => o.protocol.name))].sort(),
       },
       dataQuality,
@@ -419,7 +543,40 @@ export class AssetIntelligenceService {
         else unsupportedValue += row.valueUsdE18;
       }
     }
+    // Positions: onchain reads at the snapshot block; the wallet goes only to the chain reader.
+    const pos = await this.deps.engine.getUserPositions(wallet, s.ctx).catch(() => null);
+    const oppById = new Map(s.all.data.map((o) => [o.id, o]));
+    const cardIdsByOpp = new Map<string, string[]>();
+    for (const a of assets) for (const c of a.categories.flatMap((x) => x.subcategories.flatMap((y) => y.cards))) for (const id of c.sourceOpportunityIds) cardIdsByOpp.set(id, [...(cardIdsByOpp.get(id) ?? []), c.cardId]);
+    const amt = (m: { value: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } } | null) => (m ? { amount: m.value.amount, usd: m.value.usd, asset: m.value.asset } : null);
+    const positions: PositionView[] = (pos?.data ?? [])
+      .map((p) => {
+        const related = p.relatedOpportunityIds.map((id) => oppById.get(id)).filter((o): o is Opportunity => !!o);
+        return {
+          id: p.id,
+          protocol: { ...p.protocol },
+          kind: p.kind,
+          label: related[0]?.title ?? null,
+          assets: p.assets,
+          supplied: amt(p.supplied),
+          borrowed: amt(p.borrowed),
+          collateral: amt(p.collateral),
+          healthFactor: p.healthFactor?.value ?? null,
+          ltv: p.ltv?.value ?? null,
+          liquidationLtv: related.find((o) => o.liquidation)?.liquidation?.lltv.value ?? null,
+          liquidatable: p.liquidatable,
+          maturity: p.maturity ?? null,
+          venueAddress: p.venue.address,
+          observedAt: p.supplied?.observedAt ?? p.collateral?.observedAt ?? p.borrowed?.observedAt ?? null,
+          freshness: p.freshness.status,
+          warnings: p.warnings.map((w) => w.code),
+          relatedCardIds: [...new Set(p.relatedOpportunityIds.flatMap((id) => cardIdsByOpp.get(id) ?? []))],
+        };
+      })
+      .sort((a, b) => Number(b.borrowed !== null) - Number(a.borrowed !== null) || Number(b.supplied?.usd?.display ?? b.collateral?.usd?.display ?? 0) - Number(a.supplied?.usd?.display ?? a.collateral?.usd?.display ?? 0));
     const statuses = this.adapterStatuses(s);
+    if (pos && pos.status !== "COMPLETE") for (const a of pos.adapters.filter((x) => x.status !== "COMPLETE")) statuses.push({ protocol: `${a.protocol}_positions`, status: a.status, issues: a.issues });
+    if (!pos) statuses.push({ protocol: "positions", status: "UNKNOWN", issues: [] });
     const freshness = summarizeFreshness([], nowS);
     freshness.oldestCriticalDataAt = assets.map((a) => a.freshness.oldestCriticalDataAt).filter((x): x is string => !!x).sort()[0] ?? null;
     freshness.newestDataAt = assets.map((a) => a.freshness.newestDataAt).filter((x): x is string => !!x).sort().at(-1) ?? null;
@@ -435,6 +592,7 @@ export class AssetIntelligenceService {
       unsupportedAssetValueUsd: formatFixed(unsupportedValue, USD_DECIMALS),
       unpricedAssetCount: portfolio.totals.unpricedAssetCount,
       assets,
+      positions,
       unsupportedAssets: unsupported,
       opportunityCounts: counts,
       dataQuality: summarizeDataQuality(statuses, freshness, extra),
@@ -442,6 +600,157 @@ export class AssetIntelligenceService {
       blockNumber: s.ctx.blockNumber,
       generatedAt: this.now().toISOString(),
     };
+  }
+
+  // ---------------------------------------------------------------- price history
+
+  private readonly historyCache = new TtlCache<PriceHistory>(() => this.now().getTime());
+
+  async getPriceHistory(assetInput: string): Promise<PriceHistory | null> {
+    const s = await this.snapshot();
+    const { ref } = this.resolveAsset(s.ctx.registry, assetInput);
+    if (!ref || !ref.canonical || !this.deps.prices) return null;
+    const asset = s.ctx.registry.get(s.ctx.chainId, ref.address)!;
+    return this.historyCache.getOrLoad(ref.key, 60_000, async () => {
+      const h = await this.deps.prices!.feedHistory(asset, s.ctx.blockNumber).catch(() => null);
+      const points = (h?.points ?? []).map((p) => ({ t: new Date(p.updatedAt * 1000).toISOString(), usd: formatFixed(p.answer, p.decimals) }));
+      const first = h?.points[0];
+      const last = h?.points.at(-1);
+      // Exact change in 1e18 fixed point, then formatted.
+      const change = first && last && first.answer > 0n ? { from: points[0]!.usd, to: points.at(-1)!.usd, pct: formatFixed(((last.answer - first.answer) * 10n ** 20n) / first.answer, 18) } : null;
+      return { asset: ref, kind: "PORTFOLIO_PRICE", source: h ? { provider: "Chainlink", feed: h.feed.name, proxy: h.feed.proxyAddress } : null, points, change, generatedAt: this.now().toISOString() };
+    });
+  }
+
+  // ---------------------------------------------------------------- live prices (src/server/live.ts)
+
+  /** The asset's most liquid active pool markets (Uniswap v3/v4, Ramses) by TVL, for live pair prices. */
+  async liveMarkets(assetKey: string, limit: number): Promise<LiveMarket[]> {
+    const s = await this.snapshot();
+    const venue = (id: string) => (id === "uniswap" ? "Uniswap v3" : id === "uniswap-v4" ? "Uniswap v4" : id === "ramses" ? "Ramses" : id);
+    const tvl = (m: TradeMarket) => Number(m.liquidity.tvl?.value.display ?? 0);
+    return [...s.markets.values()]
+      .filter((m) => m.state === "ACTIVE" && m.assets.some((a) => a.key === assetKey) && m.assets.every((a) => a.canonical))
+      .filter((m) => (m.protocol.id === "uniswap-v4" ? /^0x[0-9a-f]{64}$/i.test(m.marketId) : !!m.address))
+      .sort((a, b) => tvl(b) - tvl(a))
+      .slice(0, limit)
+      .map((m) => ({
+        id: m.id,
+        venue: venue(m.protocol.id),
+        kind: m.protocol.id === "uniswap-v4" ? ("V4" as const) : ("V3" as const),
+        target: m.protocol.id === "uniswap-v4" ? m.marketId : m.address!,
+        feePpm: m.fee?.value.ppm ?? null,
+        tvlUsd: m.liquidity.tvl?.value.display ?? null,
+        a0: { key: m.assets[0].key, symbol: m.assets[0].symbol, decimals: m.assets[0].decimals },
+        a1: { key: m.assets[1].key, symbol: m.assets[1].symbol, decimals: m.assets[1].decimals },
+      }));
+  }
+
+  /** The asset's Chainlink feed (proxy + decimals), for live USD prices. */
+  async liveFeed(assetKey: string): Promise<LiveFeed | null> {
+    const s = await this.snapshot();
+    const asset = s.ctx.registry.canonical().find((a) => a.key === assetKey);
+    if (!asset || !this.deps.prices) return null;
+    const feed = await this.deps.prices.feedFor(asset).catch(() => null);
+    if (!feed) return null;
+    const [dec] = await s.ctx.reader.multicall([{ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" }], { blockNumber: s.ctx.blockNumber });
+    return dec?.status === "success" ? { key: asset.key, symbol: asset.symbol, proxy: feed.proxyAddress, decimals: Number(dec.result) } : null;
+  }
+
+  private readonly marketsCache = new TtlCache<MarketRow[]>(() => this.now().getTime());
+
+  /**
+   * Every canonical asset with its USD price (Chainlink / Phase 1) and today's change. Stock
+   * Tokens: the underlying share's change vs the previous close (Robinhood market data; the
+   * multiplier cancels out). ETH/USDG: the 1D Chainlink chart. Cached for a minute.
+   */
+  async getMarkets(): Promise<MarketRow[]> {
+    return this.marketsCache.getOrLoad("all", 60_000, async () => {
+      const s = await this.snapshot();
+      const assets = s.ctx.registry.canonical().filter((a) => a.address);
+      const prices = await this.usdPrices(assets.map((a) => a.key));
+      const quotes = this.deps.shareQuotes ? await this.deps.shareQuotes(assets.filter((a) => a.type === "STOCK_TOKEN").map((a) => a.stockMetadata?.rhSymbol ?? a.symbol)).catch(() => new Map()) : new Map();
+      const rows: MarketRow[] = [];
+      for (const a of assets) {
+        let change: number | null = null;
+        if (a.type === "STOCK_TOKEN") {
+          const q = quotes.get((a.stockMetadata?.rhSymbol ?? a.symbol).toUpperCase());
+          if (q) change = (q.last / q.prevClose - 1) * 100;
+        } else {
+          const c = await this.getPriceChart(a.key, "1D").catch(() => null);
+          change = c?.changePct != null ? Number(c.changePct) : null;
+        }
+        rows.push({ key: a.key, symbol: a.symbol, name: a.name, type: a.type, address: a.address!, usd: prices.get(a.key) ?? null, changePct: change, ...marketExtras(s.byPrimary.get(a.key) ?? []) });
+      }
+      return rows;
+    });
+  }
+
+  /** Chainlink/Phase 1 USD prices of canonical assets, as numbers (for classification only). */
+  async usdPrices(keys: string[]): Promise<Map<string, number>> {
+    const s = await this.snapshot();
+    const priced = await priceCanonicalAssets(s.ctx, keys);
+    const out = new Map<string, number>();
+    for (const k of keys) {
+      const p = priced.priceOf(k).price;
+      if (p) out.set(k, Number(formatFixed(p.raw, p.decimals)));
+    }
+    return out;
+  }
+
+  /** Canonical Stock Tokens (for the aggregator scan). */
+  async stockTokens(): Promise<{ key: string; symbol: string; address: `0x${string}`; decimals: number }[]> {
+    const s = await this.snapshot();
+    return s.ctx.registry
+      .canonical()
+      .filter((a) => a.type === "STOCK_TOKEN" && a.address)
+      .map((a) => ({ key: a.key, symbol: a.symbol, address: a.address!, decimals: a.decimals }));
+  }
+
+  private readonly chartCache = new TtlCache<PriceChartData>(() => this.now().getTime());
+
+  /**
+   * Price chart for a range. Stock Tokens: the underlying share's bars × on-chain multiplier, if
+   * the latest bar agrees with the token's Chainlink price (else Chainlink). Others: Chainlink
+   * rounds resampled to even buckets.
+   */
+  async getPriceChart(assetInput: string, range: ChartRange): Promise<PriceChartData | null> {
+    const s = await this.snapshot();
+    const { ref } = this.resolveAsset(s.ctx.registry, assetInput);
+    if (!ref || !ref.canonical || !this.deps.prices) return null;
+    const asset = s.ctx.registry.get(s.ctx.chainId, ref.address)!;
+    return this.chartCache.getOrLoad(`${ref.key}:${range}`, CHART_TTL_MS[range], async () => {
+      const now = this.now().getTime();
+      const from = now - RANGE_MS[range];
+      const generatedAt = this.now().toISOString();
+      const p = (await priceCanonicalAssets(s.ctx, [ref.key])).priceOf(ref.key);
+      const price18 = p.price ? p.price.raw * 10n ** BigInt(18 - p.price.decimals) : null;
+      let note: string | null = null;
+      if (asset.type === "STOCK_TOKEN" && this.deps.shareHistory && p.multiplier && price18) {
+        const symbol = asset.stockMetadata?.rhSymbol ?? asset.symbol;
+        try {
+          const pts = shareToToken(await this.deps.shareHistory(symbol, range), p.multiplier);
+          const lastV = pts.at(-1)?.v;
+          if (lastV && deviation(lastV, price18) <= MAX_DEVIATION) {
+            // Share bars are already evenly spaced within trading sessions; the client spaces them by index.
+            // Share data starting well after the range start means a later listing.
+            const late = range !== "1D" && pts[0]!.t > from + 5 * 86_400_000 ? pts[0]!.t : null;
+            const sum = summarize(range, pts, 18, late);
+            const q = RH_QUERY[range];
+            return { ...sum, source: { provider: "ROBINHOOD_MARKET_DATA" as const, symbol, multiplier: formatFixed(p.multiplier, 18), url: `${RH_MARKET_BASE}/${symbol}/?interval=${q.interval}&span=${q.span}` }, note: null, generatedAt };
+          }
+          note = lastV ? "SHARE_PRICE_MISMATCH" : "SHARE_DATA_EMPTY";
+        } catch {
+          note = "SHARE_DATA_UNAVAILABLE";
+        }
+      }
+      const feed = await this.deps.prices!.feedFor(asset).catch(() => null);
+      if (!feed || !this.deps.chartRounds) return { range, points: [], first: null, last: null, high: null, low: null, changePct: null, since: null, source: { provider: "CHAINLINK" as const, feed: "", proxy: "" }, note: note ?? "NO_FEED", generatedAt };
+      const { decimals, rounds } = await this.deps.chartRounds.get(feed.proxyAddress, s.ctx.blockNumber);
+      const rs = resample(rounds, from, now, BUCKET_MS[range]);
+      const late = rounds.length && rounds[0]!.t > from ? rounds[0]!.t : null;
+      return { ...summarize(range, rs, decimals, late), source: { provider: "CHAINLINK" as const, feed: feed.name, proxy: feed.proxyAddress }, note, generatedAt };
+    });
   }
 
   // ---------------------------------------------------------------- coverage

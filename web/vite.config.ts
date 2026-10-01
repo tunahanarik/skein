@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 export default defineConfig({
   root: "web",
   plugins: [react()],
-  build: { outDir: "dist", emptyOutDir: true, sourcemap: false, target: "es2022" },
+  // Fonts are never inlined as data: URLs: the CSP allows fonts from 'self' only.
+  build: { outDir: "dist", emptyOutDir: true, sourcemap: false, target: "es2022", assetsInlineLimit: (file: string) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined) },
   server: { port: 5173, strictPort: true, proxy: { "/api": "http://127.0.0.1:8787" } },
 });
