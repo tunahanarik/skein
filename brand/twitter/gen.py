@@ -86,11 +86,10 @@ pages["header-map"] = (1500, 500, BASE + f"""
 <div style="position:relative;width:1500px;height:500px">
  <div class=grid style="-webkit-mask:linear-gradient(90deg,transparent 25%,#000 70%)"></div>
  <svg width=1500 height=500 style="position:absolute;inset:0" fill=none stroke-width=1.5>{''.join(paths)}</svg>
- <div style="position:absolute;left:96px;top:78px;width:440px">
+ <div style="position:absolute;left:96px;top:110px;width:440px">
   <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN</div>
   <div class=m style="font-size:84px;font-weight:800;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
   <div style="font-size:34px;font-weight:700;letter-spacing:-.8px;line-height:1.15;margin-top:22px">Every asset.<br>Every way to <span class=l>use it.</span></div>
-  <div class=mu style="font-size:17px;line-height:1.5;margin-top:14px">Stock tokens, stablecoins and crypto,<br>mapped across 7 protocols.</div>
  </div>
  {node(W_X,227,210,"WALLET","0x ····",True)}
  {''.join(node(A_X,y,200,s,k) for s,k,y in assets)}
