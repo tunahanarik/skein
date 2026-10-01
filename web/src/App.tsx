@@ -11,13 +11,11 @@ import { TerminalPage } from "./pages/Terminal";
 import { Icon, Mark, Wordmark } from "./components/icons";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
-import { linkProps, navigate, useRoute } from "./router";
+import { linkProps, useRoute } from "./router";
 import { AlertsProvider } from "./alerts";
 import { FiredBanner } from "./components/AlertForm";
 import { WalletPicker } from "./components/WalletPicker";
 import { QuickProvider, useQuick } from "./components/market";
-import { Avatar, useAssetList } from "./components/common";
-import type { AssetListItem } from "./api";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
@@ -89,80 +87,6 @@ function ThemeToggle() {
   );
 }
 
-/** Search one box for an asset (symbol, name or contract) or a wallet address to view. */
-function GlobalSearch() {
-  const { t } = useI18n();
-  const list = useAssetList();
-  const w = useWallet();
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const [hi, setHi] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
-  const s = q.trim().toLowerCase();
-  const isAddr = /^0x[0-9a-f]{40}$/.test(s);
-  // Exact symbol, then symbol prefix, then name prefix, then a word of the name.
-  const rank = (a: AssetListItem) => {
-    const sym = a.symbol.toLowerCase();
-    const name = a.name.toLowerCase();
-    return sym === s || a.address.toLowerCase() === s ? 0 : sym.startsWith(s) ? 1 : name.startsWith(s) ? 2 : name.split(/[\s.,]+/).some((x) => x.startsWith(s)) ? 3 : 9;
-  };
-  const hits = !s || !list ? [] : list.filter((a) => rank(a) < 9).sort((a, b) => rank(a) - rank(b) || a.symbol.length - b.symbol.length || a.symbol.localeCompare(b.symbol)).slice(0, 8);
-  const walletRow = isAddr && !hits.length;
-  const go = (i: number) => {
-    const a = hits[i];
-    if (a) navigate(`/asset/${encodeURIComponent(a.symbol)}`);
-    else if (walletRow && w.usePasted(q.trim())) navigate("/wallet");
-    else return;
-    setQ("");
-    setOpen(false);
-  };
-  return (
-    <div className="gsearch" ref={ref}>
-      <Icon name="search" size={18} />
-      <input
-        placeholder={t("shell.searchAll")}
-        aria-label={t("search.label")}
-        value={q}
-        spellCheck={false}
-        autoComplete="off"
-        onChange={(e) => (setQ(e.target.value.slice(0, 100)), setOpen(true), setHi(0))}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowDown") (e.preventDefault(), setHi((h) => Math.min(h + 1, Math.max(0, hits.length - 1))));
-          else if (e.key === "ArrowUp") (e.preventDefault(), setHi((h) => Math.max(0, h - 1)));
-          else if (e.key === "Enter") go(hi);
-          else if (e.key === "Escape") setOpen(false);
-        }}
-      />
-      {open && s && (
-        <div className="gs-pop" role="listbox">
-          {hits.map((a, i) => (
-            <button key={a.key} role="option" aria-selected={i === hi} className={i === hi ? "on" : undefined} onMouseEnter={() => setHi(i)} onClick={() => go(i)}>
-              <Avatar symbol={a.symbol} address={a.address} />
-              <span className="s">{a.symbol}</span>
-              <span className="n">{a.name.replace(/\s*•\s*Robinhood Token$/i, "")}</span>
-            </button>
-          ))}
-          {walletRow && (
-            <button role="option" aria-selected className="on" onClick={() => go(0)}>
-              <Icon name="wallet" size={18} />
-              <span className="s">{t("shell.viewWallet")}</span>
-              <span className="n mono">{shortAddr(q.trim())}</span>
-            </button>
-          )}
-          {!hits.length && !walletRow && <div className="muted small" style={{ padding: 10 }}>{t("markets.empty")}</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
 /** Thin icon rail on the left (a bottom tab bar on phones). */
 function Rail() {
   const { t } = useI18n();
@@ -221,7 +145,6 @@ function Header() {
       <a className="brand top-brand" {...linkProps("/")} aria-label="Skein">
         <Mark size={30} />
       </a>
-      <GlobalSearch />
       <span className="spacer" />
       <LanguagePicker />
       {w.address && w.source === "connected" ? (
