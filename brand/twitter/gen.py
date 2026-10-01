@@ -158,6 +158,120 @@ pages["header-terminal-lime"] = (1500, 500, BASE + f"""
  </div>
 </div>""")
 
+# ---- Second round: four different concepts ----
+import math
+AA = "<style>body{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}</style>"
+L_, C_, O_ = "#C8F169", "#E9F5CF", "#6E8F2A"
+
+# C. Braid: three strands (stocks, stables, crypto) woven like a skein. "Untangle any wallet."
+def braid(x0=500, x1=1540, y0=290, amp=74, period=330, w=24):
+    # Three strands of a helix. Every pair crosses at t = pi/6 + k*pi/3, so the strip is cut into
+    # chunks centred on the crossings; inside a chunk the depth order is fixed and drawn back to front.
+    cols = [L_, C_, O_]
+    k_t = 2 * math.pi / period
+    def path(k, xa, xb):
+        ph = k * 2 * math.pi / 3
+        pts = [f"{x:.1f},{y0 + amp * math.sin((x - x0) * k_t + ph):.1f}" for x in [xa + (xb - xa) * i / 24 for i in range(25)]]
+        return "M" + " L".join(pts)
+    out = []
+    chunk = period / 6
+    n = int((x1 - x0) / chunk) + 1
+    for i in range(n):
+        xa, xb = x0 + i * chunk, x0 + (i + 1) * chunk
+        tc = ((xa + xb) / 2 - x0) * k_t
+        order = sorted(range(3), key=lambda k: math.cos(tc + k * 2 * math.pi / 3))
+        out.append(f'<clipPath id="b{i}"><rect x="{xa:.2f}" y="0" width="{chunk + .4:.2f}" height="500"/></clipPath><g clip-path="url(#b{i})">')
+        for k in order:
+            d = path(k, xa - 20, xb + 20)
+            out.append(f'<path d="{d}" stroke="#060706" stroke-width="{w + 14}" fill="none"/>')
+            out.append(f'<path d="{d}" stroke="{cols[k]}" stroke-width="{w}" fill="none"/>')
+            out.append(f'<path d="{d}" stroke="#ffffff" stroke-opacity=".22" stroke-width="3" fill="none" transform="translate(0,-6)"/>')
+        out.append("</g>")
+    return '<defs><linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".22" stop-color="#fff"/></linearGradient><mask id="fm"><rect x="500" y="0" width="1000" height="500" fill="url(#fade)"/></mask></defs><g mask="url(#fm)">' + "".join(out) + "</g>"
+
+def sw(c):
+    return f'<span style="display:inline-block;width:10px;height:10px;background:{c};margin-right:9px"></span>'
+
+pages["header-braid"] = (1500, 500, BASE + AA + f"""
+<div style="position:relative;width:1500px;height:500px">
+ <div class=grid style="opacity:.6;-webkit-mask:linear-gradient(90deg,transparent 30%,#000)"></div>
+ <svg width=1500 height=500 style="position:absolute;inset:0">{braid()}</svg>
+ <div class=m style="position:absolute;left:600px;top:96px;display:flex;gap:30px;font-size:11.5px;letter-spacing:2.4px;color:#8D948A">
+  <span>{sw(L_)}STOCK TOKENS</span><span>{sw(C_)}STABLECOINS</span><span>{sw(O_)}CRYPTO</span>
+ </div>
+ <div style="position:absolute;left:96px;top:96px;width:460px">
+  <div class=m style="font-size:84px;font-weight:700;letter-spacing:-5px;line-height:1">skein<span class=l>/</span></div>
+  <div style="font-size:44px;font-weight:600;letter-spacing:-1.4px;line-height:1.08;margin-top:26px">Untangle<br>any <span class=l>wallet.</span></div>
+ </div>
+</div>""")
+
+# D. Orbit: the wallet in the middle, assets on the first ring, what they can do on the second.
+CX, CY = 1110, 250
+def chip(x, y, t, kind):
+    st = {"asset": f"background:#0A0C0A;border:1px solid #2A2F28;color:{C_}",
+          "act": f"background:#060706;border:1px solid {L_}66;color:{L_}"}[kind]
+    return f'<div class=m style="position:absolute;left:{x:.0f}px;top:{y:.0f}px;transform:translate(-50%,-50%);padding:7px 12px;font-size:13px;font-weight:600;letter-spacing:1px;{st}">{t}</div>'
+def ring(r, items, kind, start):
+    return "".join(chip(CX + r * 1.55 * math.cos(start + i * 2 * math.pi / len(items)), CY + r * math.sin(start + i * 2 * math.pi / len(items)), t, kind) for i, t in enumerate(items))
+def ell(r, op, dash=""):
+    return f'<ellipse cx="{CX}" cy="{CY}" rx="{r * 1.55}" ry="{r}" fill="none" stroke="{L_}" stroke-opacity="{op}" {dash}/>'
+
+pages["header-orbit"] = (1500, 500, BASE + AA + f"""
+<div style="position:relative;width:1500px;height:500px;overflow:hidden">
+ <div style="position:absolute;left:{CX - 300}px;top:{CY - 300}px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,{L_}1c,transparent 60%)"></div>
+ <svg width=1500 height=500 style="position:absolute;inset:0">{ell(95, .35)}{ell(190, .22, 'stroke-dasharray="3 6"')}{ell(285, .12)}</svg>
+ {ring(95, ["NVDA", "USDG", "WETH", "cbBTC"], "asset", -math.pi / 2 + 0.4)}
+ {ring(190, ["EARN", "LEND", "BORROW", "POOL", "FIXED", "TRADE"], "act", -math.pi / 2)}
+ <div class=m style="position:absolute;left:{CX}px;top:{CY}px;transform:translate(-50%,-50%);width:84px;height:84px;display:grid;place-items:center;background:{L_};color:#0A0F04;font-size:34px;font-weight:800;letter-spacing:-3px;box-shadow:0 0 60px {L_}55">s/</div>
+ <div style="position:absolute;left:96px;top:104px;width:520px">
+  <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; WALLET RESEARCH</div>
+  <div class=m style="font-size:84px;font-weight:700;letter-spacing:-5px;line-height:1;margin-top:20px">skein<span class=l>/</span></div>
+  <div style="font-size:38px;font-weight:600;letter-spacing:-1.2px;line-height:1.12;margin-top:24px">One wallet.<br><span class=mu>Every option</span> <span class=l>around it.</span></div>
+ </div>
+</div>""")
+
+# E. Asset wall: tickers on the chain, a few lit up; the wordmark on top.
+TICK = [t for t in "AAOI AAPL ABCL ADBE AEHR AEIS ALAB AMAT AMBA AMC AMD AMKR AMZN ANET APLD APP ASML ASTS AUR AVAV AVGO AXON AXTI BABA BND BULL CBRS CCL CEG CELH CIEN CLOV CLSK COHR COIN COST CRCL CRDO CRM CRWD CRWV CSCO CTSH CVNA DDOG DELL DJT DOCN ELF EWT EWY FICO FIG FISV FLNC FTNT FUTU GEV GLD GLW GLXY GME GOOGL HIMS HPE HWM IBM INDA INTC INTU IONQ IREN JNJ JOBY KLAC KTOS LLY LMT LRCX LULU LUNR MDB META MRNA MRVL MSFT MSTR MU NBIS NET NFLX NOW NVDA OKLO ORCL PANW PLTR QBTS QCOM QQQ RBLX RDDT RGTI RIVN RKLB SHOP SLV SMCI SMH SNOW SOFI SOUN SPY TSLA TSM TTD UNH USDG WETH cbBTC USDe VRT VST VTI WDAY XOM ZM".split()]
+LITS = {(1, 2): "NVDA", (2, 11): "USDG", (3, 4): "TSLA", (6, 1): "WETH", (7, 12): "cbBTC", (8, 4): "SPY", (1, 13): "AAPL", (6, 10): "GLD", (8, 9): "COIN", (2, 0): "PLTR"}
+def wall():
+    cells = []
+    for r in range(10):
+        for c in range(15):
+            on = (r, c) in LITS
+            t = LITS.get((r, c)) or TICK[(r * 15 + c) * 7 % len(TICK)]
+            cells.append(f'<div class=m style="position:absolute;left:{c * 100}px;top:{r * 50}px;width:100px;height:50px;border-right:1px solid #10130F;border-bottom:1px solid #10130F;display:grid;place-items:center;font-size:15px;font-weight:{700 if on else 500};color:{L_ if on else "#2E342C"};{"background:#C8F16912" if on else ""}">{t}</div>')
+    return "".join(cells)
+
+pages["header-wall"] = (1500, 500, BASE + AA + f"""
+<div style="position:relative;width:1500px;height:500px;overflow:hidden">
+ <div style="position:absolute;inset:0">{wall()}</div>
+ <div style="position:absolute;inset:0;background:radial-gradient(42% 70% at 50% 50%,#060706f2 45%,#06070600)"></div>
+ <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-54%);text-align:center;white-space:nowrap">
+  <div class=m style="font-size:12.5px;letter-spacing:3px;color:#8D948A"><span class=l>●</span>&nbsp; ROBINHOOD CHAIN</div>
+  <div class=m style="font-size:112px;font-weight:700;letter-spacing:-7px;line-height:1;margin-top:18px">skein<span class=l>/</span></div>
+  <div style="font-size:30px;font-weight:600;letter-spacing:-.8px;margin-top:22px">200+ assets. <span class=l>One map.</span></div>
+ </div>
+</div>""")
+
+# F. Search: the product in one gesture, on lime.
+pages["header-search"] = (1500, 500, BASE + AA + f"""
+<div style="position:relative;width:1500px;height:500px;background:radial-gradient(120% 140% at 0% 0%,#D3F57E,#C8F169 45%,#BDE85C);color:{D}">
+ <div style="position:absolute;inset:0;background-image:linear-gradient({D}0d 1px,transparent 1px),linear-gradient(90deg,{D}0d 1px,transparent 1px);background-size:50px 50px;-webkit-mask:radial-gradient(70% 90% at 50% 50%,transparent 30%,#000)"></div>
+ <div style="position:absolute;left:50%;top:104px;transform:translateX(-50%);width:900px;text-align:center">
+  <div class=m style="font-size:76px;font-weight:700;letter-spacing:-4.5px;line-height:1">skein<span style="color:{OLIVE}">/</span></div>
+  <div style="font-size:26px;font-weight:600;letter-spacing:-.6px;margin-top:16px;color:{OLIVE}">See what any wallet could be doing.</div>
+  <div style="margin-top:30px;display:flex;align-items:stretch;background:{D};box-shadow:0 24px 50px #3A4D0F45;text-align:left">
+   <div class=m style="flex:1;display:flex;align-items:center;gap:14px;padding:0 24px;height:72px;font-size:20px;color:#8FA36A">
+    <span style="color:{L_}">&gt;</span>paste any wallet address<span style="display:inline-block;width:11px;height:26px;background:{L_}"></span>
+   </div>
+   <div class=m style="display:grid;place-items:center;padding:0 28px;margin:10px;background:{L_};color:{D};font-size:15px;font-weight:700;letter-spacing:2px">ANALYZE →</div>
+  </div>
+  <div class=m style="margin-top:20px;font-size:13px;letter-spacing:2px;color:{OLIVE};display:flex;justify-content:center;gap:24px">
+   <span>EARN</span><span>·</span><span>LEND</span><span>·</span><span>BORROW</span><span>·</span><span>POOL</span><span>·</span><span>READ ONLY</span>
+  </div>
+ </div>
+</div>""")
+
 for name, (w, h, html) in pages.items():
     (pathlib.Path(__file__).parent / f"{name}.html").write_text(f"<!doctype html><html><head>{html.split('</style>',1)[0]}</style></head><body style='width:{w}px;height:{h}px'>{html.split('</style>',1)[1]}</body></html>", encoding="utf-8")
     print(name, w, h)
