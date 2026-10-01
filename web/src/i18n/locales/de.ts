@@ -714,4 +714,6 @@ export const de: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} Protokolle",
   "home.c.question": "was möchtest du tun?",
   "home.c.pick": "Asset wählen",
+  "home.w.note": "Es werden nur öffentliche Chain-Daten gelesen. Die Adresse bleibt im Speicher dieses Tabs und wird nie gespeichert.",
+  "home.c.scanning": "Protokolle für {s} werden durchsucht…",
 };

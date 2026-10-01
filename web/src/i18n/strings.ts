@@ -717,6 +717,8 @@ export const en = {
   "home.cmd.protocols": "{n} protocols",
   "home.c.question": "what do you want to do?",
   "home.c.pick": "pick an asset",
+  "home.w.note": "Only public chain data is read. The address stays in this tab's memory and is never saved.",
+  "home.c.scanning": "Scanning protocols for {s}…",
 };
 
 export type StringKey = keyof typeof en;
@@ -1411,4 +1413,6 @@ export const tr: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} protokol",
   "home.c.question": "ne yapmak istiyorsun?",
   "home.c.pick": "varlık seç",
+  "home.w.note": "Sadece herkese açık zincir verisi okunur. Adres bu sekmenin hafızasında kalır, hiçbir yere kaydedilmez.",
+  "home.c.scanning": "{s} için protokoller taranıyor…",
 };

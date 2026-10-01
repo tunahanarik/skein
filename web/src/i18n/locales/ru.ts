@@ -715,4 +715,6 @@ export const ru: Record<StringKey, string> = {
   "home.cmd.protocols": "протоколов: {n}",
   "home.c.question": "что вы хотите сделать?",
   "home.c.pick": "выберите актив",
+  "home.w.note": "Читаются только публичные данные сети. Адрес остаётся в памяти этой вкладки и нигде не сохраняется.",
+  "home.c.scanning": "Проверяем протоколы для {s}…",
 };

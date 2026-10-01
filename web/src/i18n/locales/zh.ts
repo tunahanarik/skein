@@ -714,4 +714,6 @@ export const zh: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} 个协议",
   "home.c.question": "你想做什么？",
   "home.c.pick": "选择资产",
+  "home.w.note": "只读取公开链上数据。地址仅保存在此标签页的内存中，从不存储。",
+  "home.c.scanning": "正在为 {s} 扫描协议…",
 };

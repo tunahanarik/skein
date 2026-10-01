@@ -166,7 +166,7 @@ export function AssetPicker({ value, onChange, label, only, placeholder }: { val
   }, [list, q, only]);
   return (
     <div className="picker" ref={ref}>
-      <button className="picker-btn" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-l`} aria-label={`${label}: ${value?.symbol ?? ""}`} onClick={() => setOpen(!open)}>
+      <button type="button" className="picker-btn" aria-haspopup="listbox" aria-expanded={open} aria-controls={`${id}-l`} aria-label={`${label}: ${value?.symbol ?? ""}`} onClick={() => setOpen(!open)}>
         {(value || !placeholder) && <Avatar symbol={value?.symbol ?? "?"} address={value?.address ?? null} />}
         <span>{value?.symbol ?? placeholder ?? "…"}</span>
         <span className="chev" aria-hidden="true">

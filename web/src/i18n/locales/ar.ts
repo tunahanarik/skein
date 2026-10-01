@@ -715,4 +715,6 @@ export const ar: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} بروتوكولات",
   "home.c.question": "ماذا تريد أن تفعل؟",
   "home.c.pick": "اختر أصلًا",
+  "home.w.note": "تُقرأ بيانات السلسلة العامة فقط. يبقى العنوان في ذاكرة هذه العلامة ولا يُحفظ أبدًا.",
+  "home.c.scanning": "جارٍ فحص البروتوكولات لـ {s}…",
 };

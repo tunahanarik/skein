@@ -715,4 +715,6 @@ export const it: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} protocolli",
   "home.c.question": "cosa vuoi fare?",
   "home.c.pick": "scegli un asset",
+  "home.w.note": "Si leggono solo dati pubblici della chain. L'indirizzo resta nella memoria di questa scheda e non viene mai salvato.",
+  "home.c.scanning": "Scansione dei protocolli per {s}…",
 };

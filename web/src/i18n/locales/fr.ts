@@ -714,4 +714,6 @@ export const fr: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} protocoles",
   "home.c.question": "que voulez-vous faire ?",
   "home.c.pick": "choisir un actif",
+  "home.w.note": "Seules des données publiques de la chaîne sont lues. L'adresse reste dans la mémoire de cet onglet et n'est jamais enregistrée.",
+  "home.c.scanning": "Analyse des protocoles pour {s}…",
 };

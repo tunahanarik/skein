@@ -109,19 +109,7 @@ function WalletResearch() {
         </button>
       </form>
       {err && <div className="cmd-err">{t("home.w.bad")}</div>}
-      <div className="hw-or">
-        <span>{t("home.w.or")}</span>
-        {w.address && w.source === "connected" ? (
-          <button className="btn small" onClick={() => navigate("/wallet")}>
-            {t("walletEntry.open")}
-          </button>
-        ) : (
-          <button className="btn small" disabled={w.connecting} onClick={w.openPicker}>
-            {w.connecting ? t("walletEntry.waiting") : t("walletEntry.use")}
-          </button>
-        )}
-      </div>
-      <div className="cmd-note">{t("walletEntry.footnote")}</div>
+      <div className="cmd-note">{t("home.w.note")}</div>
     </div>
   );
 }
@@ -201,6 +189,17 @@ function CommandTerminal() {
             else if (e.key === "Tab") (e.preventDefault(), complete(hits[hi] ?? hits[0]!));
           }}
         />
+        <AssetPicker
+          label={t("home.pickAsset")}
+          placeholder={t("home.c.pick")}
+          value={asset}
+          onChange={(a) => {
+            setPicked(a);
+            // Keep the verb; the picked asset replaces any typed one.
+            setLine(verb ? `${words[0]} ` : "");
+            input.current?.focus();
+          }}
+        />
         {hits.length > 0 && (
           <div className="cmd-pop" role="listbox">
             {hits.map((a, i) => (
@@ -231,31 +230,43 @@ function CommandTerminal() {
         ))}
       </div>
 
-      <div className="cmd-result" aria-live="polite">
-        <div className="cr-head">
-          <span>{t("home.c.result")} ·</span>
-          <AssetPicker label={t("home.pickAsset")} placeholder={t("home.c.pick")} value={asset} onChange={(a) => (setPicked(a), typed && setLine(verb ? `${words[0]} ` : ""))} />
-          {asset && intel.data && <span>{t("home.c.count", { n: rows.length })}</span>}
-          {intent && <span className="cr-intent">{t(`intent.${intent}`)}</span>}
+      <div className={`cr-wrap${asset ? " open" : ""}`} aria-live="polite">
+        <div className="cr-clip">
+          {asset && (
+            <div className="cmd-result" key={`${asset.key}|${intent ?? "ALL"}`}>
+              <div className="cr-head">
+                <span>{t("home.c.result")} ·</span>
+                <span className="cr-asset">
+                  <Avatar symbol={asset.symbol} address={asset.address} />
+                  {asset.symbol}
+                </span>
+                {intel.data && <span>{t("home.c.count", { n: rows.length })}</span>}
+                {intent && <span className="cr-intent">{t(`intent.${intent}`)}</span>}
+                <span className="spacer" />
+                <button type="button" className="cr-clear" aria-label={t("modal.close")} onClick={() => (setPicked(null), setLine(verb ? `${words[0]} ` : ""))}>
+                  ✕
+                </button>
+              </div>
+              {!intel.data && <div className="cr-scan">{t("home.c.scanning", { s: asset.symbol })}</div>}
+              {intel.data && !rows.length && <div className="cr-empty">{t("home.c.none")}</div>}
+              {rows.map((r, i) => {
+                const { val, unit } = oppValue(t, r.intent, r.card);
+                return (
+                  <button key={r.card.cardId} type="button" className="cr-row" style={{ animationDelay: `${i * 70}ms` }} onClick={() => open(i)}>
+                    <ProtocolLogo name={r.card.protocol.name} size={22} />
+                    <span className="p">{r.card.protocol.name}</span>
+                    <span className="c">{contextLine(t, r.card)}</span>
+                    <span className="spacer" />
+                    <span className="v num">
+                      {val} <small>{unit}</small>
+                    </span>
+                    <span className="k">{i === 0 ? "[ENTER]" : `[${i + 1}]`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
-        {!asset && <div className="cr-empty">{t("home.c.pickHint")}</div>}
-        {asset && !intel.data && <div className="cr-empty">…</div>}
-        {asset && intel.data && !rows.length && <div className="cr-empty">{t("home.c.none")}</div>}
-        {rows.map((r, i) => {
-          const { val, unit } = oppValue(t, r.intent, r.card);
-          return (
-            <button key={r.card.cardId} type="button" className="cr-row" onClick={() => open(i)}>
-              <ProtocolLogo name={r.card.protocol.name} size={22} />
-              <span className="p">{r.card.protocol.name}</span>
-              <span className="c">{contextLine(t, r.card)}</span>
-              <span className="spacer" />
-              <span className="v num">
-                {val} <small>{unit}</small>
-              </span>
-              <span className="k">{i === 0 ? "[ENTER]" : `[${i + 1}]`}</span>
-            </button>
-          );
-        })}
       </div>
     </div>
   );

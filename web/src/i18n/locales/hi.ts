@@ -691,4 +691,6 @@ export const hi: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} प्रोटोकॉल",
   "home.c.question": "आप क्या करना चाहते हैं?",
   "home.c.pick": "एसेट चुनें",
+  "home.w.note": "केवल सार्वजनिक चेन डेटा पढ़ा जाता है। पता इसी टैब की मेमोरी में रहता है और कभी सहेजा नहीं जाता।",
+  "home.c.scanning": "{s} के लिए प्रोटोकॉल खोजे जा रहे हैं…",
 };

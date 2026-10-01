@@ -691,4 +691,6 @@ export const ko: Record<StringKey, string> = {
   "home.cmd.protocols": "프로토콜 {n}개",
   "home.c.question": "무엇을 하고 싶나요?",
   "home.c.pick": "자산 선택",
+  "home.w.note": "공개 체인 데이터만 읽습니다. 주소는 이 탭의 메모리에만 남고 저장되지 않습니다.",
+  "home.c.scanning": "{s} 프로토콜 검색 중…",
 };

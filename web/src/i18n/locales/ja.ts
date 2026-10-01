@@ -714,4 +714,6 @@ export const ja: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} プロトコル",
   "home.c.question": "何をしたいですか？",
   "home.c.pick": "資産を選択",
+  "home.w.note": "読み取るのは公開チェーンデータのみ。アドレスはこのタブのメモリにだけ残り、保存されません。",
+  "home.c.scanning": "{s} のプロトコルを検索中…",
 };

@@ -715,4 +715,6 @@ export const pt: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} protocolos",
   "home.c.question": "o que você quer fazer?",
   "home.c.pick": "escolha um ativo",
+  "home.w.note": "Apenas dados públicos da rede são lidos. O endereço fica na memória desta aba e nunca é salvo.",
+  "home.c.scanning": "Verificando protocolos para {s}…",
 };

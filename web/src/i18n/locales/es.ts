@@ -715,4 +715,6 @@ export const es: Record<StringKey, string> = {
   "home.cmd.protocols": "{n} protocolos",
   "home.c.question": "¿qué quieres hacer?",
   "home.c.pick": "elige un activo",
+  "home.w.note": "Solo se leen datos públicos de la cadena. La dirección queda en la memoria de esta pestaña y nunca se guarda.",
+  "home.c.scanning": "Buscando en los protocolos para {s}…",
 };
