@@ -61,14 +61,21 @@ export function Icon({ name, size = 20, className }: { name: IconName; size?: nu
   );
 }
 
-/** The Skein mark: three strands braided into one (many routes, one path); the lead strand in the accent. */
+/** The Skein mark: "s/" on the accent, for tight spots (rail, favicon). */
 export function Mark({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="mark" fill="none" strokeWidth="2.6" strokeLinecap="round">
-      <path d="M4 8c6 0 6 8 12 8s6-8 12-8" stroke="var(--mark-c)" />
-      <path d="M4 16c6 0 6 8 12 8s6-8 12-8" stroke="var(--mark-b)" />
-      <path d="M4 24c6 0 6-16 12-16s6 16 12 16" stroke="var(--mark-a)" />
-    </svg>
+    <span className="mark-s" style={{ width: size, height: size, fontSize: Math.round(size * 0.5) }} aria-hidden="true">
+      s/
+    </span>
+  );
+}
+
+/** The Skein wordmark: "skein/", a path-like name with the slash in the accent. */
+export function Wordmark() {
+  return (
+    <span className="wordmark">
+      skein<span className="sl">/</span>
+    </span>
   );
 }
 

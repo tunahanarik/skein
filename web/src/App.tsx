@@ -7,7 +7,7 @@ import { BridgePage } from "./pages/Bridge";
 import { ComparePage } from "./pages/Compare";
 import { CoveragePage } from "./pages/Coverage";
 import { MarketsPage } from "./pages/Markets";
-import { Icon, Mark } from "./components/icons";
+import { Icon, Mark, Wordmark } from "./components/icons";
 import { HomePage } from "./pages/Home";
 import { WalletPage } from "./pages/Wallet";
 import { linkProps, navigate, useRoute } from "./router";
@@ -172,7 +172,7 @@ function Rail() {
   return (
     <aside className="rail" aria-label="Main">
       <a className="rail-brand" {...linkProps("/")} aria-label="Skein">
-        <Mark size={24} />
+        <Mark size={30} />
       </a>
       <nav className="rail-nav">
         <a className={`rail-i${on("home", "asset")}`} {...linkProps("/")} aria-current={on("home", "asset") ? "page" : undefined}>
@@ -214,8 +214,7 @@ function Header() {
   return (
     <header className="top">
       <a className="brand top-brand" {...linkProps("/")} aria-label="Skein">
-        <Mark size={20} />
-        <span>skein</span>
+        <Mark size={30} />
       </a>
       <GlobalSearch />
       <span className="spacer" />
@@ -246,8 +245,7 @@ function Footer() {
       <div className="shell">
         <div className="row" style={{ gap: 18, marginBottom: 12 }}>
           <span className="brand small">
-            <Mark size={16} />
-            <span>skein</span>
+            <Wordmark />
           </span>
           <span className="cap-label">Explore · Track · Discover</span>
           <span className="spacer" />

@@ -1336,3 +1336,12 @@ footer.bottom { border-top: 1px solid var(--border); }
 .cap-tags { gap: 3px; flex-wrap: nowrap; }
 .stage-id .picker-btn { font-family: var(--mono-ui); }
 .brand span, .top-brand span { font-family: var(--mono-ui); font-weight: 700; letter-spacing: -0.02em; text-transform: lowercase; }
+/* Skein marks: "s/" tile and the "skein/" wordmark */
+.mark-s { display: inline-grid; place-items: center; flex: none; background: var(--accent); color: var(--on-accent); border-radius: 4px; font-family: var(--mono-ui); font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+.wordmark { font-family: var(--mono-ui); font-weight: 700; font-size: 18px; letter-spacing: -0.03em; color: var(--text); text-transform: none; }
+.wordmark .sl { color: var(--accent); margin-left: 1px; }
+.brand.small .wordmark { font-size: 15px; }
+.top-brand .wordmark { font-size: 17px; }
+.rail-brand:hover .mark-s { background: var(--accent-2); }
+.top-brand .mark-s { display: inline-grid !important; }
+@media (max-width: 720px) { header.top .btn.small { padding: 8px 9px; font-size: 10px; letter-spacing: 0.02em; } header.top { gap: 6px; } .gsearch { padding: 0 10px; } }
