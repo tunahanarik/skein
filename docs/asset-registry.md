@@ -73,9 +73,26 @@ Besides ETH, WETH, USDG and the Stock Tokens, a crypto token is canonical only i
 - **Two independent lists:** CoinGecko's Robinhood token list (`tokens.coingecko.com/robinhood/all.json`) and LI.FI's token list for chain 4663 give the same address.
 - **Onchain:** `symbol()`, `name()` and `decimals()` match, and the contract has code.
 
-Admitted: LINK, cbBTC, USDe.
+Admitted: cbBTC, USDe.
+
+LINK passes every check but is left out: it has no pool or market on Robinhood Chain yet.
 
 Not yet admitted:
 - ENA, weETH, wstETH: they have a feed but only one list names their address.
 - sUSDe, syrupUSDC, syrupUSDG: exchange-rate feeds only.
 - Everything else on the chain (meme tokens).
+
+## Yield-bearing USDG tokens (`USDG_RATE_ASSETS`)
+
+These are crypto tokens worth a rate in USDG. They are priced at that rate × Chainlink USDG/USD (`USDG_RATE`).
+
+| Token | Where it is used | Rate source |
+|---|---|---|
+| syrupUSDG (Maple) | Morpho collateral, ~$14.6M | Chainlink "syrupUSDG / USDG Exchange Rate"; address named by CoinGecko's and LI.FI's lists |
+| spUSDG (Spark Savings) | Spark vault, Morpho collateral, ~$14.1M | ERC-4626 `convertToAssets(1 share)`, read onchain; `asset()` is USDG |
+
+Selection: tokens that actually have earn, LP or borrow markets. They were found by scanning every protocol adapter for non-canonical assets (2026-10-01).
+
+Look-alikes are never admitted. Morpho markets use tokens named "USDe", "USDG", "WETH" and "ETH" at other addresses.
+
+mGLO (~$3.1M on Morpho) is pending. It needs Midas' own oracle.

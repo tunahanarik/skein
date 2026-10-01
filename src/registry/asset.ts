@@ -11,6 +11,7 @@ export type PriceMethod =
   | "CHAINLINK_USDG_USD" // USDG
   | "CHAINLINK_STOCK_TOKEN_FEED" // token price, multiplier included
   | "CHAINLINK_USD_FEED" // crypto token with its own "<SYMBOL> / USD" feed (Asset.usdFeedName)
+  | "USDG_RATE" // yield-bearing USDG token: rate to USDG (Asset.usdgRate) × Chainlink USDG/USD
   | "ROBINHOOD_QUOTE_MID"; // underlying share mid × uiMultiplier
 
 export interface StockMetadata {
@@ -44,6 +45,8 @@ export interface Asset {
   stockMetadata?: StockMetadata;
   /** CHAINLINK_USD_FEED only: the feed's name in the Chainlink directory, e.g. "LINK / USD". */
   usdFeedName?: string;
+  /** USDG_RATE only: where the token's value in USDG comes from. */
+  usdgRate?: { kind: "CHAINLINK_FEED"; feedName: string } | { kind: "ERC4626" };
   priceMethods: PriceMethod[];
   provenance: DataSource[];
 }

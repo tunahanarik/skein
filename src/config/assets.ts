@@ -61,21 +61,11 @@ export interface CryptoAssetConfig extends AssetConfig {
  *   - two independent lists name the same address: CoinGecko's Robinhood token list
  *     (tokens.coingecko.com/robinhood/all.json) and LI.FI's token list for chain 4663;
  *   - onchain symbol(), name() and decimals() match, and the contract has code.
- * Not admitted yet (one source only, or no USD feed): ENA, weETH, wstETH, sUSDe, syrupUSDC, syrupUSDG.
+ * Not admitted yet (one source only, or no USD feed): ENA, weETH, wstETH, sUSDe, syrupUSDC.
+ * LINK passes every check but has no pool or market on Robinhood Chain yet (2026-10-01), so it is left
+ * out until it does: feed "LINK / USD", address 0x492641F648a4986844848E0beFE66D14817bCE34.
  */
 export const CRYPTO_ASSETS: readonly CryptoAssetConfig[] = [
-  {
-    address: "0x492641F648a4986844848E0beFE66D14817bCE34",
-    symbol: "LINK",
-    name: "Chainlink",
-    decimals: 18,
-    kind: "OTHER",
-    verification: "VERIFIED_ONCHAIN",
-    officialSource: "https://tokens.coingecko.com/robinhood/all.json",
-    usdFeed: "0xe86e3422Aa9B5e8ee9f3E41a63975bC387A8bce9",
-    feedName: "LINK / USD",
-    checkedAt: "2026-10-01",
-  },
   {
     address: "0xCEC185eB182c47d1bA1EFc84e6959e18cd620Be4",
     symbol: "cbBTC",
@@ -98,6 +88,44 @@ export const CRYPTO_ASSETS: readonly CryptoAssetConfig[] = [
     officialSource: "https://tokens.coingecko.com/robinhood/all.json",
     usdFeed: "0xb9fB4e65744E4178894f7C61CF80E8a48A5f224a",
     feedName: "USDE / USD",
+    checkedAt: "2026-10-01",
+  },
+];
+
+/** A yield-bearing USDG token: worth `rate` USDG, priced at rate × Chainlink USDG/USD. */
+export interface UsdgRateAssetConfig extends Omit<AssetConfig, "usdFeed"> {
+  rate: { kind: "CHAINLINK_FEED"; feedName: string } | { kind: "ERC4626" };
+}
+
+/**
+ * Yield-bearing USDG tokens with real Morpho / Spark markets on Robinhood Chain, verified 2026-10-01.
+ * - syrupUSDG (Maple): Morpho collateral (~$14.6M). The address is named by CoinGecko's and LI.FI's
+ *   token lists. Its rate to USDG is Chainlink's "syrupUSDG / USDG Exchange Rate" feed (1.013 on 2026-10-01).
+ * - spUSDG (Spark Savings): the vault in config/protocols.ts (~$14.1M). It is ERC-4626 with
+ *   asset() = USDG, so its rate is convertToAssets(1 share), read onchain at the valuation block.
+ * Look-alikes seen in Morpho markets ("USDe", "USDG", "WETH", "ETH" at other addresses) are NOT admitted.
+ */
+export const USDG_RATE_ASSETS: readonly UsdgRateAssetConfig[] = [
+  {
+    address: "0x40858070814a57FdF33a613ae84fE0a8b4a874f7",
+    symbol: "syrupUSDG",
+    name: "Maple syrupUSDG",
+    decimals: 6,
+    kind: "STABLECOIN",
+    verification: "VERIFIED_ONCHAIN",
+    officialSource: "https://tokens.coingecko.com/robinhood/all.json",
+    rate: { kind: "CHAINLINK_FEED", feedName: "syrupUSDG / USDG Exchange Rate" },
+    checkedAt: "2026-10-01",
+  },
+  {
+    address: "0xde770c84FE66E063336b31737cFE9790f18c4087",
+    symbol: "spUSDG",
+    name: "Spark Savings USDG",
+    decimals: 6,
+    kind: "STABLECOIN",
+    verification: "VERIFIED_ONCHAIN",
+    officialSource: "https://docs.spark.fi",
+    rate: { kind: "ERC4626" },
     checkedAt: "2026-10-01",
   },
 ];

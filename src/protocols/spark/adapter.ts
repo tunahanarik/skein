@@ -90,7 +90,7 @@ export class SparkSavingsAdapter implements OpportunityAdapter {
       return { data: [], status: "UNKNOWN", issues: [{ scope: "spUSDG", message: "asset() is not the canonical USDG (or decimals differ); not published", severity: "FATAL" }], warnings, timingsMs: { total: ms(t0) } };
     }
     const asset: AssetRef = { key: reg.key, chainId: ctx.chainId, address: reg.address!, symbol: reg.symbol, decimals: reg.decimals, canonical: true, registryType: reg.type };
-    const share: AssetRef = { key: `${ctx.chainId}:${SP_USDG.toLowerCase()}`, chainId: ctx.chainId, address: SP_USDG, symbol: "spUSDG", decimals: Number(dec), canonical: false, registryType: null };
+    const share: AssetRef = { key: `${ctx.chainId}:${SP_USDG.toLowerCase()}`, chainId: ctx.chainId, address: SP_USDG, symbol: "spUSDG", decimals: Number(dec), canonical: !!ctx.registry.get(ctx.chainId, SP_USDG)?.canonical, registryType: ctx.registry.get(ctx.chainId, SP_USDG)?.type ?? null };
     const { priceOf } = await priceCanonicalAssets(ctx, [asset.key]);
     const px = priceOf(asset.key).price;
     const amt = (raw: bigint): AmountWithUsd => {

@@ -11,7 +11,8 @@
 | Stock Token | Chainlink Stock Token feed (token price, multiplier included), if valid and FRESH/AGING | Robinhood `/rhj/prices` mid × uiMultiplier (applied once, here), if the quote is FRESH/AGING, not halted, and a multiplier is known | UNPRICED |
 | ETH, WETH | Chainlink ETH/USD | — | UNPRICED |
 | USDG | Chainlink USDG/USD | — (**no assumed $1**) | UNPRICED |
-| Crypto tokens (LINK, cbBTC, USDe) | their own Chainlink `<SYMBOL> / USD` feed, looked up by the exact name in `Asset.usdFeedName` (`CHAINLINK_USD_FEED`). Stablecoins use the USDG freshness rule, others the 24/7 ETH rule | — (no pool price, never another token's feed) | UNPRICED |
+| Crypto tokens (cbBTC, USDe) | their own Chainlink `<SYMBOL> / USD` feed, looked up by the exact name in `Asset.usdFeedName` (`CHAINLINK_USD_FEED`). Stablecoins use the USDG freshness rule, others the 24/7 ETH rule | — (no pool price, never another token's feed) | UNPRICED |
+| syrupUSDG, spUSDG | rate to USDG (Chainlink exchange-rate feed, or ERC-4626 `convertToAssets`) × Chainlink USDG/USD (`USDG_RATE`) | — (no assumed 1:1, no assumed peg) | UNPRICED |
 | UNKNOWN | — | — | UNPRICED |
 
 Feeds come from the official Chainlink directory (cached 1 h). Stock feeds are matched to tokens by the ticker in the feed name; tickers with two feeds are dropped as ambiguous. Robinhood quotes come from one bulk `/rhj/prices` call (cached 15 s) and are matched to tokens **by contract address in the quote's deployments**, not by symbol.

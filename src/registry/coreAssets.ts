@@ -1,4 +1,4 @@
-import { CORE_ASSETS, CRYPTO_ASSETS } from "../config/assets.js";
+import { CORE_ASSETS, CRYPTO_ASSETS, USDG_RATE_ASSETS } from "../config/assets.js";
 import { ROBINHOOD_CHAIN_ID } from "../config/chains.js";
 import { assetKey, type Asset } from "./asset.js";
 
@@ -72,6 +72,23 @@ export function coreAssets(): Asset[] {
         usdFeedName: c.feedName,
         priceMethods: ["CHAINLINK_USD_FEED"],
         provenance: [{ ...docs(c.officialSource, `token list + onchain check (${c.checkedAt})`), observedAt: `${c.checkedAt}T00:00:00.000Z` }],
+      }),
+    ),
+    // Yield-bearing USDG tokens, priced at their rate to USDG × USDG/USD.
+    ...USDG_RATE_ASSETS.map(
+      (c): Asset => ({
+        key: assetKey(ROBINHOOD_CHAIN_ID, c.address),
+        chainId: ROBINHOOD_CHAIN_ID,
+        address: c.address,
+        symbol: c.symbol,
+        name: c.name,
+        decimals: c.decimals,
+        type: "STABLECOIN",
+        canonical: true,
+        verificationStatus: c.verification,
+        usdgRate: c.rate,
+        priceMethods: ["USDG_RATE"],
+        provenance: [{ ...docs(c.officialSource, `onchain check (${c.checkedAt})`), observedAt: `${c.checkedAt}T00:00:00.000Z` }],
       }),
     ),
   ];
