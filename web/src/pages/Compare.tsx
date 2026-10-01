@@ -107,11 +107,11 @@ export function ComparePage() {
                 {views.map((v, i) =>
                   cell(v, (x) => {
                     const c = top(x, sub);
-                    if (!c) return <span className="faint">—</span>;
+                    if (!c) return <span className="faint">·</span>;
                     return (
                       <div>
                         <div className="num" style={{ fontWeight: 600 }}>
-                          {c.headline ? pctText(c.headline.display) : "—"} <span className="badge-inline">{code(t, "use", c.usability.status)}</span>
+                          {c.headline ? pctText(c.headline.display) : "·"} <span className="badge-inline">{code(t, "use", c.usability.status)}</span>
                         </div>
                         <div className="small muted">{actionLabel(t, c)}</div>
                       </div>
@@ -126,7 +126,7 @@ export function ComparePage() {
             </tr>
             <tr>
               <th scope="row">{t("coverage.protocols")}</th>
-              {views.map((v, i) => cell(v, (x) => <span className="small">{x.summary.protocols.join(", ") || "—"}</span>))}
+              {views.map((v, i) => cell(v, (x) => <span className="small">{x.summary.protocols.join(", ") || "·"}</span>))}
             </tr>
           </tbody>
         </table>

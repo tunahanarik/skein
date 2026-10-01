@@ -65,7 +65,7 @@ async function assetShell(path: string): Promise<string | null> {
   if (!a?.canonical) return null;
   return shellWithMeta(readFileSync(index, "utf8"), {
     title: `${a.symbol} · Skein`,
-    description: `What ${a.symbol} (${a.name.slice(0, 60)}) can do on Robinhood Chain: trade, earn, borrow and provide liquidity. Read-only; sources and ages for every number.`,
+    description: `What ${a.symbol} (${a.name.slice(0, 60)}) can do on Robinhood Chain: trade, earn, borrow and provide liquidity. Read only; sources and ages for every number.`,
   });
 }
 

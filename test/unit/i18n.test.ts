@@ -30,6 +30,16 @@ describe("i18n dictionaries", () => {
     });
   }
 
+  it("no hyphens or dashes in any UI text (house style); ticker symbols and placeholders excepted", () => {
+    const strip = (v: string) => v.replace(/\{[^}]*\}/g, "").replace(/https?:\/\/\S+/g, "");
+    for (const [code, dict] of Object.entries({ en, ...ALL })) {
+      for (const [k, v] of Object.entries(dict)) {
+        const s = strip(v);
+        expect([code, k, /[–—]/.test(s) || /(?<=[^\W\d_])-(?=[^\W\d_])/u.test(s)]).toEqual([code, k, false]);
+      }
+    }
+  });
+
   it("no promotional or safety claims in English and Turkish (negations allowed)", () => {
     const EN = /\bbest\b|safest|\bsafe\b|(?<!not[ _]|not a |no )guaranteed|risk[ -]?free|(?<!not a |not )recommended/i;
     const clean = (v: string) => v.replace(/“[^”]*”/g, "").replace(/signed or recommended/, "");

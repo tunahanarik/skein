@@ -78,7 +78,7 @@ export function OpportunityTable({ cards }: { cards: Card[] }) {
                       <div className="small muted">{contextLine(t, c)}</div>
                     </td>
                     <td className="num" style={{ textAlign: "right", fontWeight: 600 }}>
-                      {c.headline ? pctText(c.headline.display) : "—"}
+                      {c.headline ? pctText(c.headline.display) : "·"}
                     </td>
                     <td className="num" style={{ textAlign: "right" }}>
                       {usd(c.liquidity?.usd?.display, { compact: true })}

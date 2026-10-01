@@ -69,12 +69,12 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                   </td>
                   {quoted && (
                     <td className="num" style={{ textAlign: "right", fontWeight: 600 }}>
-                      {q ? `${amount(q.expectedOutput.display)} ${q.expectedOutput.asset.symbol}` : "—"}
+                      {q ? `${amount(q.expectedOutput.display)} ${q.expectedOutput.asset.symbol}` : "·"}
                     </td>
                   )}
                   {quoted && (
                     <td className="num" style={{ textAlign: "right" }}>
-                      {q?.priceImpact != null ? pctE18(q.priceImpact) : "—"}
+                      {q?.priceImpact != null ? pctE18(q.priceImpact) : "·"}
                     </td>
                   )}
                   <td className="num" style={{ textAlign: "right" }}>
@@ -85,7 +85,7 @@ export function RouteTable({ cards }: { cards: Card[] }) {
                   </td>
                   {hasVol && (
                     <td className="num" style={{ textAlign: "right" }}>
-                      {routeVol(c) !== null ? usd(String(routeVol(c)), { compact: true }) : "—"}
+                      {routeVol(c) !== null ? usd(String(routeVol(c)), { compact: true }) : "·"}
                     </td>
                   )}
                   <td>

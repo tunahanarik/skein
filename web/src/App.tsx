@@ -24,6 +24,10 @@ import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
 /** Language menu styled like the rest of the site (a native <select> list cannot be themed). */
+/** English names, shown under each native name so a language can be found by either. */
+const LANG_EN: Record<string, string> = { en: "English", tr: "Turkish", de: "German", fr: "French", it: "Italian", es: "Spanish", pt: "Portuguese", ru: "Russian", zh: "Chinese", ja: "Japanese", ko: "Korean", ar: "Arabic", hi: "Hindi" };
+
+/** Language menu: a two-column grid of code badges with native and English names; arrows move, Enter picks. */
 function LanguagePicker() {
   const { lang, setLang, t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -42,38 +46,53 @@ function LanguagePicker() {
       document.removeEventListener("keydown", key);
     };
   }, [open]);
+  // Two columns: left/right move by one, up/down by a row.
   const move = (e: ReactKeyboardEvent) => {
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 2, ArrowUp: -2 }[e.key];
+    if (!step) return;
     e.preventDefault();
     const items = [...(listRef.current?.querySelectorAll<HTMLButtonElement>("button") ?? [])];
     const i = items.indexOf(document.activeElement as HTMLButtonElement);
-    items[(i + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length]?.focus();
+    items[Math.min(items.length - 1, Math.max(0, i + step))]?.focus();
   };
   return (
     <div className="lang-menu" ref={ref}>
       <button className="lang" aria-haspopup="listbox" aria-expanded={open} aria-label={t("shell.language")} onClick={() => setOpen(!open)}>
         <Icon name="globe" size={16} />
-        <span className="cur">{current.label}</span>
+        <span className="cur">{current.code.toUpperCase()}</span>
         <Icon name="chevron" size={14} className="chev" />
       </button>
       {open && (
-        <div className="lang-pop" role="listbox" aria-label={t("shell.language")} ref={listRef} onKeyDown={move}>
-          {LANGS.map((l) => (
-            <button
-              key={l.code}
-              role="option"
-              aria-selected={l.code === lang}
-              lang={l.code}
-              dir={l.rtl ? "rtl" : undefined}
-              onClick={() => {
-                setLang(l.code as Lang);
-                setOpen(false);
-              }}
-            >
-              <span>{l.label}</span>
-              {l.code === lang && <Icon name="check" size={15} />}
-            </button>
-          ))}
+        <div className="lang-pop lp2" role="dialog" aria-label={t("shell.language")}>
+          <div className="lp-head">
+            <Icon name="globe" size={14} />
+            <span>{t("shell.language")}</span>
+            <span className="spacer" />
+            <span className="lp-n">{LANGS.length}</span>
+          </div>
+          <div className="lp-grid" role="listbox" aria-label={t("shell.language")} ref={listRef} onKeyDown={move}>
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                role="option"
+                aria-selected={l.code === lang}
+                className={l.code === lang ? "on" : undefined}
+                onClick={() => {
+                  setLang(l.code as Lang);
+                  setOpen(false);
+                }}
+              >
+                <span className="lp-code">{l.code.toUpperCase()}</span>
+                <span className="lp-names">
+                  <span className="lp-native" lang={l.code} dir={l.rtl ? "rtl" : undefined}>
+                    {l.label}
+                  </span>
+                  <span className="lp-en">{LANG_EN[l.code]}</span>
+                </span>
+                {l.code === lang && <Icon name="check" size={14} />}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -196,6 +215,9 @@ function Header() {
             <Icon name="terminal" size={14} /> {t("nav.terminal")}
           </a>
         )}
+        <span className="hq-pro" aria-disabled="true" title={t("nav.proSoon")}>
+          <Icon name="spark" size={14} /> PRO <span className="soon-tag">{t("nav.soon")}</span>
+        </span>
       </div>
       <span className="spacer" />
       <ChainPulse />

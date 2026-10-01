@@ -245,16 +245,16 @@ export function AggregatorSwap({ from, to, amountRaw }: { from: Tok; to: Tok; am
           ) : loading ? (
             <span className="route-wait">{t("swap.routeSearching")}</span>
           ) : (
-            "—"
+            "·"
           )}
         </span>
         <span className="muted">{t("bridge.receive")}</span>
-        <strong className="num">{q ? `≈ ${amount(formatUnits(q.toAmount, to.decimals), 6)} ${to.symbol}` : "—"}</strong>
+        <strong className="num">{q ? `≈ ${amount(formatUnits(q.toAmount, to.decimals), 6)} ${to.symbol}` : "·"}</strong>
         <span className="muted">{t("swap.minReceived")}</span>
-        <span className="num">{q ? `${amount(formatUnits(q.toAmountMin, to.decimals), 6)} ${to.symbol}` : "—"}</span>
+        <span className="num">{q ? `${amount(formatUnits(q.toAmountMin, to.decimals), 6)} ${to.symbol}` : "·"}</span>
         <span className="muted">{t("agg.vsOracle")}</span>
         <span className={`num ${loss === null ? "" : loss <= GOOD ? "up" : loss <= MAX ? "warnc" : "down"}`}>
-          {loss === null ? "—" : `${loss > 0 ? "−" : "+"}${pct(Math.abs(loss) * 100, 2)}`} {loss !== null && <span className="muted small">({t(loss <= GOOD ? "agg.good" : loss <= MAX ? "agg.ok" : "agg.expensive")})</span>}
+          {loss === null ? "·" : `${loss > 0 ? "−" : "+"}${pct(Math.abs(loss) * 100, 2)}`} {loss !== null && <span className="muted small">({t(loss <= GOOD ? "agg.good" : loss <= MAX ? "agg.ok" : "agg.expensive")})</span>}
         </span>
         {q && q.feesUsd !== null && (
           <>
@@ -312,7 +312,7 @@ export function AggregatorPanel({ asset }: { asset: Tok }) {
         <h3>{t("agg.title")}</h3>
         {row && row.cls !== "NO_ROUTE" && (
           <span className={`src-badge ${row.cls === "GOOD" ? "ok" : row.cls === "OK" ? "warn" : "bad"}`}>
-            {t("agg.scan", { s: row.toolName ?? "—", x: row.loss !== null ? pct(row.loss * 100, 2) : "—" })}
+            {t("agg.scan", { s: row.toolName ?? "·", x: row.loss !== null ? pct(row.loss * 100, 2) : "·" })}
           </span>
         )}
         {row?.cls === "NO_ROUTE" && <span className="src-badge bad">{t("agg.noRouteScan")}</span>}

@@ -132,7 +132,7 @@ export function SwapBody({ card }: { card: Card }) {
           <span className="muted">{t("swap.expected")}</span>
           <strong className="num">{state ? fmtOut(state.out) : loading ? "…" : `${amount(q.expectedOutput.display)} ${outA.symbol}`}</strong>
           <span className="muted">{t("route.impact")}</span>
-          <span className="num">{q.priceImpact != null ? pctE18(q.priceImpact) : "—"}</span>
+          <span className="num">{q.priceImpact != null ? pctE18(q.priceImpact) : "·"}</span>
           <span className="muted">{t("swap.minReceived")}</span>
           <span className="num">{fmtOut(min)}</span>
         </div>

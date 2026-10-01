@@ -73,7 +73,7 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
         )}
         {q && (
           <div>
-            <div className="v num">{q.priceImpact === null ? "—" : pctE18(q.priceImpact)}</div>
+            <div className="v num">{q.priceImpact === null ? "·" : pctE18(q.priceImpact)}</div>
             <div className="l">{t("card.impact", { c: code(t, "impact", q.priceImpactClass) })}</div>
           </div>
         )}

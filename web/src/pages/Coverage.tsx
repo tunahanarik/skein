@@ -105,7 +105,7 @@ export function CoveragePage() {
                 <td className="num" style={{ textAlign: "right" }}>
                   {r.actionable} / {r.limited}
                 </td>
-                <td className="small muted">{r.protocols.join(", ") || "—"}</td>
+                <td className="small muted">{r.protocols.join(", ") || "·"}</td>
               </tr>
             ))}
           </tbody>

@@ -62,7 +62,7 @@ function Spark({ address, up }: { address: string; up: boolean | null }) {
 }
 
 function Change({ v }: { v: number | null }) {
-  if (v === null) return <span className="num faint">—</span>;
+  if (v === null) return <span className="num faint">·</span>;
   return <span className={`num ${v >= 0 ? "up" : "down"}`}>{`${v >= 0 ? "+" : ""}${pct(v, 2)}`}</span>;
 }
 
@@ -264,7 +264,7 @@ function Table({ rows, sort, setSort }: { rows: Market[]; sort: { k: SortKey; de
                     </span>
                   </a>
                 </td>
-                <td className="r num">{r.usd !== null ? usd(String(r.usd)) : "—"}</td>
+                <td className="r num">{r.usd !== null ? usd(String(r.usd)) : "·"}</td>
                 <td className="r">
                   <Change v={r.changePct} />
                 </td>
@@ -278,10 +278,10 @@ function Table({ rows, sort, setSort }: { rows: Market[]; sort: { k: SortKey; de
                       <span className="faint small">{r.bestApyProtocol}</span>
                     </span>
                   ) : (
-                    <span className="faint">—</span>
+                    <span className="faint">·</span>
                   )}
                 </td>
-                <td className="r num hide-s">{r.liquidityUsd !== null ? compactUsd(r.liquidityUsd) : "—"}</td>
+                <td className="r num hide-s">{r.liquidityUsd !== null ? compactUsd(r.liquidityUsd) : "·"}</td>
                 <td className="hide-m">
                   <CapTags r={r} />
                 </td>
@@ -325,9 +325,9 @@ function HeatMap({ rows }: { rows: Market[] }) {
           const a = Math.min(1, Math.abs(c) / 4);
           const bg = r.changePct === null ? "var(--surface-2)" : `color-mix(in srgb, ${c >= 0 ? "#7fae1f" : "#c2453a"} ${Math.round(18 + a * 62)}%, var(--surface))`;
           return (
-            <a key={r.key} className={`tile t-${size}`} style={{ background: bg }} {...linkProps(hrefOf(r))} title={`${shortName(r.name)} · ${r.liquidityUsd !== null ? compactUsd(r.liquidityUsd) : "—"}`}>
+            <a key={r.key} className={`tile t-${size}`} style={{ background: bg }} {...linkProps(hrefOf(r))} title={`${shortName(r.name)} · ${r.liquidityUsd !== null ? compactUsd(r.liquidityUsd) : "·"}`}>
               <span className="s">{r.symbol}</span>
-              <span className="num c">{r.changePct === null ? "—" : `${c >= 0 ? "+" : ""}${pct(c, 1)}`}</span>
+              <span className="num c">{r.changePct === null ? "·" : `${c >= 0 ? "+" : ""}${pct(c, 1)}`}</span>
             </a>
           );
         })}
@@ -356,7 +356,7 @@ function Cards({ rows }: { rows: Market[] }) {
             <span className="spacer" />
             <Change v={r.changePct} />
           </span>
-          <span className="px num">{r.usd !== null ? usd(String(r.usd)) : "—"}</span>
+          <span className="px num">{r.usd !== null ? usd(String(r.usd)) : "·"}</span>
           <span className="bot">
             <CapTags r={r} />
             {r.bestApy !== null && <span className="num up small">{pct(r.bestApy, 1)}</span>}

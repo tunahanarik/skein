@@ -33,7 +33,7 @@ export function intentValue(t: ReturnType<typeof useI18n>["t"], i: Intent, agg?:
   const aggOk = agg && (agg.cls === "GOOD" || agg.cls === "OK");
   if (i.key === "TRADE" && !i.count && aggOk) return { v: t("intent.aggV"), foot: t("intent.foot.agg", { s: agg!.toolName ?? "LI.FI" }) };
   if (i.key === "TRADE") return { v: String(i.count), foot: i.count ? (aggOk ? t("intent.foot.assetsAgg") : t("intent.foot.assets")) : t("intent.foot.none") };
-  if (!i.usable.length) return { v: "—", foot: t("intent.foot.none") };
+  if (!i.usable.length) return { v: "·", foot: t("intent.foot.none") };
   if (i.key === "BORROW") return { v: i.best !== null ? pct(i.best, 0) : String(i.count), foot: `${t("intent.foot.ltv")} · ${who}` };
   return { v: i.best !== null ? pct(i.best, 1) : String(i.count), foot: i.count > 1 ? t("intent.foot.options", { n: i.count, p: who }) : who };
 }
@@ -82,7 +82,7 @@ function subline(protocol: string, ctx: string): string {
 
 /** The headline number of an opportunity and its unit (APY, fixed APY or max LTV). */
 export function oppValue(t: ReturnType<typeof useI18n>["t"], intent: IntentKey, card: Card): { val: string; unit: string } {
-  const val = intent === "BORROW" ? (card.lltv ? pctE18(card.lltv, 0) : "—") : card.headline ? pctE18(card.headline.value, 1) : "—";
+  const val = intent === "BORROW" ? (card.lltv ? pctE18(card.lltv, 0) : "·") : card.headline ? pctE18(card.headline.value, 1) : "·";
   const unit = intent === "BORROW" ? t("intent.unit.ltv") : card.headline?.basis === "FIXED" || intent === "FIXED" ? t("intent.unit.fixed") : t("intent.unit.apy");
   return { val, unit };
 }

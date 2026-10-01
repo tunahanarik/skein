@@ -117,7 +117,7 @@ function TokenModal({ title, side, chains, chainId, canonical, onPick, onClose }
           <input className="input" autoFocus placeholder={t("bridge.searchToken")} aria-label={t("bridge.searchToken")} value={q} onChange={(e) => setQ(e.target.value)} />
           <div className="tm-list" role="listbox" aria-label={t("bridge.select")}>
             {!list && <div className="muted small" style={{ padding: 10 }}>{t("misc.loading")}</div>}
-            {list && !shown.length && <div className="muted small" style={{ padding: 10 }}>—</div>}
+            {list && !shown.length && <div className="muted small" style={{ padding: 10 }}>·</div>}
             {shown.map((x) => (
               <button key={x.address} role="option" aria-selected={false} className="tm-tok" onClick={() => onPick(cid, x)}>
                 <TokenIcon token={x} size={30} />
@@ -502,7 +502,7 @@ export function BridgeForm() {
         <details className="bx-quote">
           <summary>
             <span>
-              {t("bridge.via")} <strong>{q.toolName}</strong> · {q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "—"} · {t("bridge.feeShort", { x: usd((q.feesUsd + q.gasUsd).toFixed(2)) })}
+              {t("bridge.via")} <strong>{q.toolName}</strong> · {q.durationS !== null ? t("bridge.seconds", { n: Math.max(1, Math.round(q.durationS)) }) : "·"} · {t("bridge.feeShort", { x: usd((q.feesUsd + q.gasUsd).toFixed(2)) })}
             </span>
           </summary>
           <div className="kv">

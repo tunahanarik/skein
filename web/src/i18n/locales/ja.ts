@@ -268,7 +268,7 @@ export const ja: Record<StringKey, string> = {
 
   // rate history
   "rates.title": "このサーバーが {since} 以降に記録したレート履歴（{n} ポイント）",
-  "rates.range": "範囲 {lo} – {hi}",
+  "rates.range": "範囲 {lo}…{hi}",
   "rates.note": "サーバー稼働中に {m} 分ごとにサンプリング",
   "rates.aria": "{lo} から {hi} までのレート履歴",
   "rates.none": "レート履歴はまだ記録されていません。",
@@ -378,7 +378,7 @@ export const ja: Record<StringKey, string> = {
 
   // about
   "about.title": "仕組み",
-  "about.p1": "Skein は一つの問いに答えます：Robinhood Chain でこの資産を持っている — 実際に何ができるのか？ チェーンと各プロトコルの公開 API から直接読み取り、内容を検証し、出典と鮮度とともに結果を表示します。Uniswap v3 のスワップはアプリから行え、ご自身のウォレットで署名します。",
+  "about.p1": "Skein は一つの問いに答えます：Robinhood Chain でこの資産を持っている, 実際に何ができるのか？ チェーンと各プロトコルの公開 API から直接読み取り、内容を検証し、出典と鮮度とともに結果を表示します。Uniswap v3 のスワップはアプリから行え、ご自身のウォレットで署名します。",
   "about.h1": "あなたのウォレット、あなたの承認",
   "about.l1": "サーバーはウォレットを持たず、何も署名できません。スワップ取引はブラウザ内で作成されてウォレットに渡され、ウォレットが一件ずつ表示して承認または拒否を求めます。",
   "about.l2": "作成できる取引は二種類だけです：Uniswap の SwapRouter02 への正確な金額の承認と、結果がご自身のアドレスに送られる Uniswap v3 スワップ（最低受取額はスリッページ許容値で設定）。メッセージ署名なし、permit なし、無制限の承認なし。",
@@ -422,7 +422,7 @@ export const ja: Record<StringKey, string> = {
   "modal.close": "閉じる",
   "picker.title": "ウォレットを接続",
   "picker.detected": "このブラウザで見つかったウォレット",
-  "picker.none": "このブラウザにウォレット拡張機能が見つかりません。Robinhood Chain に対応したものをインストールしてから、このページを再読み込みしてください：",
+  "picker.none": "このブラウザにウォレット拡張機能が見つかりません。Robinhood Chain に対応したものをインストールしてから、このページを再読み込みしてください。",
   "picker.mobile": "Robinhood Wallet（モバイル）は内蔵ブラウザでこのサイトを開けます。QR コードによるスマートフォンのウォレット接続（WalletConnect）はまだ利用できません。",
   "swap.button": "スワップ",
   "swap.title": "スワップ {a} → {b}",
@@ -443,7 +443,7 @@ export const ja: Record<StringKey, string> = {
   "swap.confirmWallet": "ウォレットで確認してください…",
   "swap.approve": "1. このスワップのために {s} を許可",
   "swap.approving": "承認を待っています…",
-  "swap.approveNote": "Uniswap の SwapRouter02 にこの金額だけを承認します — 無制限の承認はしません。",
+  "swap.approveNote": "Uniswap の SwapRouter02 にこの金額だけを承認します, 無制限の承認はしません。",
   "swap.swapStep": "2. スワップ",
   "swap.swap": "スワップ",
   "swap.swapping": "スワップを待っています…",
@@ -734,4 +734,9 @@ export const ja: Record<StringKey, string> = {
   "picker.close": "閉じる",
   "shell.pulse": "ネットワーク状況",
   "home.c.openAsset": "資産ページを開く",
+  "picker.found": "検出",
+  "picker.official": "公式",
+  "picker.rhText": "Robinhood 公式の iPhone / Android ウォレット。Robinhood Chain に標準対応。アプリ内ブラウザで Skein を開いて接続します。",
+  "picker.others": "Robinhood Chain で使えるその他のウォレット",
+  "nav.proSoon": "Skein Pro は近日公開",
 };

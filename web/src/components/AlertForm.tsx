@@ -67,7 +67,7 @@ export function AlertList() {
                   </a>
                 </td>
                 <td>{a.label}</td>
-                <td className="num muted">{a.lastValue !== undefined ? (a.kind === "PRICE" ? usd(String(a.lastValue)) : pct(a.lastValue)) : "—"}</td>
+                <td className="num muted">{a.lastValue !== undefined ? (a.kind === "PRICE" ? usd(String(a.lastValue)) : pct(a.lastValue)) : "·"}</td>
                 <td>{a.triggeredAt ? <span className="badge LIMITED">{t("alert.triggered")}</span> : <span className="badge ACTIONABLE">{t("alert.armed")}</span>}</td>
                 <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                   {a.triggeredAt && (

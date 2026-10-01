@@ -122,8 +122,8 @@ export function AssetPage({ assetRef }: { assetRef: string }) {
         <p className="faint small" style={{ marginTop: 30 }}>
           {t("asset.footer", {
             b: v.blockNumber,
-            from: v.freshness.oldestCriticalDataAt ? ago(t, v.freshness.oldestCriticalDataAt) : "—",
-            to: v.freshness.newestDataAt ? ago(t, v.freshness.newestDataAt) : "—",
+            from: v.freshness.oldestCriticalDataAt ? ago(t, v.freshness.oldestCriticalDataAt) : "·",
+            to: v.freshness.newestDataAt ? ago(t, v.freshness.newestDataAt) : "·",
             d: n.discovered,
             v: n.verified,
             a: n.actionable,

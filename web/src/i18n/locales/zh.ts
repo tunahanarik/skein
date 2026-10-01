@@ -38,7 +38,7 @@ export const zh: Record<StringKey, string> = {
 
   // home
   "home.title": "您的 Robinhood Chain 资产可以做什么？",
-  "home.lead": "选择一个 Stock Token、USDG 或 ETH，查看它可以在哪里兑换、出借、用作抵押品或存入资金池——每个数字都附有来源、时效和限制。",
+  "home.lead": "选择一个 Stock Token、USDG 或 ETH，查看它可以在哪里兑换、出借、用作抵押品或存入资金池, 每个数字都附有来源、时效和限制。",
   "home.lookup": "查找资产",
   "home.lookupHint": "仅限经过验证的 Robinhood Chain 资产。仿冒代币绝不会按名称匹配。",
   "home.across": "全部 {n} 种已验证资产",
@@ -268,7 +268,7 @@ export const zh: Record<StringKey, string> = {
 
   // rate history
   "rates.title": "本服务器自 {since} 起记录的利率历史（{n} 个数据点）",
-  "rates.range": "范围 {lo} – {hi}",
+  "rates.range": "范围 {lo}…{hi}",
   "rates.note": "服务器运行期间每 {m} 分钟采样一次",
   "rates.aria": "从 {lo} 到 {hi} 的利率历史",
   "rates.none": "尚未记录利率历史。",
@@ -378,7 +378,7 @@ export const zh: Record<StringKey, string> = {
 
   // about
   "about.title": "运作方式",
-  "about.p1": "Skein 回答一个问题：我在 Robinhood Chain 上持有这个资产——我实际能用它做什么？它直接从链上和协议的公开 API 读取数据，核对所读内容，并显示结果及其来源和时效。可以在应用内进行 Uniswap v3 兑换，并在您自己的钱包中签名。",
+  "about.p1": "Skein 回答一个问题：我在 Robinhood Chain 上持有这个资产, 我实际能用它做什么？它直接从链上和协议的公开 API 读取数据，核对所读内容，并显示结果及其来源和时效。可以在应用内进行 Uniswap v3 兑换，并在您自己的钱包中签名。",
   "about.h1": "您的钱包，由您批准",
   "about.l1": "服务器没有钱包，无法签署任何内容。兑换交易在您的浏览器中构建并交给您的钱包，钱包会逐笔显示，由您批准或拒绝。",
   "about.l2": "只能构建两类交易：向 Uniswap 的 SwapRouter02 授权确切金额，以及输出发送到您自己地址的 Uniswap v3 兑换，其最低数量由您设置的滑点容差决定。不签署消息，不使用 permit，不做无限授权。",
@@ -386,7 +386,7 @@ export const zh: Record<StringKey, string> = {
   "about.h2": "展示哪些内容",
   "about.p2": "每个机会都会获得五种状态之一。状态与数据的验证程度分开记录：",
   "about.s1": "通过我们执行的全部检查。",
-  "about.s2": "可以使用，但有明确说明的限制。例如：流动性低于 $10,000、您输入金额的价格影响为 1–15%，或数据已过时。",
+  "about.s2": "可以使用，但有明确说明的限制。例如：流动性低于 $10,000、您输入金额的价格影响为 1…15%，或数据已过时。",
   "about.s3": "为提供背景而展示，但目前无法实现其用途。例如：已无可借额度的借款市场。",
   "about.s4": "存在证据问题。例如：预言机数据冲突、仿冒代币、流动性低于 $50、价格影响 15% 以上，或含义尚未明确的收益数字。",
   "about.s5": "已到期、已暂停或已停止存入。",
@@ -422,7 +422,7 @@ export const zh: Record<StringKey, string> = {
   "modal.close": "关闭",
   "picker.title": "连接钱包",
   "picker.detected": "在此浏览器中找到的钱包",
-  "picker.none": "此浏览器中未找到钱包扩展。请安装一个支持 Robinhood Chain 的钱包，然后刷新此页面：",
+  "picker.none": "此浏览器中未找到钱包扩展。请安装一个支持 Robinhood Chain 的钱包，然后刷新此页面。",
   "picker.mobile": "Robinhood Wallet（手机版）可以在其内置浏览器中打开本网站。通过二维码连接手机钱包（WalletConnect）暂不可用。",
   "swap.button": "兑换",
   "swap.title": "兑换 {a} → {b}",
@@ -443,7 +443,7 @@ export const zh: Record<StringKey, string> = {
   "swap.confirmWallet": "请在钱包中确认…",
   "swap.approve": "1. 为此次兑换授权 {s}",
   "swap.approving": "等待授权…",
-  "swap.approveNote": "仅向 Uniswap 的 SwapRouter02 授权此确切金额——不做无限授权。",
+  "swap.approveNote": "仅向 Uniswap 的 SwapRouter02 授权此确切金额, 不做无限授权。",
   "swap.swapStep": "2. 兑换",
   "swap.swap": "兑换",
   "swap.swapping": "等待兑换…",
@@ -492,7 +492,7 @@ export const zh: Record<StringKey, string> = {
   "bridge.done": "跨链完成。",
   "bridge.failed": "跨链桥报告失败：{s}",
   "bridge.track": "在 LI.FI 上跟踪 ↗",
-  "bridge.note1": "报价来自 LI.FI，并在您签名前重新核对：网络、代币、金额和接收地址必须与您的请求一致，交易必须发送到 LI.FI 在该网络上的合约——该地址已固定在本应用中，并与 LI.FI 公布的部署记录核对过。",
+  "bridge.note1": "报价来自 LI.FI，并在您签名前重新核对：网络、代币、金额和接收地址必须与您的请求一致，交易必须发送到 LI.FI 在该网络上的合约, 该地址已固定在本应用中，并与 LI.FI 公布的部署记录核对过。",
   "bridge.note2": "授权仅限确切金额。跨链使用第三方合约和流动性，可能出现延迟或失败。此处内容均不构成财务建议。",
   "bridge.canonical": "Robinhood Chain 自己的官方跨链桥（提款较慢，无第三方）在链文档中有说明：",
   "nav.opps": "探索",
@@ -693,7 +693,7 @@ export const zh: Record<StringKey, string> = {
   "home.cmd.try": "试试：",
   "home.w.step": "探索钱包",
   "home.w.title": "看看任何钱包可以做什么",
-  "home.w.lead": "粘贴一个 Robinhood Chain 地址——你自己的或你关注的。Skein 会找出其中每项资产，并为每项资产显示可以赚取收益、借贷或提供流动性的地方。",
+  "home.w.lead": "粘贴一个 Robinhood Chain 地址, 你自己的或你关注的。Skein 会找出其中每项资产，并为每项资产显示可以赚取收益、借贷或提供流动性的地方。",
   "home.w.b1t": "闲置资产",
   "home.w.b1d": "没有产生收益的代币，以及每个代币的最高选项。",
   "home.w.b2t": "持仓",
@@ -734,4 +734,9 @@ export const zh: Record<StringKey, string> = {
   "picker.close": "关闭",
   "shell.pulse": "网络状态",
   "home.c.openAsset": "打开资产页面",
+  "picker.found": "已检测到",
+  "picker.official": "官方",
+  "picker.rhText": "Robinhood 官方 iPhone 与 Android 钱包，内置 Robinhood Chain 支持。在其应用内浏览器中打开 Skein 即可连接。",
+  "picker.others": "其他支持 Robinhood Chain 的钱包",
+  "nav.proSoon": "Skein Pro 即将推出",
 };

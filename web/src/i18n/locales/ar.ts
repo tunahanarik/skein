@@ -39,7 +39,7 @@ export const ar: Record<StringKey, string> = {
 
   // home
   "home.title": "ماذا يمكن أن تفعل أصولك على Robinhood Chain؟",
-  "home.lead": "اختر Stock Token أو USDG أو ETH واطّلع على أماكن تداوله أو إقراضه أو استخدامه كضمان أو إيداعه في مجمّع — مع مصدر كل رقم وعمره وحدوده.",
+  "home.lead": "اختر Stock Token أو USDG أو ETH واطّلع على أماكن تداوله أو إقراضه أو استخدامه كضمان أو إيداعه في مجمّع, مع مصدر كل رقم وعمره وحدوده.",
   "home.lookup": "البحث عن أصل",
   "home.lookupHint": "أصول Robinhood Chain الموثّقة فقط. لا تُطابَق الرموز المقلِّدة بالاسم أبدًا.",
   "home.across": "عبر جميع الأصول الموثّقة البالغة {n}",
@@ -269,7 +269,7 @@ export const ar: Record<StringKey, string> = {
 
   // rate history
   "rates.title": "سجل المعدلات الذي سجّله هذا الخادم منذ {since} ({n} نقطة)",
-  "rates.range": "النطاق {lo} – {hi}",
+  "rates.range": "النطاق {lo}…{hi}",
   "rates.note": "يُسجَّل كل {m} دقيقة أثناء تشغيل الخادم",
   "rates.aria": "سجل المعدلات من {lo} إلى {hi}",
   "rates.none": "لم يُسجَّل سجل للمعدلات بعد.",
@@ -379,7 +379,7 @@ export const ar: Record<StringKey, string> = {
 
   // about
   "about.title": "كيف يعمل",
-  "about.p1": "يجيب Skein عن سؤال واحد: أمتلك هذا الأصل على Robinhood Chain — فماذا يمكنني أن أفعل به فعلًا؟ يقرأ البروتوكولات مباشرة من السلسلة ومن واجهاتها البرمجية العامة، ويتحقق مما يقرأ، ويعرض النتيجة مع مصدرها وعمرها. يمكن إجراء مبادلات Uniswap v3 من التطبيق مع التوقيع في محفظتك الخاصة.",
+  "about.p1": "يجيب Skein عن سؤال واحد: أمتلك هذا الأصل على Robinhood Chain, فماذا يمكنني أن أفعل به فعلًا؟ يقرأ البروتوكولات مباشرة من السلسلة ومن واجهاتها البرمجية العامة، ويتحقق مما يقرأ، ويعرض النتيجة مع مصدرها وعمرها. يمكن إجراء مبادلات Uniswap v3 من التطبيق مع التوقيع في محفظتك الخاصة.",
   "about.h1": "محفظتك، وموافقتك",
   "about.l1": "لا يملك الخادم محفظة ولا يستطيع توقيع أي شيء. تُنشأ معاملات المبادلة في متصفحك وتُسلَّم إلى محفظتك، التي تعرض كل معاملة لتوافق عليها أو ترفضها.",
   "about.l2": "لا يمكن إنشاء سوى نوعين من المعاملات: موافقة على المبلغ المحدد بالضبط لـ SwapRouter02 من Uniswap، ومبادلة Uniswap v3 تذهب نتيجتها إلى عنوانك مع حد أدنى تحدده عبر هامش الانزلاق. لا توقيع رسائل، ولا permit، ولا موافقات غير محدودة.",
@@ -423,7 +423,7 @@ export const ar: Record<StringKey, string> = {
   "modal.close": "إغلاق",
   "picker.title": "ربط محفظة",
   "picker.detected": "المحافظ الموجودة في هذا المتصفح",
-  "picker.none": "لم يُعثر على إضافة محفظة في هذا المتصفح. ثبّت محفظة تدعم Robinhood Chain ثم أعد تحميل هذه الصفحة:",
+  "picker.none": "لم يُعثر على إضافة محفظة في هذا المتصفح. ثبّت محفظة تدعم Robinhood Chain ثم أعد تحميل هذه الصفحة.",
   "picker.mobile": "يمكن لـ Robinhood Wallet (على الهاتف) فتح هذا الموقع في متصفحه المدمج. ربط محفظة الهاتف عبر رمز QR (WalletConnect) غير متاح بعد.",
   "swap.button": "مبادلة",
   "swap.title": "مبادلة {a} → {b}",
@@ -444,7 +444,7 @@ export const ar: Record<StringKey, string> = {
   "swap.confirmWallet": "أكّد في محفظتك…",
   "swap.approve": "1. السماح بـ {s} لهذه المبادلة",
   "swap.approving": "بانتظار الموافقة…",
-  "swap.approveNote": "يوافق على هذا المبلغ بالضبط لـ SwapRouter02 من Uniswap — دون موافقة غير محدودة.",
+  "swap.approveNote": "يوافق على هذا المبلغ بالضبط لـ SwapRouter02 من Uniswap, دون موافقة غير محدودة.",
   "swap.swapStep": "2. مبادلة",
   "swap.swap": "مبادلة",
   "swap.swapping": "بانتظار المبادلة…",
@@ -694,7 +694,7 @@ export const ar: Record<StringKey, string> = {
   "home.cmd.try": "جرّب:",
   "home.w.step": "استكشف محفظة",
   "home.w.title": "اعرف ما يمكن لأي محفظة أن تفعله",
-  "home.w.lead": "الصق عنوانًا على Robinhood Chain — عنوانك أو عنوانًا تتابعه. يجد Skein كل أصل فيه ويعرض لكل أصل أين يمكنه تحقيق عائد أو الاقتراض أو توفير السيولة.",
+  "home.w.lead": "الصق عنوانًا على Robinhood Chain, عنوانك أو عنوانًا تتابعه. يجد Skein كل أصل فيه ويعرض لكل أصل أين يمكنه تحقيق عائد أو الاقتراض أو توفير السيولة.",
   "home.w.b1t": "أصول خاملة",
   "home.w.b1d": "رموز لا تحقق أي عائد، وأعلى الخيارات لكل منها.",
   "home.w.b2t": "مراكز مفتوحة",
@@ -735,4 +735,9 @@ export const ar: Record<StringKey, string> = {
   "picker.close": "إغلاق",
   "shell.pulse": "حالة الشبكة",
   "home.c.openAsset": "فتح صفحة الأصل",
+  "picker.found": "تم العثور",
+  "picker.official": "رسمية",
+  "picker.rhText": "محفظة Robinhood لهواتف iPhone وAndroid مع دعم مدمج لـ Robinhood Chain. افتح Skein في متصفح التطبيق للاتصال.",
+  "picker.others": "محافظ أخرى تعمل مع Robinhood Chain",
+  "nav.proSoon": "Skein Pro قادم قريبًا",
 };

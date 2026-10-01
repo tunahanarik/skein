@@ -141,7 +141,7 @@ export function PriceChart({ assetRef }: { assetRef: string }) {
             width={width}
             height={H}
             role="img"
-            aria-label={t("chart.aria", { r: t(`chart.period.${range}`), c: change !== null ? pct(change, 2) : "—" })}
+            aria-label={t("chart.aria", { r: t(`chart.period.${range}`), c: change !== null ? pct(change, 2) : "·" })}
             onPointerMove={(e) => onMove(e.clientX, e.currentTarget)}
             onPointerDown={(e) => onMove(e.clientX, e.currentTarget)}
             onPointerLeave={() => setHover(null)}

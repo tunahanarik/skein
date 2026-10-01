@@ -50,6 +50,31 @@ const isAddr = (a: unknown): a is `0x${string}` => typeof a === "string" && /^0x
 const safeText = (s: unknown, max: number) => (typeof s === "string" ? s.replace(/[\u0000-\u001f‪-‮⁦-⁩]/g, "").slice(0, max) : "");
 const safeIcon = (s: unknown) => (typeof s === "string" && /^data:image\/(png|jpeg|webp|svg\+xml|gif)[;,]/i.test(s) && s.length < 200_000 ? s : null);
 
+/**
+ * Wallets known to work with Robinhood Chain (any EVM browser wallet does; Robinhood Wallet is the
+ * official mobile one). A detected wallet gets its official name and a bundled icon (official
+ * app-store or site artwork in /wallets), so no remote or announced image is needed.
+ */
+export const KNOWN_WALLETS: { id: string; name: string; icon: string; rdns: string[]; match: RegExp; url: string }[] = [
+  { id: "metamask", name: "MetaMask", icon: "/wallets/metamask.png", rdns: ["io.metamask", "io.metamask.flask"], match: /^metamask/i, url: "https://metamask.io/download" },
+  { id: "rabby", name: "Rabby Wallet", icon: "/wallets/rabby.png", rdns: ["io.rabby"], match: /^rabby/i, url: "https://rabby.io/" },
+  { id: "coinbase", name: "Coinbase Wallet", icon: "/wallets/coinbase.png", rdns: ["com.coinbase.wallet"], match: /^coinbase/i, url: "https://wallet.coinbase.com/" },
+  { id: "phantom", name: "Phantom", icon: "/wallets/phantom.png", rdns: ["app.phantom"], match: /^phantom/i, url: "https://phantom.com/download" },
+  { id: "okx", name: "OKX Wallet", icon: "/wallets/okx.png", rdns: ["com.okex.wallet"], match: /^okx/i, url: "https://web3.okx.com/download" },
+  { id: "rainbow", name: "Rainbow", icon: "/wallets/rainbow.png", rdns: ["me.rainbow"], match: /^rainbow/i, url: "https://rainbow.me/download" },
+  { id: "zerion", name: "Zerion", icon: "/wallets/zerion.png", rdns: ["io.zerion.wallet"], match: /^zerion/i, url: "https://zerion.io/download" },
+  { id: "trust", name: "Trust Wallet", icon: "/wallets/trust.png", rdns: ["com.trustwallet.app"], match: /^trust/i, url: "https://trustwallet.com/download" },
+];
+export const ROBINHOOD_WALLET = {
+  name: "Robinhood Wallet",
+  icon: "/wallets/robinhood.png",
+  appStore: "https://apps.apple.com/us/app/robinhood-wallet-swap-crypto/id1634080733",
+  playStore: "https://play.google.com/store/apps/details?id=com.robinhood.gateway",
+};
+export function knownWallet(info: { name: string; rdns: string | null }) {
+  return KNOWN_WALLETS.find((k) => (info.rdns && k.rdns.includes(info.rdns.toLowerCase())) || k.match.test(info.name)) ?? null;
+}
+
 /** EIP-6963 discovery; the list grows as wallets announce themselves. */
 function useDiscoveredWallets(): { info: WalletInfo; provider: Eip1193 }[] {
   const [list, setList] = useState<{ info: WalletInfo; provider: Eip1193 }[]>([]);
@@ -57,7 +82,9 @@ function useDiscoveredWallets(): { info: WalletInfo; provider: Eip1193 }[] {
     const onAnnounce = (ev: Event) => {
       const d = (ev as CustomEvent).detail as { info?: Record<string, unknown>; provider?: Eip1193 } | undefined;
       if (!d?.provider || typeof d.provider.request !== "function" || typeof d.info?.uuid !== "string") return;
-      const info: WalletInfo = { id: safeText(d.info.uuid, 64), name: safeText(d.info.name, 40) || "Wallet", icon: safeIcon(d.info.icon), rdns: safeText(d.info.rdns, 80) || null };
+      const raw: WalletInfo = { id: safeText(d.info.uuid, 64), name: safeText(d.info.name, 40) || "Wallet", icon: safeIcon(d.info.icon), rdns: safeText(d.info.rdns, 80) || null };
+      const k = knownWallet(raw);
+      const info: WalletInfo = k ? { ...raw, name: k.name, icon: k.icon } : raw;
       setList((l) => (l.some((x) => x.info.id === info.id || (info.rdns && x.info.rdns === info.rdns)) ? l : [...l, { info, provider: d.provider! }]));
     };
     window.addEventListener("eip6963:announceProvider", onAnnounce);
@@ -70,12 +97,10 @@ function useDiscoveredWallets(): { info: WalletInfo; provider: Eip1193 }[] {
 /** Name and bundled icon for a wallet that only exposes window.ethereum (no EIP-6963 announcement). */
 function legacyInfo(e: Eip1193): { name: string; icon: string | null; rdns: string | null } {
   const f = e as unknown as Record<string, unknown>;
-  if (f.isRabby) return { name: "Rabby", icon: "/wallets/rabby.png", rdns: null };
-  if (f.isOkxWallet || f.isOKExWallet) return { name: "OKX Wallet", icon: "/wallets/okx.png", rdns: null };
-  if (f.isCoinbaseWallet) return { name: "Coinbase Wallet", icon: "/wallets/coinbase.png", rdns: null };
-  if (f.isTrust || f.isTrustWallet) return { name: "Trust Wallet", icon: "/wallets/trust.png", rdns: null };
-  if (f.isMetaMask) return { name: "MetaMask", icon: "/wallets/metamask.png", rdns: null };
-  return { name: "Browser wallet", icon: null, rdns: null };
+  // Most specific first: several wallets also set isMetaMask for compatibility.
+  const id = f.isPhantom ? "phantom" : f.isRabby ? "rabby" : f.isRainbow ? "rainbow" : f.isZerion ? "zerion" : f.isOkxWallet || f.isOKExWallet ? "okx" : f.isCoinbaseWallet ? "coinbase" : f.isTrust || f.isTrustWallet ? "trust" : f.isMetaMask ? "metamask" : null;
+  const k = id ? KNOWN_WALLETS.find((x) => x.id === id) : undefined;
+  return k ? { name: k.name, icon: k.icon, rdns: null } : { name: "Browser wallet", icon: null, rdns: null };
 }
 
 interface WalletState {

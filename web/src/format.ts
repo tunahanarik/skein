@@ -7,16 +7,16 @@ export function setLocale(l: string): void {
 }
 
 export function usd(v: string | null | undefined, opts: { compact?: boolean } = {}): string {
-  if (v === null || v === undefined) return "—";
+  if (v === null || v === undefined) return "·";
   const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
+  if (!Number.isFinite(n)) return "·";
   if (opts.compact && Math.abs(n) >= 10_000) return "$" + new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 }).format(n);
   const digits = Math.abs(n) >= 1000 ? 0 : Math.abs(n) >= 1 ? 2 : 4;
   return "$" + n.toLocaleString(locale, { minimumFractionDigits: Math.min(2, digits), maximumFractionDigits: digits });
 }
 
 export function amount(v: string | null | undefined, max = 6): string {
-  if (v === null || v === undefined) return "—";
+  if (v === null || v === undefined) return "·";
   const n = Number(v);
   if (!Number.isFinite(n)) return v;
   return n.toLocaleString(locale, { maximumFractionDigits: n !== 0 && Math.abs(n) < 1 ? Math.max(max, 4) : max });
@@ -29,7 +29,7 @@ export function fixed(n: number, digits: number): string {
 
 /** 1e18-scaled fraction string → percent. */
 export function pctE18(v: string | null | undefined, digits = 2): string {
-  if (v === null || v === undefined) return "—";
+  if (v === null || v === undefined) return "·";
   return pct(Number(v) / 1e16, digits);
 }
 
@@ -67,11 +67,11 @@ export function shortAddr(a: string): string {
 }
 
 export function date(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "·";
   return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 export function feePpm(ppm: number | null | undefined): string {
-  if (ppm === null || ppm === undefined) return "—";
+  if (ppm === null || ppm === undefined) return "·";
   return pct(ppm / 10_000, 3, 0);
 }

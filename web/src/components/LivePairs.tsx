@@ -69,11 +69,11 @@ export function LivePairs({ assetKey, symbol }: { assetKey: string; symbol: stri
                   </span>
                 </span>
                 <span role="cell" className={`px num${fresh ? (r.move!.dir > 0 ? " up" : " down") : ""}`}>
-                  {r.price ? livePrice(r.price) : "—"} <small>{r.other.symbol}</small>
+                  {r.price ? livePrice(r.price) : "·"} <small>{r.other.symbol}</small>
                   {r.move && <span className={`arrow ${r.move.dir > 0 ? "up" : "down"}`}>{r.move.dir > 0 ? "▲" : "▼"}</span>}
                 </span>
                 <span role="cell" className="tvl muted small num">
-                  {r.tick.tvlUsd ? usd(r.tick.tvlUsd, { compact: true }) : "—"}
+                  {r.tick.tvlUsd ? usd(r.tick.tvlUsd, { compact: true }) : "·"}
                 </span>
               </button>
             );
