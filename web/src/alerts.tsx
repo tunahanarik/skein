@@ -24,7 +24,7 @@ export interface Alert {
   lastValue?: number;
 }
 
-const KEY = "hoodmap.alerts";
+const KEY = "skein.alerts";
 export const CHECK_MS = 120_000;
 const MAX_ALERTS = 20;
 
@@ -96,7 +96,7 @@ export function AlertsProvider({ children }: { children: ReactNode }) {
     if (newly.length) {
       setFired((f) => [...f, ...newly]);
       try {
-        if (typeof Notification !== "undefined" && Notification.permission === "granted") for (const a of newly) new Notification("Hoodmap", { body: `${a.symbol}: ${a.label}` });
+        if (typeof Notification !== "undefined" && Notification.permission === "granted") for (const a of newly) new Notification("Skein", { body: `${a.symbol}: ${a.label}` });
       } catch {
         /* notifications unavailable */
       }

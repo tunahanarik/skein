@@ -171,7 +171,7 @@ function Rail() {
   const on = (...n: string[]) => (n.includes(route.name) ? " on" : "");
   return (
     <aside className="rail" aria-label="Main">
-      <a className="rail-brand" {...linkProps("/")} aria-label="Hoodmap">
+      <a className="rail-brand" {...linkProps("/")} aria-label="Skein">
         <Mark size={24} />
       </a>
       <nav className="rail-nav">
@@ -213,9 +213,9 @@ function Header() {
   const w = useWallet();
   return (
     <header className="top">
-      <a className="brand top-brand" {...linkProps("/")} aria-label="Hoodmap">
+      <a className="brand top-brand" {...linkProps("/")} aria-label="Skein">
         <Mark size={20} />
-        <span>hoodmap</span>
+        <span>skein</span>
       </a>
       <GlobalSearch />
       <span className="spacer" />
@@ -247,7 +247,7 @@ function Footer() {
         <div className="row" style={{ gap: 18, marginBottom: 12 }}>
           <span className="brand small">
             <Mark size={16} />
-            <span>hoodmap</span>
+            <span>skein</span>
           </span>
           <span className="cap-label">Explore · Track · Discover</span>
           <span className="spacer" />
@@ -268,7 +268,7 @@ function Page() {
   const route = useRoute();
   useEffect(() => {
     const title = route.name === "asset" ? route.ref.slice(0, 16) : t(`title.${route.name}`);
-    document.title = `${title} · Hoodmap`;
+    document.title = `${title} · Skein`;
   }, [route, t]);
   switch (route.name) {
     case "home":

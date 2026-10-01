@@ -35,7 +35,8 @@
   --i-trade-bg: #1b1f1a; --i-trade-fg: #e4e8e0;
   --ticker-bg: #070807;
   --mark-a: #c8f169;
-  --mark-b: #f2f4ef;
+  --mark-b: #8d948a;
+  --mark-c: #4a5048;
   --shadow: none;
   --shadow-pop: 0 20px 60px rgba(0, 0, 0, 0.45);
   --radius: 16px;
@@ -75,7 +76,8 @@
   --i-trade-bg: #eceae5; --i-trade-fg: #1a201c;
   --ticker-bg: #eceae5;
   --mark-a: #5f8f0d;
-  --mark-b: #1a201c;
+  --mark-b: #5e665f;
+  --mark-c: #aab0a8;
   --shadow-pop: 0 20px 60px rgba(26, 32, 28, 0.16);
   color-scheme: light;
 }
@@ -1333,3 +1335,4 @@ footer.bottom { border-top: 1px solid var(--border); }
 .ctag, .mk-table .ctag { letter-spacing: 0.02em; padding: 1px 5px; font-size: 9.5px; }
 .cap-tags { gap: 3px; flex-wrap: nowrap; }
 .stage-id .picker-btn { font-family: var(--mono-ui); }
+.brand span, .top-brand span { font-family: var(--mono-ui); font-weight: 700; letter-spacing: -0.02em; text-transform: lowercase; }

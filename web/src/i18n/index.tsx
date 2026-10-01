@@ -43,7 +43,7 @@ const LOADERS: Partial<Record<Lang, () => Promise<Dict>>> = {
   hi: () => import("./locales/hi").then((m) => m.hi),
 };
 const loaded: Partial<Record<Lang, Dict>> = { en, tr };
-const STORAGE_KEY = "hoodmap.lang";
+const STORAGE_KEY = "skein.lang";
 
 export function translate(dict: Dict, key: StringKey, vars?: Record<string, string | number>): string {
   const s = dict[key] ?? en[key] ?? key;

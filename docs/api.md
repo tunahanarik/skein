@@ -89,7 +89,7 @@ Wallet handling (`web/src/wallet.tsx`):
 
 Languages: English (default) and Turkish, switchable in the header. The choice is stored in `localStorage` (a UI preference, not personal data). All wording lives in `web/src/i18n/strings.ts`. A test (`test/unit/i18n.test.ts`) checks that both languages have the same keys and placeholders and that neither uses promotional or safety claims. Action labels such as "Supply USDG" are rebuilt on the client from structured card fields, so they translate. Protocol-supplied titles and redemption terms are data and stay in English, labelled as such. Numbers, percentages and dates follow the chosen language's format.
 
-The product name is "Hoodmap" (chosen 2026-09-29; formerly the placeholder "Waypoint"). Robinhood's terms forbid "Robinhood Chain" as a product name, and the footer states the app is not affiliated with or endorsed by Robinhood.
+The product name is "Skein" (chosen 2026-10-01; earlier "Hoodmap", and before that the placeholder "Waypoint"). Robinhood's terms forbid "Robinhood Chain" as a product name, and the footer states the app is not affiliated with or endorsed by Robinhood.
 
 ## Performance (public RPC, 2026-09-24)
 | Request | Time |

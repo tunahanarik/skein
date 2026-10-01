@@ -1,5 +1,5 @@
 /**
- * A small set of rounded line icons (24×24, 1.8 stroke) and the Hoodmap mark. Inline SVG, so no
+ * A small set of rounded line icons (24×24, 1.8 stroke) and the Skein mark. Inline SVG, so no
  * icon font or third-party request is needed. Decorative by default (aria-hidden).
  */
 import type { ReactNode } from "react";
@@ -61,12 +61,13 @@ export function Icon({ name, size = 20, className }: { name: IconName; size?: nu
   );
 }
 
-/** The Hoodmap mark: a two-faceted arrowhead. */
+/** The Skein mark: three strands braided into one (many routes, one path); the lead strand in the accent. */
 export function Mark({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="mark">
-      <path d="M3 21.5 L29 3 L17.5 29 Z" fill="var(--mark-a)" />
-      <path d="M29 3 L17.5 29 L14.5 17.5 Z" fill="var(--mark-b)" />
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="mark" fill="none" strokeWidth="2.6" strokeLinecap="round">
+      <path d="M4 8c6 0 6 8 12 8s6-8 12-8" stroke="var(--mark-c)" />
+      <path d="M4 16c6 0 6 8 12 8s6-8 12-8" stroke="var(--mark-b)" />
+      <path d="M4 24c6 0 6-16 12-16s6 16 12 16" stroke="var(--mark-a)" />
     </svg>
   );
 }

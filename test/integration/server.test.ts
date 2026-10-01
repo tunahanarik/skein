@@ -144,7 +144,7 @@ describe("static web app", () => {
 describe("asset shell meta", () => {
   it("escapes values and replaces the generic title", async () => {
     const { shellWithMeta } = await import("../../src/server/static.js");
-    const html = shellWithMeta('<html><head><title>Hoodmap</title><meta name="description" content="x" /></head><body></body></html>', { title: 'A<b>"', description: "d & e" });
+    const html = shellWithMeta('<html><head><title>Skein</title><meta name="description" content="x" /></head><body></body></html>', { title: 'A<b>"', description: "d & e" });
     expect(html).toContain("<title>A&lt;b&gt;&quot;</title>");
     expect(html).toContain('property="og:description" content="d &amp; e"');
     expect(html.match(/<title>/g)).toHaveLength(1);

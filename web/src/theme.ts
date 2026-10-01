@@ -5,7 +5,7 @@
 import { useCallback, useState } from "react";
 
 export type Theme = "light" | "dark";
-const KEY = "hoodmap.theme";
+const KEY = "skein.theme";
 
 function stored(): Theme | null {
   try {

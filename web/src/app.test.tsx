@@ -86,7 +86,7 @@ describe("asset page", () => {
     expect(await screen.findByText("NVDA ile PT-NVDA-15OCT2026 al")).toBeTruthy();
     expect(screen.getByText("NVDA teminatıyla USDG borç al")).toBeTruthy();
     expect(document.body.textContent).toContain("%7,28");
-    expect(localStorage.getItem("hoodmap.lang")).toBe("tr");
+    expect(localStorage.getItem("skein.lang")).toBe("tr");
   });
 });
 
@@ -123,7 +123,7 @@ describe("alerts", () => {
     fireEvent.click(within(box).getByRole("button", { name: "Create alert" }));
     expect(await screen.findByText("Alert saved.")).toBeTruthy();
     expect(await screen.findByText("Alert:", {}, { timeout: 4000 })).toBeTruthy();
-    const stored = JSON.parse(localStorage.getItem("hoodmap.alerts") ?? "[]");
+    const stored = JSON.parse(localStorage.getItem("skein.alerts") ?? "[]");
     expect(stored).toHaveLength(1);
     expect(stored[0].triggeredAt).toBeTypeOf("number");
   });
@@ -136,7 +136,7 @@ describe("shell", () => {
     const btn = screen.getByRole("button", { name: /light/i });
     fireEvent.click(btn);
     expect(document.documentElement.dataset.theme).toBe("light");
-    expect(localStorage.getItem("hoodmap.theme")).toBe("light");
+    expect(localStorage.getItem("skein.theme")).toBe("light");
   });
 
   it("a pasted wallet address never reaches the URL or storage", async () => {

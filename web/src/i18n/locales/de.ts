@@ -378,7 +378,7 @@ export const de: Record<StringKey, string> = {
 
   // about
   "about.title": "So funktioniert es",
-  "about.p1": "Hoodmap beantwortet eine Frage: Ich halte dieses Asset auf Robinhood Chain — was kann ich tatsächlich damit tun? Die App liest Protokolle direkt von der Chain und aus ihren öffentlichen APIs, prüft das Gelesene und zeigt das Ergebnis mit Quelle und Alter. Uniswap-v3-Swaps lassen sich aus der App heraus ausführen, signiert in Ihrer eigenen Wallet.",
+  "about.p1": "Skein beantwortet eine Frage: Ich halte dieses Asset auf Robinhood Chain — was kann ich tatsächlich damit tun? Die App liest Protokolle direkt von der Chain und aus ihren öffentlichen APIs, prüft das Gelesene und zeigt das Ergebnis mit Quelle und Alter. Uniswap-v3-Swaps lassen sich aus der App heraus ausführen, signiert in Ihrer eigenen Wallet.",
   "about.h1": "Ihre Wallet, Ihre Zustimmung",
   "about.l1": "Der Server hat keine Wallet und kann nichts signieren. Swap-Transaktionen werden in Ihrem Browser erstellt und an Ihre Wallet übergeben, die jede zur Bestätigung oder Ablehnung anzeigt.",
   "about.l2": "Nur zwei Arten von Transaktionen können erstellt werden: eine Freigabe genau des Betrags an Uniswaps SwapRouter02 und ein Uniswap-v3-Swap, dessen Ergebnis an Ihre eigene Adresse geht, mit einem Mindestbetrag, den Sie über die Slippage-Toleranz festlegen. Keine Nachrichtensignaturen, keine Permits, keine unbegrenzten Freigaben.",

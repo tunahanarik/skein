@@ -12,7 +12,7 @@ import { decodeFunctionData, getAddress, parseAbi, type Address, type Hex } from
 
 export const KYBER_API = "https://aggregator-api.kyberswap.com/robinhood/api/v1";
 export const KYBER_ROUTER: Address = "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5";
-const CLIENT_ID = "hoodmap";
+const CLIENT_ID = "skein";
 
 export const kyberRouterAbi = parseAbi([
   "struct SwapDescriptionV2 { address srcToken; address dstToken; address[] srcReceivers; uint256[] srcAmounts; address[] feeReceivers; uint256[] feeAmounts; address dstReceiver; uint256 amount; uint256 minReturnAmount; uint256 flags; bytes permit; }",

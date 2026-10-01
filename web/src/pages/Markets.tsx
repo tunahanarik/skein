@@ -16,7 +16,7 @@ const FUND = /\b(ETF|Trust|Fund|iShares|SPDR|Vanguard|Invesco|Schwab|VanEck|Sele
 const shortName = (n: string) => n.replace(/\s*•\s*Robinhood Token$/i, "").replace(/\s+(Inc\.?|Corp\.?|Corporation|Common Stock|Class [A-Z].*)$/i, "");
 const CAPS: Cap[] = ["earn", "fixed", "borrow", "lp"];
 const MIN_LIQ = [0, 10_000, 100_000, 1_000_000] as const;
-const VIEW_KEY = "hoodmap.markets.view";
+const VIEW_KEY = "skein.markets.view";
 const hrefOf = (r: Market) => `/asset/${encodeURIComponent(r.symbol)}`;
 const trim = (x: string) => x.replace(/\.0$/, "");
 const compactUsd = (n: number) => (n >= 1e9 ? `$${trim((n / 1e9).toFixed(1))}B` : n >= 1e6 ? `$${trim((n / 1e6).toFixed(1))}M` : n >= 1e3 ? `$${(n / 1e3).toFixed(0)}k` : `$${n.toFixed(0)}`);

@@ -6,12 +6,14 @@ import "@fontsource-variable/jetbrains-mono";
 import "./styles.css";
 import { applyStoredTheme } from "./theme";
 
-// One-time move of UI preferences from the old product name ("waypoint.*" keys).
+// One-time move of UI preferences from earlier product names ("waypoint.*", then "hoodmap.*").
 try {
-  for (const k of ["lang", "theme", "alerts", "watchlist"]) {
-    const old = localStorage.getItem(`waypoint.${k}`);
-    if (old !== null && localStorage.getItem(`hoodmap.${k}`) === null) localStorage.setItem(`hoodmap.${k}`, old);
-    localStorage.removeItem(`waypoint.${k}`);
+  for (const k of ["lang", "theme", "alerts", "watchlist", "markets.view"]) {
+    for (const prev of ["waypoint", "hoodmap"]) {
+      const old = localStorage.getItem(`${prev}.${k}`);
+      if (old !== null && localStorage.getItem(`skein.${k}`) === null) localStorage.setItem(`skein.${k}`, old);
+      localStorage.removeItem(`${prev}.${k}`);
+    }
   }
 } catch {
   /* storage unavailable */

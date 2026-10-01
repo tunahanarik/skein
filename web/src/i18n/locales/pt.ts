@@ -379,7 +379,7 @@ export const pt: Record<StringKey, string> = {
 
   // about
   "about.title": "Como funciona",
-  "about.p1": "O Hoodmap responde a uma pergunta: tenho este ativo na Robinhood Chain — o que posso realmente fazer com ele? Ele lê os protocolos diretamente da chain e de suas APIs públicas, verifica o que lê e mostra o resultado com fonte e idade. Swaps na Uniswap v3 podem ser feitos pelo app, assinados na sua própria carteira.",
+  "about.p1": "O Skein responde a uma pergunta: tenho este ativo na Robinhood Chain — o que posso realmente fazer com ele? Ele lê os protocolos diretamente da chain e de suas APIs públicas, verifica o que lê e mostra o resultado com fonte e idade. Swaps na Uniswap v3 podem ser feitos pelo app, assinados na sua própria carteira.",
   "about.h1": "Sua carteira, sua aprovação",
   "about.l1": "O servidor não tem carteira e não pode assinar nada. As transações de swap são montadas no seu navegador e entregues à sua carteira, que mostra cada uma para você aprovar ou rejeitar.",
   "about.l2": "Só dois tipos de transação podem ser montados: uma aprovação do valor exato para o SwapRouter02 da Uniswap e um swap na Uniswap v3 cujo resultado vai para o seu próprio endereço, com um mínimo definido pela tolerância de slippage. Sem assinatura de mensagens, sem permits, sem aprovações ilimitadas.",
