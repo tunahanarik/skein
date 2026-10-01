@@ -709,4 +709,6 @@ export const ko: Record<StringKey, string> = {
   "picker.move": "이동",
   "picker.choose": "선택",
   "picker.close": "닫기",
+  "shell.pulse": "네트워크 상태",
+  "home.c.openAsset": "자산 페이지 열기",
 };

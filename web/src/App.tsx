@@ -15,7 +15,11 @@ import { linkProps, useRoute } from "./router";
 import { AlertsProvider } from "./alerts";
 import { FiredBanner } from "./components/AlertForm";
 import { WalletPicker } from "./components/WalletPicker";
-import { QuickProvider, useQuick } from "./components/market";
+import { QuickProvider, useMarketQuotes, useQuick } from "./components/market";
+import { useLive } from "./live";
+
+/** Registry key of WETH, priced at ETH/USD. */
+const WETH_KEY = "4663:0x0bd7d308f8e1639fab988df18a8011f41eacad73";
 import { useTheme } from "./theme";
 import { useWallet, WalletProvider } from "./wallet";
 
@@ -137,15 +141,74 @@ function Rail() {
   );
 }
 
+/** Where you are: "skein/ <page>" (the asset symbol on asset pages). */
+function Breadcrumb() {
+  const { t } = useI18n();
+  const route = useRoute();
+  const here = route.name === "asset" ? route.ref.toUpperCase() : t(`title.${route.name}`).toLowerCase();
+  return (
+    <nav className="crumb" aria-label="Breadcrumb">
+      <a {...linkProps("/")}>
+        skein<span className="sl">/</span>
+      </a>
+      {route.name !== "home" && <span className="here">{here}</span>}
+    </nav>
+  );
+}
+
+/** Live chain pulse: connection, latest block, ETH price and today's change. */
+function ChainPulse() {
+  const { t } = useI18n();
+  const live = useLive({});
+  const quotes = useMarketQuotes();
+  const eth = quotes?.get(WETH_KEY);
+  return (
+    <div className="pulse" aria-label={t("shell.pulse")}>
+      <span className={`pd${live.connected ? " on" : ""}`} title={live.connected ? t("home.cmd.live") : ""}>
+        ●
+      </span>
+      {live.block && (
+        <span className="pb">
+          <span className="k">{t("home.cmd.block")}</span> {Number(live.block).toLocaleString("en-US")}
+        </span>
+      )}
+      {eth?.usd != null && (
+        <span className="pe">
+          <span className="k">ETH</span> ${Math.round(eth.usd).toLocaleString("en-US")}
+          {eth.changePct != null && <span className={eth.changePct >= 0 ? "up" : "down"}>{` ${eth.changePct >= 0 ? "+" : ""}${eth.changePct.toFixed(2)}%`}</span>}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function Header() {
   const { t } = useI18n();
   const w = useWallet();
+  const route = useRoute();
+  const quick = useQuick();
+  const from = route.name === "asset" ? route.ref : undefined;
   return (
     <header className="top">
       <a className="brand top-brand" {...linkProps("/")} aria-label="Skein">
         <Mark size={30} />
       </a>
+      <Breadcrumb />
+      <div className="hq">
+        <button type="button" onClick={() => quick.open("swap", from)}>
+          <Icon name="swap" size={14} /> {t("quick.swap")}
+        </button>
+        <button type="button" onClick={() => quick.open("bridge")}>
+          <Icon name="bridge" size={14} /> {t("quick.bridge")}
+        </button>
+        {route.name !== "terminal" && (
+          <a {...linkProps("/terminal")}>
+            <Icon name="terminal" size={14} /> {t("nav.terminal")}
+          </a>
+        )}
+      </div>
       <span className="spacer" />
+      <ChainPulse />
       <LanguagePicker />
       {w.address && w.source === "connected" ? (
         <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>

@@ -732,4 +732,6 @@ export const ja: Record<StringKey, string> = {
   "picker.move": "移動",
   "picker.choose": "選択",
   "picker.close": "閉じる",
+  "shell.pulse": "ネットワーク状況",
+  "home.c.openAsset": "資産ページを開く",
 };

@@ -4,11 +4,13 @@ import { topOpportunities, type IntentKey } from "../intents";
 import { contextLine } from "../text";
 import { useI18n } from "../i18n";
 import { useLive } from "../live";
-import { navigate } from "../router";
+import { linkProps, navigate } from "../router";
 import { useWallet } from "../wallet";
 import { Avatar, useAssetList, useAsync } from "./common";
 import { Icon, ProtocolLogo, type IconName } from "./icons";
-import { AssetPicker, oppValue, useQuick } from "./market";
+import { AssetPicker, oppValue, useQuick, useTodayChange } from "./market";
+import { PriceChart } from "./PriceChart";
+import { pct, usd } from "../format";
 
 /** What a line typed into the command bar means. Wallet addresses come first: Skein is a wallet explorer. */
 export type Command =
@@ -141,7 +143,9 @@ export function CommandTerminal() {
   }, [list, last, typed]);
 
   const intel = useAsync((sig) => (asset ? api.asset(asset.address, {}, sig) : Promise.resolve(null)), [asset?.key]);
-  const rows = useMemo(() => (intel.data ? topOpportunities(intel.data, 40).filter((r) => !intent || r.intent === intent).slice(0, 4) : []), [intel.data, intent]);
+  // "earn yield" means any yield: lending and vaults, fixed rates and liquidity provision.
+  const matches = (k: IntentKey) => !intent || k === intent || (intent === "EARN" && (k === "FIXED" || k === "LIQUIDITY"));
+  const rows = useMemo(() => (intel.data ? topOpportunities(intel.data, 40).filter((r) => matches(r.intent)).slice(0, 4) : []), [intel.data, intent]); // eslint-disable-line react-hooks/exhaustive-deps
   const open = (i: number) => {
     const r = rows[i];
     if (r && asset) navigate(`/asset/${encodeURIComponent(asset.symbol)}?i=${r.intent}`);
@@ -264,10 +268,44 @@ export function CommandTerminal() {
                   </button>
                 );
               })}
+              <TerminalChart asset={asset} />
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The chosen asset's live price and its real price history (Robinhood bars for Stock Tokens,
+ * Chainlink rounds otherwise; the same data as the asset page), under the results.
+ */
+function TerminalChart({ asset }: { asset: AssetListItem }) {
+  const { t } = useI18n();
+  const live = useLive({ prices: [asset.key] });
+  const lp = live.prices.get(asset.key);
+  const mv = live.moves.get(asset.key);
+  const flash = mv && Date.now() - mv.at < 1500 ? (mv.dir > 0 ? " up" : " down") : "";
+  const today = useTodayChange(asset.key);
+  return (
+    <div className="tchart">
+      <div className="tc-head">
+        <span className="tc-sym">{asset.symbol}</span>
+        <span className="tc-name">{asset.name.replace(/\s*•\s*Robinhood Token$/i, "")}</span>
+        <span className="spacer" />
+        {lp && <span className={`tc-px num${flash}`}>{usd(lp.usd)}</span>}
+        {today !== null && (
+          <span className={`num ${today >= 0 ? "up" : "down"}`}>
+            {today >= 0 ? "+" : ""}
+            {pct(today, 2)} {t("asset.today")}
+          </span>
+        )}
+        <a className="tc-open" {...linkProps(`/asset/${encodeURIComponent(asset.symbol)}`)}>
+          {t("home.c.openAsset")} →
+        </a>
+      </div>
+      <PriceChart key={asset.key} assetRef={asset.address} />
     </div>
   );
 }

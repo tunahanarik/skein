@@ -733,4 +733,6 @@ export const ar: Record<StringKey, string> = {
   "picker.move": "تنقّل",
   "picker.choose": "اختيار",
   "picker.close": "إغلاق",
+  "shell.pulse": "حالة الشبكة",
+  "home.c.openAsset": "فتح صفحة الأصل",
 };

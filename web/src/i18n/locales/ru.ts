@@ -733,4 +733,6 @@ export const ru: Record<StringKey, string> = {
   "picker.move": "выбор",
   "picker.choose": "выбрать",
   "picker.close": "закрыть",
+  "shell.pulse": "Состояние сети",
+  "home.c.openAsset": "Открыть страницу актива",
 };

@@ -732,4 +732,6 @@ export const zh: Record<StringKey, string> = {
   "picker.move": "移动",
   "picker.choose": "选择",
   "picker.close": "关闭",
+  "shell.pulse": "网络状态",
+  "home.c.openAsset": "打开资产页面",
 };

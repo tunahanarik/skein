@@ -733,4 +733,6 @@ export const it: Record<StringKey, string> = {
   "picker.move": "muovi",
   "picker.choose": "scegli",
   "picker.close": "chiudi",
+  "shell.pulse": "Stato della rete",
+  "home.c.openAsset": "Apri la pagina dell'asset",
 };

@@ -1511,3 +1511,31 @@ footer.bottom { border-top: 1px solid var(--border); }
 .ap-foot { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--border); font-family: var(--mono-ui); font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
 .ap-foot kbd { font-family: var(--mono-ui); font-size: 10px; border: 1px solid var(--border-2); border-radius: 2px; padding: 0 4px; color: var(--text-2); }
 @media (max-width: 560px) { .ap-foot .keys { display: none; } .ap-opt .px .num { font-size: 11.5px; } }
+
+/* header: breadcrumb, quick links, live chain pulse */
+.crumb { display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--mono-ui); font-size: 14px; }
+.crumb a { color: var(--text); font-weight: 700; text-decoration: none; letter-spacing: -0.02em; }
+.crumb a .sl { color: var(--accent); }
+.crumb .here { color: var(--text-2); text-transform: lowercase; }
+.hq { display: inline-flex; gap: 6px; margin-left: 16px; padding-left: 16px; border-left: 1px solid var(--border); }
+.hq button, .hq a { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-2); font-family: var(--mono-ui); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 10px; border-radius: 3px; cursor: pointer; text-decoration: none; }
+.hq button:hover, .hq a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.pulse { display: inline-flex; align-items: center; gap: 12px; font-family: var(--mono-ui); font-size: 11px; color: var(--text-2); padding: 6px 12px; border: 1px solid var(--border); border-radius: 3px; white-space: nowrap; }
+.pulse .k { color: var(--text-3); letter-spacing: 0.06em; }
+.pulse .pd { color: var(--text-3); font-size: 9px; }
+.pulse .pd.on { color: var(--accent); animation: route-pulse 2s ease-in-out infinite; }
+.pulse .up { color: var(--ok); }
+.pulse .down { color: var(--bad); }
+@media (max-width: 1100px) { .pulse .pb { display: none; } }
+@media (max-width: 900px) { .hq { display: none; } }
+@media (max-width: 720px) { .crumb, .pulse { display: none; } }
+
+/* terminal: the chosen asset's live price and chart under the results */
+.tchart { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 12px; display: grid; gap: 10px; animation: cr-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
+.tc-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tc-sym { font-family: var(--mono-ui); font-weight: 700; font-size: 15px; }
+.tc-name { font-size: 12.5px; color: var(--text-3); }
+.tc-px { font-family: var(--mono-ui); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.tc-open { font-size: 12px; margin-left: 6px; }
+.tchart .pchart { background: transparent; padding: 0; }
+.tchart .pc-foot { display: none; }

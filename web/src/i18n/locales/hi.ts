@@ -709,4 +709,6 @@ export const hi: Record<StringKey, string> = {
   "picker.move": "चलें",
   "picker.choose": "चुनें",
   "picker.close": "बंद",
+  "shell.pulse": "नेटवर्क स्थिति",
+  "home.c.openAsset": "एसेट पेज खोलें",
 };

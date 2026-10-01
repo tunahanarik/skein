@@ -735,6 +735,8 @@ export const en = {
   "picker.move": "move",
   "picker.choose": "choose",
   "picker.close": "close",
+  "shell.pulse": "Network status",
+  "home.c.openAsset": "Open asset page",
 };
 
 export type StringKey = keyof typeof en;
@@ -1447,4 +1449,6 @@ export const tr: Record<StringKey, string> = {
   "picker.move": "gez",
   "picker.choose": "seç",
   "picker.close": "kapat",
+  "shell.pulse": "Ağ durumu",
+  "home.c.openAsset": "Varlık sayfasını aç",
 };
