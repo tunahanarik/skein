@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
-export async function launch({ width = 1280, height = 720 } = {}) {
+export async function launch({ width = 1280, height = 720, scale = 1 } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "skein-video-"));
   const port = 9300 + Math.floor(Math.random() * 500);
   const p = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${dir}`, "--disable-gpu", "--disable-lcd-text", "--hide-scrollbars", "--allow-file-access-from-files", "--autoplay-policy=no-user-gesture-required", "--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--disable-backgrounding-occluded-windows", "--disable-features=IntensiveWakeUpThrottling", `--window-size=${width},${height}`, "about:blank"], { stdio: "ignore" });
@@ -22,6 +22,6 @@ export async function launch({ width = 1280, height = 720 } = {}) {
   const evaluate = async (expr) => { const r = await send("Runtime.evaluate", { expression: expr, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description ?? r.exceptionDetails.text); return r.result.value; };
   await send("Emulation.setFocusEmulationEnabled", { enabled: true }).catch(() => {});
   await send("Page.setWebLifecycleState", { state: "active" }).catch(() => {});
-  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false });
+  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: scale, mobile: false });
   return { send, evaluate, close: () => { try { ws.close(); } catch {} p.kill(); } };
 }

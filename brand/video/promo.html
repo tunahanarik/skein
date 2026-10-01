@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Skein promo</title>
+<style>html,body{margin:0;background:#050605;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// Skein promo, 1920x1080. draw(t) is a pure function of time; encode() renders every frame with
+// WebCodecs (H.264), so the output never drops frames regardless of how long a frame takes to draw.
+const W = 1920, H = 1080, DUR = 34;
+const C = { bg: "#050605", ink: "#E4E9E1", mut: "#8D948A", faint: "#596057", line: "#1A1E19", line2: "#262B25", lime: "#C8F169", cream: "#E9F5CF", olive: "#6E8F2A", amber: "#E8B44C", dark: "#0A0F04", panel: "#0A0C0A" };
+const cv = document.getElementById("c"), x = cv.getContext("2d");
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const ex = (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p));            // expo out
+const eio = (p) => (p < 0.5 ? 16 * p ** 5 : 1 - Math.pow(-2 * p + 2, 5) / 2); // quint in out
+const lerp = (a, b, p) => a + (b - a) * p;
+const M = (w, s) => `${w} ${s}px JB`, S = (w, s) => `${w} ${s}px IT`;
+const IMG = {};
+
+function txt(s, X, Y, font, color, o = {}) {
+  const { align = "left", alpha = 1, ls = 0, base = "alphabetic" } = o;
+  x.save(); x.globalAlpha *= alpha; x.font = font; x.fillStyle = color; x.textAlign = align; x.textBaseline = base; x.letterSpacing = `${ls}px`;
+  x.fillText(s, X, Y); x.restore();
+}
+function tw(s, font, ls = 0) { x.save(); x.font = font; x.letterSpacing = `${ls}px`; const w = x.measureText(s).width; x.restore(); return w; }
+function rr(X, Y, w, h, r, fill, stroke, alpha = 1, lw = 1.5) {
+  x.save(); x.globalAlpha *= alpha; x.beginPath(); x.roundRect(X, Y, w, h, r);
+  if (fill) { x.fillStyle = fill; x.fill(); } if (stroke) { x.strokeStyle = stroke; x.lineWidth = lw; x.stroke(); } x.restore();
+}
+function glow(X, Y, r, rgba, a = 1) { const g = x.createRadialGradient(X, Y, 0, X, Y, r); g.addColorStop(0, rgba); g.addColorStop(1, "rgba(0,0,0,0)"); x.save(); x.globalAlpha *= a; x.fillStyle = g; x.fillRect(X - r, Y - r, 2 * r, 2 * r); x.restore(); }
+/** Text revealed upward from behind a mask (the line slides up into place). */
+function reveal(s, X, Y, font, color, p, o = {}) {
+  const size = parseInt(font.split(" ")[1]);
+  x.save(); x.beginPath(); x.rect(0, Y - size * 1.05, W, size * 1.35); x.clip();
+  txt(s, X, Y + (1 - ex(p)) * size * 1.2, font, color, o); x.restore();
+}
+
+// ---------- ambient layers ----------
+let noise;
+function makeNoise() {
+  noise = document.createElement("canvas"); noise.width = noise.height = 256;
+  const n = noise.getContext("2d"), d = n.createImageData(256, 256);
+  let s = 7; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < d.data.length; i += 4) { const v = r() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  n.putImageData(d, 0, 0);
+}
+function grain(t) {
+  x.save(); x.globalAlpha = 0.035; x.globalCompositeOperation = "overlay";
+  const ox = Math.floor((t * 977) % 256), oy = Math.floor((t * 613) % 256);
+  for (let X = -ox; X < W; X += 256) for (let Y = -oy; Y < H; Y += 256) x.drawImage(noise, X, Y);
+  x.restore();
+}
+function vignette() { const g = x.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 1.05); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.65)"); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+function grid(a, drift) {
+  x.save(); x.strokeStyle = "#121611"; x.lineWidth = 1; x.globalAlpha = a; const o = drift % 60;
+  for (let i = -1; i < 34; i++) { x.beginPath(); x.moveTo(i * 60 + o, 0); x.lineTo(i * 60 + o, H); x.stroke(); }
+  for (let i = -1; i < 20; i++) { x.beginPath(); x.moveTo(0, i * 60 + o); x.lineTo(W, i * 60 + o); x.stroke(); }
+  x.restore();
+}
+/** Three braided strands (stocks, stables, crypto): the skein. Drawn back to front per slice. */
+function braid(t, { y0 = H / 2, amp = 90, period = 620, w = 26, a = 1, x0 = -100, x1 = W + 100, speed = 60 } = {}) {
+  const cols = [C.lime, C.cream, C.olive], k = (2 * Math.PI) / period, ph0 = -t * speed * k;
+  const chunk = period / 6, sh = ((t * speed) % chunk);
+  for (let X = x0 - chunk + sh; X < x1; X += chunk) {
+    const tc = (X + chunk / 2) * k + ph0;
+    const order = [0, 1, 2].sort((i, j) => Math.cos(tc + (i * 2 * Math.PI) / 3) - Math.cos(tc + (j * 2 * Math.PI) / 3));
+    x.save(); x.beginPath(); x.rect(X, 0, chunk + 0.6, H); x.clip();
+    for (const i of order) {
+      x.beginPath();
+      for (let s = 0; s <= 24; s++) { const px = X - 10 + ((chunk + 20) * s) / 24, py = y0 + amp * Math.sin(px * k + ph0 + (i * 2 * Math.PI) / 3); s ? x.lineTo(px, py) : x.moveTo(px, py); }
+      x.globalAlpha = a; x.lineCap = "butt";
+      x.strokeStyle = C.bg; x.lineWidth = w + 12; x.stroke();
+      x.strokeStyle = cols[i]; x.lineWidth = w; x.stroke();
+      x.globalAlpha = a * 0.25; x.strokeStyle = "#fff"; x.lineWidth = 2; x.translate(0, -w * 0.22); x.stroke(); x.translate(0, w * 0.22);
+    }
+    x.restore();
+  }
+}
+function wordmark(X, Y, size, { color = C.ink, slash = C.lime, align = "left", reveal: rp = 1, slashP = 1 } = {}) {
+  const f = M(800, size), ls = -size * 0.06, w1 = tw("skein", f, ls), w2 = tw("/", f);
+  const x0 = align === "center" ? X - (w1 + w2) / 2 : X;
+  x.save(); x.beginPath(); x.rect(x0 - 10, Y - size, (w1 + 10) * ex(rp), size * 1.3); x.clip(); txt("skein", x0, Y, f, color, { ls }); x.restore();
+  x.save(); x.beginPath(); x.rect(x0 + w1 - 4, Y - size * 0.95 + (1 - ex(slashP)) * size * 1.3, w2 + 20, size * 1.3); x.clip(); txt("/", x0 + w1, Y, f, slash); x.restore();
+  return w1 + w2;
+}
+function markTile(X, Y, s, a = 1) { rr(X - s / 2, Y - s / 2, s, s, s * 0.12, C.lime, null, a); txt("s/", X - s * 0.03, Y + s * 0.2, M(800, s * 0.52), C.dark, { align: "center", alpha: a, ls: -s * 0.03 }); }
+
+// ---------- product frame ----------
+/** A browser window holding a crop of a real screenshot. cam = {sx, sy, sw, sh} in image pixels. */
+function browser(img, X, Y, w, h, cam, { a = 1, url = "skein", rot = 0, hl = null } = {}) {
+  x.save(); x.globalAlpha *= a; x.translate(X + w / 2, Y + h / 2); x.rotate(rot); x.translate(-w / 2, -h / 2);
+  x.save(); x.shadowColor = "rgba(0,0,0,0.75)"; x.shadowBlur = 80; x.shadowOffsetY = 40; rr(0, 0, w, h, 16, "#0B0D0B"); x.restore();
+  glow(w / 2, h * 0.1, w * 0.6, "rgba(200,241,105,0.05)");
+  x.save(); x.beginPath(); x.roundRect(0, 0, w, 48, [16, 16, 0, 0]); x.fillStyle = "#0E110E"; x.fill(); x.restore();
+  ["#3A3F39", "#3A3F39", "#3A3F39"].forEach((c, i) => { x.beginPath(); x.arc(26 + i * 22, 24, 6, 0, 7); x.fillStyle = c; x.fill(); });
+  rr(w / 2 - 170, 11, 340, 26, 13, "#151915");
+  txt(url, w / 2, 29, M(500, 14), C.mut, { align: "center" });
+  x.save(); x.beginPath(); x.roundRect(0, 48, w, h - 48, [0, 0, 16, 16]); x.clip();
+  x.drawImage(img, cam.sx, cam.sy, cam.sw, cam.sh, 0, 48, w, h - 48);
+  if (hl) { const k = w / cam.sw, ky = (h - 48) / cam.sh; const hx = (hl.x - cam.sx) * k, hy = 48 + (hl.y - cam.sy) * ky, hw = hl.w * k, hh = hl.h * ky;
+    x.fillStyle = `rgba(5,6,5,${0.42 * hl.p})`; x.fillRect(0, 48, w, h); x.save(); x.beginPath(); x.roundRect(hx, hy, hw, hh, 8); x.clip(); x.drawImage(img, cam.sx, cam.sy, cam.sw, cam.sh, 0, 48, w, h - 48); x.restore();
+    rr(hx - 4, hy - 4, hw + 8, hh + 8, 10, null, C.lime, hl.p, 3); }
+  x.restore();
+  rr(0, 0, w, h, 16, null, "#262B25", 1, 1.5);
+  x.restore();
+}
+function camLerp(a, b, p) { return { sx: lerp(a.sx, b.sx, p), sy: lerp(a.sy, b.sy, p), sw: lerp(a.sw, b.sw, p), sh: lerp(a.sh, b.sh, p) }; }
+function chapter(n, title, sub, t, X = 120, Y = 420) {
+  const a = seg(t, 0.1, 0.5), b = seg(t, 0.25, 0.75), c = seg(t, 0.45, 0.95);
+  txt(`0${n}`, X, Y - 120, M(700, 22), C.lime, { alpha: ex(a), ls: 3 });
+  x.save(); x.globalAlpha = ex(a); x.fillStyle = C.lime; x.fillRect(X + 46, Y - 128, 60 * ex(a), 2); x.restore();
+  txt("/ 04", X + 120, Y - 120, M(500, 22), C.faint, { alpha: ex(a), ls: 3 });
+  title.forEach((line, i) => reveal(line, X, Y + i * 84, S(800, 76), i === title.length - 1 ? C.lime : C.ink, seg(t, 0.25 + i * 0.12, 0.95 + i * 0.12), { ls: -2.5 }));
+  sub.forEach((line, i) => txt(line, X + 2, Y + title.length * 84 + 30 + i * 42, S(500, 30), C.mut, { alpha: ex(c) }));
+}
+function bug(a) { if (a <= 0) return; wordmark(60, 70, 30, {}); txt("ROBINHOOD CHAIN", W - 60, 62, M(600, 15), C.faint, { align: "right", alpha: a, ls: 4 }); }
+
+// ---------- scenes ----------
+function s1(t) { // kinetic hook
+  grid(0.5, t * 8); glow(W / 2, H / 2, 900, "rgba(200,241,105,0.07)");
+  const out = eio(seg(t, 2.55, 3.0));
+  x.save(); x.translate(0, -out * 140); x.globalAlpha = 1 - out;
+  const L = [["200+ assets.", C.ink, 0.1], ["7 protocols.", C.ink, 0.6], ["One chain.", C.lime, 1.1]];
+  L.forEach(([s, c, d], i) => reveal(s, W / 2, 430 + i * 130, S(800, 120), c, seg(t, d, d + 0.6), { align: "center", ls: -4 }));
+  x.restore();
+  const q = seg(t, 2.9, 3.5);
+  reveal("Which of your assets", W / 2, 500, S(800, 104), C.ink, q, { align: "center", ls: -3.5 });
+  reveal("are actually working?", W / 2, 620, S(800, 104), C.lime, seg(t, 3.05, 3.65), { align: "center", ls: -3.5 });
+  const fo = seg(t, 4.4, 4.7); if (fo > 0) { x.fillStyle = `rgba(5,6,5,${fo})`; x.fillRect(0, 0, W, H); }
+}
+function s2(t) { // logo reveal over the braid
+  grid(0.45, 40 + t * 8);
+  const bp = ex(seg(t, 0.2, 1.6));
+  x.save(); x.globalAlpha = bp; braid(t, { y0: 760, amp: 70, w: 22, a: 0.9 }); x.restore();
+  const g = x.createLinearGradient(0, 600, 0, 1080); g.addColorStop(0, "rgba(5,6,5,1)"); g.addColorStop(0.35, "rgba(5,6,5,0)"); g.addColorStop(0.75, "rgba(5,6,5,0)"); g.addColorStop(1, "rgba(5,6,5,1)"); x.fillStyle = g; x.fillRect(0, 600, W, 480);
+  const tp = seg(t, 0.1, 0.7);
+  glow(W / 2, 380, 420, "rgba(200,241,105,0.18)", ex(tp));
+  x.save(); x.translate(W / 2, 330); x.scale(lerp(0.4, 1, ex(tp)), lerp(0.4, 1, ex(tp))); markTile(0, 0, 150, ex(tp)); x.restore();
+  wordmark(W / 2, 560, 150, { align: "center", reveal: seg(t, 0.7, 1.4), slashP: seg(t, 1.2, 1.6) });
+  txt("See what any wallet could be doing.", W / 2, 650, S(600, 42), C.mut, { align: "center", alpha: ex(seg(t, 1.6, 2.2)), ls: -0.5 });
+}
+const HOME = { full: { sx: 0, sy: 0, sw: 2400, sh: 1500 }, input: { sx: 120, sy: 230, sw: 1500, sh: 937 } };
+function s3(t) { // 01 paste any wallet
+  grid(0.4, 80 + t * 8); bug(1);
+  chapter(1, ["Paste any", "wallet."], ["Yours, a fund's, or one", "you want to learn from."], t, 120, 470);
+  const enter = ex(seg(t, 0.1, 0.9));
+  const cam = camLerp(HOME.full, HOME.input, eio(seg(t, 1.0, 2.6)));
+  const hl = { x: 190, y: 488, w: 1105, h: 100, p: ex(seg(t, 2.4, 2.9)) };
+  browser(IMG.home, lerp(1100, 760, enter), 170, 1040, 700, cam, { a: enter, hl });
+  // typed address over the input once highlighted
+  if (t > 2.7) {
+    const k = 1040 / cam.sw, ky = 652 / cam.sh, bx = lerp(1100, 760, enter);
+    const ix = bx + (255 - cam.sx) * k, iy = 170 + 48 + (560 - cam.sy) * ky;
+    const s = "0x ···· ···· ···· ····", n = Math.floor(s.length * seg(t, 2.8, 3.8));
+    x.save(); x.fillStyle = "#0B0E0A"; x.fillRect(ix - 6, iy - 40, 520, 54); x.restore();
+    txt(s.slice(0, n), ix, iy, M(500, 34), C.ink);
+    if (Math.floor(t * 2.4) % 2 === 0) { const cw = tw(s.slice(0, n), M(500, 34)); x.fillStyle = C.lime; x.fillRect(ix + cw + 6, iy - 30, 3, 36); }
+  }
+}
+const ROWS = [["NVDA", "STOCK TOKEN", true, "EARN", "Morpho"], ["USDG", "STABLECOIN", true, "LEND", "Spark"], ["TSLA", "STOCK TOKEN", true, "FIXED RATE", "Pendle"], ["WETH", "CRYPTO", false, "POOL", "Uniswap"], ["cbBTC", "CRYPTO", true, "BORROW AGAINST", "Morpho"]];
+function s4(t) { // 02 every asset, what it could do
+  grid(0.4, 120 + t * 8); bug(1);
+  chapter(2, ["See what", "each asset", "could do."], ["Idle money, open positions", "and the best options for each."], t, 120, 420);
+  const X0 = 780, w = 1020, a = ex(seg(t, 0.1, 0.7));
+  x.save(); x.translate(0, (1 - a) * 60); x.globalAlpha = a;
+  x.save(); x.shadowColor = "rgba(0,0,0,0.7)"; x.shadowBlur = 70; x.shadowOffsetY = 30; rr(X0, 150, w, 780, 16, "#0A0C0A"); x.restore();
+  rr(X0, 150, w, 780, 16, null, C.line2);
+  txt("WALLET READOUT", X0 + 36, 205, M(600, 17), C.mut, { ls: 4 }); txt("0x ···· ····", X0 + w - 36, 205, M(500, 17), C.faint, { align: "right" });
+  const stats = [["ASSETS", 5, C.ink], ["IDLE", 4, C.amber], ["PROTOCOLS READ", 7, C.lime]];
+  stats.forEach(([k, v, c], i) => { const sx = X0 + 36 + i * 320; rr(sx, 232, 300, 108, 10, "#0D100D", C.line); txt(k, sx + 22, 268, M(500, 14), C.faint, { ls: 3 }); txt(String(Math.round(v * ex(seg(t, 0.5, 1.6)))), sx + 22, 322, M(800, 40), c); });
+  ROWS.forEach(([sym, kind, idle, act, proto], i) => {
+    const t0 = 0.8 + i * 0.22, p = ex(seg(t, t0, t0 + 0.6)), Y = 368 + i * 108;
+    x.save(); x.globalAlpha *= p; x.translate((1 - p) * 80, 0);
+    rr(X0 + 36, Y, w - 72, 94, 10, "#0D100D", C.line);
+    rr(X0 + 60, Y + 23, 48, 48, 8, null, C.line2); txt(sym.slice(0, 2).toUpperCase(), X0 + 84, Y + 54, M(800, 15), C.lime, { align: "center" });
+    txt(sym, X0 + 130, Y + 46, M(800, 26), C.ink); txt(kind, X0 + 130, Y + 72, M(500, 13), C.faint, { ls: 2 });
+    if (idle) { rr(X0 + 390, Y + 30, 88, 34, 6, C.amber); txt("IDLE", X0 + 434, Y + 53, M(800, 15), C.dark, { align: "center", ls: 2 }); }
+    else { rr(X0 + 390, Y + 30, 110, 34, 6, null, C.line2); txt("IN USE", X0 + 445, Y + 53, M(700, 15), C.mut, { align: "center", ls: 2 }); }
+    const ap = ex(seg(t, t0 + 0.45, t0 + 0.9)), R = X0 + w - 62;
+    const pw = tw("· " + proto, M(500, 19)), aw = tw(act, M(800, 21));
+    txt("· " + proto, R, Y + 55, M(500, 19), C.mut, { align: "right", alpha: ap });
+    txt(act, R - pw - 10, Y + 55, M(800, 21), C.ink, { align: "right", alpha: ap });
+    txt("→", R - pw - 10 - aw - 14 - (1 - ap) * 30, Y + 55, M(800, 21), C.lime, { align: "right", alpha: ap });
+    x.restore();
+  });
+  x.restore();
+  const b = ex(seg(t, 2.9, 3.4));
+  if (b > 0) { x.save(); x.globalAlpha = b; x.shadowColor = "rgba(200,241,105,0.4)"; x.shadowBlur = 40; rr(X0 + 200, 905, w - 400, 74, 37, C.lime); x.restore(); txt("4 assets could be working", X0 + w / 2, 954, S(800, 34), C.dark, { align: "center", alpha: b, ls: -0.5 }); }
+}
+const TERM = { full: { sx: 0, sy: 0, sw: 2400, sh: 1500 }, cmd: { sx: 160, sy: 260, sw: 1800, sh: 1128 }, res: { sx: 110, sy: 108, sw: 2250, sh: 1392 } };
+function s5(t) { // 03 ask in plain words
+  grid(0.4, 160 + t * 8); bug(1);
+  chapter(3, ["Ask in", "plain words."], ["Earn, fix a rate, borrow,", "provide liquidity, swap, bridge."], t, 120, 470);
+  const enter = ex(seg(t, 0.1, 0.9));
+  const p1 = eio(seg(t, 0.8, 1.8)), p2 = eio(seg(t, 2.2, 3.4));
+  let cam = camLerp(TERM.full, TERM.cmd, p1); cam = camLerp(cam, TERM.res, p2);
+  const hl = t > 3.2 ? { x: 205, y: 640, w: 2110, h: 70, p: ex(seg(t, 3.3, 3.8)) } : null;
+  browser(IMG.terminal, lerp(1100, 760, enter), 170, 1040, 700, cam, { a: enter, hl });
+}
+function s6(t) { // 04 act in your own wallet
+  grid(0.4, 200 + t * 8); bug(1);
+  chapter(4, ["Act in your", "own wallet."], ["Live routes, minimum output", "set before you sign."], t, 120, 470);
+  const enter = ex(seg(t, 0.1, 0.9));
+  const zoom = eio(seg(t, 0.9, 2.2));
+  const cam = camLerp({ sx: 0, sy: 0, sw: 2400, sh: 1500 }, { sx: 1300, sy: 90, sw: 1100, sh: 687 * 1.5 }, zoom);
+  const hl = t > 2.4 ? { x: 1760, y: 560, w: 600, h: 180, p: ex(seg(t, 2.5, 3.0)) } : null;
+  browser(IMG.swap, lerp(1100, 760, enter), 140, 1040, 760, cam, { a: enter, hl });
+  const c = ex(seg(t, 3.0, 3.5));
+  if (c > 0) { rr(800, 930, 960, 70, 35, "#0E110E", C.line2, c); txt("✓ Exact amount approvals   ✓ No message signing   ✓ Pinned contracts", 1280, 975, M(600, 18), C.lime, { align: "center", alpha: c, ls: 1 }); }
+}
+const MK = { sx: 560, sy: 680, sw: 1000, sh: 1250 }, AS = { sx: 0, sy: 0, sw: 2400, sh: 1500 };
+function s7(t) { // montage: every asset, every way to use it
+  grid(0.4, 240 + t * 8);
+  const a = ex(seg(t, 0, 0.8)), drift = t * 18;
+  x.save(); x.globalAlpha = 0.9;
+  browser(IMG.markets, lerp(-300, 60, a), 140 - drift, 560, 700, { sx: MK.sx, sy: MK.sy + t * 60, sw: MK.sw, sh: MK.sh }, { a, rot: -0.03, url: "skein/markets" });
+  browser(IMG.asset, lerp(2200, 1300, a), 220 + drift, 560, 600, { sx: 0, sy: 40 + t * 70, sw: 2400, sh: 2400 * 540 / 560 }, { a, rot: 0.03, url: "skein/nvda" });
+  x.restore();
+  x.fillStyle = "rgba(5,6,5,0.42)"; x.fillRect(0, 0, W, H);
+  glow(W / 2, H / 2, 640, "rgba(5,6,5,0.92)");
+  reveal("Every asset.", W / 2, 500, S(800, 110), C.ink, seg(t, 0.4, 1.0), { align: "center", ls: -4 });
+  reveal("Every way to use it.", W / 2, 630, S(800, 110), C.lime, seg(t, 0.6, 1.2), { align: "center", ls: -4 });
+  txt("Stock tokens  ·  Stablecoins  ·  Crypto", W / 2, 730, M(600, 22), C.mut, { align: "center", alpha: ex(seg(t, 1.2, 1.7)), ls: 3 });
+}
+function s8(t) { // end card
+  grid(0.45, 280 + t * 8);
+  x.save(); x.globalAlpha = ex(seg(t, 0, 1.2)); braid(t + 10, { y0: 860, amp: 60, w: 18, a: 0.85 }); x.restore();
+  const g = x.createLinearGradient(0, 700, 0, 1080); g.addColorStop(0, "rgba(5,6,5,1)"); g.addColorStop(0.4, "rgba(5,6,5,0)"); g.addColorStop(0.8, "rgba(5,6,5,0)"); g.addColorStop(1, "rgba(5,6,5,1)"); x.fillStyle = g; x.fillRect(0, 700, W, 380);
+  glow(W / 2, 420, 520, "rgba(200,241,105,0.14)", ex(seg(t, 0, 0.8)));
+  const p = seg(t, 0.1, 0.7);
+  x.save(); x.translate(W / 2 - 330, 400); x.scale(lerp(0.6, 1, ex(p)), lerp(0.6, 1, ex(p))); markTile(0, 0, 150, ex(p)); x.restore();
+  wordmark(W / 2 - 220, 455, 150, { reveal: seg(t, 0.4, 1.1), slashP: seg(t, 0.9, 1.3) });
+  txt("See what any wallet could be doing.", W / 2, 590, S(700, 48), C.ink, { align: "center", alpha: ex(seg(t, 1.2, 1.8)), ls: -1 });
+  const c = ex(seg(t, 1.7, 2.3));
+  rr(W / 2 - 230, 650, 460, 64, 32, null, C.lime, c, 2);
+  txt("BUILT FOR ROBINHOOD CHAIN", W / 2, 690, M(700, 18), C.lime, { align: "center", alpha: c, ls: 3 });
+  txt("Read only to explore  ·  You sign every transaction", W / 2, 770, S(500, 24), C.faint, { align: "center", alpha: ex(seg(t, 2.1, 2.7)) });
+}
+
+// [start, end, scene]; scenes cross through a lime wipe or a fade
+const SCENES = [[0, 4.7, s1], [4.7, 7.6, s2], [7.6, 12.3, s3], [12.3, 16.9, s4], [16.9, 21.4, s5], [21.4, 25.9, s6], [25.9, 29.4, s7], [29.4, DUR, s8]];
+const WIPES = [7.6, 12.3, 16.9, 21.4, 25.9];
+function draw(t) {
+  x.setTransform(1, 0, 0, 1, 0, 0); x.globalAlpha = 1; x.fillStyle = C.bg; x.fillRect(0, 0, W, H);
+  for (const [a, b, f] of SCENES) if (t >= a && t < b) { x.save(); f(t - a); x.restore(); const fi = 1 - seg(t, a, a + 0.25); if (a > 0 && !WIPES.includes(a) && fi > 0) { x.fillStyle = `rgba(5,6,5,${fi})`; x.fillRect(0, 0, W, H); } }
+  // lime wipe: a band sweeps across, the next scene is revealed behind it
+  for (const w of WIPES) { const p = seg(t, w - 0.32, w + 0.32); if (p > 0 && p < 1) { const e = eio(p), X = lerp(-W * 0.3, W * 1.05, e); x.save(); x.fillStyle = C.lime; x.beginPath(); x.moveTo(X, 0); x.lineTo(X + 260, 0); x.lineTo(X + 140, H); x.lineTo(X - 120, H); x.fill(); x.restore(); } }
+  vignette(); grain(t);
+}
+
+async function setup() {
+  const base = "/node_modules/@fontsource-variable";
+  for (const f of [new FontFace("JB", `url(${base}/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2)`, { weight: "100 900" }), new FontFace("IT", `url(${base}/inter-tight/files/inter-tight-latin-wght-normal.woff2)`, { weight: "100 900" })]) document.fonts.add(await f.load());
+  await Promise.all(["home", "terminal", "swap", "asset", "markets"].map((n) => new Promise((r, j) => { const i = new Image(); i.onload = () => ((IMG[n] = i), r()); i.onerror = j; i.src = `shots/${n}.png`; })));
+  makeNoise(); draw(0); return true;
+}
+window.draw = draw; window.DUR = DUR; window.ready = setup();
+
+window.encode = async function (fps = 60) {
+  const out = []; let desc = null, err = null;
+  const enc = new VideoEncoder({ output: (chunk, meta) => { if (meta?.decoderConfig?.description) { const d = meta.decoderConfig.description; desc = new Uint8Array(d.buffer ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : d); } const b = new Uint8Array(chunk.byteLength); chunk.copyTo(b); out.push({ b, key: chunk.type === "key" }); }, error: (e) => (err = e) });
+  enc.configure({ codec: "avc1.640033", width: W, height: H, bitrate: 16_000_000, framerate: fps, latencyMode: "quality", avc: { format: "avc" } });
+  const n = Math.round(DUR * fps);
+  for (let f = 0; f < n; f++) {
+    draw(f / fps);
+    const vf = new VideoFrame(cv, { timestamp: Math.round((f * 1e6) / fps), duration: Math.round(1e6 / fps) });
+    enc.encode(vf, { keyFrame: f % (fps * 2) === 0 }); vf.close();
+    while (enc.encodeQueueSize > 4) await new Promise((r) => setTimeout(r, 1));
+    if (err) throw err;
+  }
+  await enc.flush(); enc.close();
+  const total = out.reduce((s, c) => s + c.b.length, 0), all = new Uint8Array(total); let o = 0;
+  for (const c of out) { all.set(c.b, o); o += c.b.length; }
+  window.blob = new Blob([all]);
+  window.meta = { fps, frames: out.length, sizes: out.map((c) => c.b.length), keys: out.map((c, i) => (c.key ? i : -1)).filter((i) => i >= 0), desc: btoa(String.fromCharCode(...desc)), width: W, height: H };
+  return { frames: out.length, bytes: total };
+};
+window.chunk = async (i, size) => { const buf = new Uint8Array(await window.blob.slice(i, i + size).arrayBuffer()); let s = ""; for (let k = 0; k < buf.length; k += 0x8000) s += String.fromCharCode(...buf.subarray(k, k + 0x8000)); return btoa(s); };
+</script>
+</body>
+</html>
