@@ -314,7 +314,6 @@ export function StatusLine({ protocols }: { protocols: number | null }) {
   const live = useLive({});
   return (
     <div className="cmd-status">
-      <span className="spacer" />
       <span>{t("home.cmd.assets", { n: list?.length ?? "…" })}</span>
       {protocols !== null && <span>{t("home.cmd.protocols", { n: protocols })}</span>}
       <span className={`cmd-live${live.connected ? " on" : ""}`}>
