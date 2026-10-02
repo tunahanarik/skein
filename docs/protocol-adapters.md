@@ -1,6 +1,6 @@
 # Protocol adapters
 
-`src/opportunities/adapter.ts`. Each protocol is one class implementing `OpportunityAdapter`. The engine consumes only this interface.
+`packages/engine/src/opportunities/adapter.ts`. Each protocol is one class implementing `OpportunityAdapter`. The engine consumes only this interface.
 
 ```ts
 interface OpportunityAdapter {
@@ -24,7 +24,7 @@ interface OpportunityAdapter {
 2. **No self-pricing.** USD values come from `ctx.prices` (Phase 1). Protocol-reported USD floats and protocol oracles are never used for valuation.
 3. **Explicit yield types** (see opportunity-engine.md). Never emit an untyped "apy".
 4. **Provenance on every value.** Use `Measured<T>` with `source.type` / `provider` / `method` / `url` or `contract` / `blockNumber` / `sourceTimestamp`, and `origin` SUPPLIED or COMPUTED.
-5. **Freshness from `src/config/freshness.ts` only.** Adapters must not hardcode ages or TTLs.
+5. **Freshness from `packages/core/src/config/freshness.ts` only.** Adapters must not hardcode ages or TTLs.
 6. **Cross-verify against the chain** where the chain is authoritative. On disagreement, emit a `DataConflict` with both values, keep the authoritative one, and say so in `resolution`.
 7. **Separate caches:** slow configuration and fast state, using `CACHE_TTL_MS`. Never cache failures; stale fallback must be bounded and reported.
 8. **Positions are not opportunities.**
@@ -37,8 +37,8 @@ interface OpportunityAdapter {
 
     Leave `eligibility: null`: the engine computes it.
 11. **(Phase 3) Only advertise implemented capabilities.** Pendle declares `userPositions: true` because balances and rates are fully interpretable onchain.
-12. **(Phase 3) Sanitize token metadata.** Chain-read symbols go through `sanitizeSymbol` (`src/lib/sanitize.ts`), and API strings through `sanitizeLabel`.
-13. **(Phase 4) TRADE adapters** publish `Opportunity.trade = { market, route }` using the generic trade model (`src/model/trade.ts`). Rules:
+12. **(Phase 3) Sanitize token metadata.** Chain-read symbols go through `sanitizeSymbol` (`packages/core/src/lib/sanitize.ts`), and API strings through `sanitizeLabel`.
+13. **(Phase 4) TRADE adapters** publish `Opportunity.trade = { market, route }` using the generic trade model (`packages/core/src/model/trade.ts`). Rules:
     - One opportunity per direction.
     - `yields` stays empty.
     - DEX prices are `DEX_MARKET_PRICE`; USD always comes from the Phase 1 Price Service.
@@ -48,10 +48,10 @@ interface OpportunityAdapter {
     - Refuse routes containing unverified or non-canonical markets.
 
 ## Adding a protocol
-1. Create `src/protocols/<name>/` with API/onchain readers, a pure `normalize.ts`, and `adapter.ts`.
+1. Create `packages/protocols/src/<name>/` with API/onchain readers, a pure `normalize.ts`, and `adapter.ts`.
 2. Map venues to categories and set lifecycle, entry, liquidity kind and relationships.
 3. Add a `details` member to `OpportunityDetails`.
-4. Register it in `src/runtime.ts`.
+4. Register it in `packages/runtime/src/runtime.ts`.
 5. **No protocol-specific change to the engine.**
 
 Phase 3 did exactly this for Pendle ([protocols/pendle-adapter.md](protocols/pendle-adapter.md)).

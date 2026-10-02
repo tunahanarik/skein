@@ -2,16 +2,16 @@
  * Pendle adapter + generic maturity/eligibility semantics, end-to-end on the offline world.
  */
 import { describe, expect, it } from "vitest";
-import type { Opportunity } from "../../src/model/opportunity.js";
-import { compareMetrics, comparisonGroup } from "../../src/opportunities/comparison.js";
-import { OpportunityEngine } from "../../src/opportunities/engine.js";
-import { resolveToCanonical } from "../../src/model/assetRelationship.js";
-import { getPortfolio } from "../../src/portfolio/engine.js";
-import { MorphoAdapter } from "../../src/protocols/morpho/adapter.js";
-import { PendleAdapter } from "../../src/protocols/pendle/adapter.js";
-import { FakeMorphoApi, fixtureMarkets, installMorpho } from "../fixtures/morpho.js";
-import { FakePendleApi, fixturePendleMarkets, IMPLIED_NVDA, IMPLIED_USDG, installPendle, type FixtureMarket } from "../fixtures/pendle.js";
-import { BLOCK, defaultWorld, NOW, NOW_S, NVDA, NVDA_MULT, ONE, testStack, UNKNOWN_FAKE_USDG, USDG, WALLET } from "../fixtures/world.js";
+import type { Opportunity } from "@skein/core/model/opportunity";
+import { compareMetrics, comparisonGroup } from "@skein/engine/opportunities/comparison";
+import { OpportunityEngine } from "@skein/engine/opportunities/engine";
+import { resolveToCanonical } from "@skein/core/model/assetRelationship";
+import { getPortfolio } from "@skein/portfolio/engine";
+import { MorphoAdapter } from "@skein/protocols/morpho/adapter";
+import { PendleAdapter } from "@skein/protocols/pendle/adapter";
+import { FakeMorphoApi, fixtureMarkets, installMorpho } from "@skein/testkit/morpho";
+import { FakePendleApi, fixturePendleMarkets, IMPLIED_NVDA, IMPLIED_USDG, installPendle, type FixtureMarket } from "@skein/testkit/pendle";
+import { BLOCK, defaultWorld, NOW, NOW_S, NVDA, NVDA_MULT, ONE, testStack, UNKNOWN_FAKE_USDG, USDG, WALLET } from "@skein/testkit/world";
 
 const ALL = { eligibility: "ALL" as const };
 

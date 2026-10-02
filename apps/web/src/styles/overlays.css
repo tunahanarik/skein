@@ -1,0 +1,95 @@
+/*
+ * Floating layers: dialogs, the asset picker and autocomplete lists.
+ * Frosted glass is used only here (and on the header), never on content panels.
+ */
+
+/* dialog */
+.modal-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fade 220ms var(--ease-out); }
+.modal, .modal.panel { width: min(460px, 100%); max-height: calc(100vh - 32px); overflow: auto; display: grid; gap: 16px; padding: 20px; outline: none; border-radius: var(--r-lg); background: var(--glass); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); box-shadow: var(--e4); animation: modal-in 280ms var(--ease-drawer); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.modal-head h2 { font-size: 16px; line-height: 24px; }
+.modal-head .btn.small { --h: 30px; width: 30px; padding: 0; color: var(--fg-2); background: transparent; box-shadow: none; }
+.modal-head .btn.small:hover { color: var(--fg-1); background: var(--hover-2); }
+.modal:has(.wp) { width: min(520px, 100%); }
+
+/* connect a wallet */
+.wp { display: grid; gap: 16px; }
+.wp-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; font-weight: 500; color: var(--fg-3); }
+.wp-n { font-family: var(--mono); color: var(--fg-4); }
+.wp-list { display: grid; gap: 6px; }
+.wp-row { display: flex; align-items: center; gap: 12px; width: 100%; height: 52px; padding: 0 12px; border: 0; border-radius: var(--r-md); background: var(--bg-2); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-1); text-align: start; cursor: pointer; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.wp-row:hover:not(:disabled) { background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-3); }
+.wp-row:active:not(:disabled) { transform: scale(0.99); }
+.wp-row:disabled { opacity: 0.6; cursor: wait; }
+.wp-row img, .wp-get img, .wp-rh img { flex: none; border-radius: var(--r-md); }
+.wp-row > .icon { margin-inline-start: 4px; color: var(--fg-4); transition: transform 220ms var(--ease-out), color var(--t-fast) var(--ease-out); }
+.wp-row:hover:not(:disabled) > .icon { color: var(--fg-1); transform: translateX(2px); }
+.wp-name { font-size: 14px; font-weight: 600; }
+.wp-mono { width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-md); background: var(--bg-3); font: 600 11px/1 var(--mono); }
+.wp-tag { margin-inline-start: auto; padding: 2px 6px; border-radius: var(--r-xs); font: 600 9.5px/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); box-shadow: inset 0 0 0 1px var(--line-2); }
+.wp-tag.on { color: var(--accent-fg); background: var(--accent-a08); box-shadow: inset 0 0 0 1px var(--accent-a16); }
+.wp-empty, .wp-wait { padding: 4px 2px; font-size: 13px; color: var(--fg-3); }
+.wp-wait { animation: breathe 1.6s ease-in-out infinite; }
+.wp-rh { display: flex; align-items: flex-start; gap: 14px; padding: 16px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--accent-a08), transparent 70%), var(--bg-2); box-shadow: inset 0 0 0 1px var(--accent-a16); }
+.wp-rh-txt { display: grid; gap: 6px; min-width: 0; }
+.wp-rh-name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.wp-rh-name .wp-tag { margin-inline-start: 0; color: var(--accent-fg); box-shadow: inset 0 0 0 1px var(--accent-a24); }
+.wp-rh-sub { font-size: 12.5px; line-height: 19px; color: var(--fg-2); }
+.wp-stores { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.wp-stores a { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: var(--r-sm); font-size: 12.5px; font-weight: 500; color: var(--fg-1); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2); text-decoration: none; transition: box-shadow var(--t-fast) var(--ease-out); }
+.wp-stores a:hover { box-shadow: inset 0 0 0 1px var(--line-3); text-decoration: none; }
+.wp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.wp-get { display: flex; align-items: center; gap: 10px; min-width: 0; height: 44px; padding: 0 10px; border-radius: var(--r-md); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-1); text-decoration: none; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
+.wp-get:hover { background: var(--hover-2); box-shadow: inset 0 0 0 1px var(--line-2); text-decoration: none; }
+.wp-get .wp-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wp-install { margin-inline-start: auto; font-size: 11.5px; white-space: nowrap; color: var(--fg-3); transition: color var(--t-fast) var(--ease-out); }
+.wp-get:hover .wp-install { color: var(--accent-fg); }
+.wp-err { font-size: 12.5px; color: var(--down); }
+.wp-note { padding-top: 12px; border-top: 1px solid var(--line-1); font-size: 12px; line-height: 18px; color: var(--fg-3); }
+@media (max-width: 480px) { .wp-grid { grid-template-columns: 1fr; } }
+
+/* asset picker: the button and its list on the page's top layer */
+.picker { position: relative; display: inline-block; vertical-align: middle; }
+.picker-btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 6px; border: 0; border-radius: var(--r-sm); background: var(--bg-2); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-2); font-size: 14px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; cursor: pointer; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.picker-btn:hover { background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-3); }
+.picker-btn:active { transform: scale(0.97); }
+.picker-btn[aria-expanded="true"] { box-shadow: inset 0 0 0 1px var(--accent-a24), 0 0 0 4px var(--accent-a08); }
+.picker-btn .avatar { width: 22px; height: 22px; font-size: 7.5px; }
+.picker-btn .chev { color: var(--fg-3); font-size: 10px; transition: transform 220ms var(--ease-out); }
+.picker-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.picker-pop, .picker-pop.panel { position: fixed; z-index: 70; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; padding: 0; border-radius: var(--r-lg); background: var(--glass); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); box-shadow: var(--e3); animation: pop var(--t-pop) var(--ease-out); }
+.ap-search { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line-1); }
+.ap-prompt { font: 700 15px/1 var(--mono); color: var(--accent-fg); }
+.ap-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--fg-1); font: 400 14px var(--mono); caret-color: var(--accent-fg); }
+.ap-search input::placeholder { color: var(--fg-3); }
+.ap-tabs { display: flex; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--line-1); overflow-x: auto; scrollbar-width: none; }
+.ap-tabs button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--fg-3); font-size: 12.5px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
+.ap-tabs button:hover { color: var(--fg-1); background: var(--hover-2); }
+.ap-tabs button.on { color: var(--fg-1); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2); }
+.ap-tabs .c { font: 500 11px/1 var(--mono); color: var(--fg-4); }
+.ap-list { display: block; overflow-y: auto; padding: 4px 6px 6px; scrollbar-width: thin; overscroll-behavior: contain; }
+.ap-group { position: sticky; top: -4px; z-index: 1; padding: 10px 8px 6px; font: 500 10.5px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-3); background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.ap-opt, .picker-opt { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--r-sm); background: none; color: var(--fg-1); text-align: start; cursor: pointer; transition: background 80ms var(--ease-out); }
+.ap-opt .avatar { width: 28px; height: 28px; }
+.ap-opt .nm { display: grid; min-width: 0; }
+.ap-opt .s { font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; }
+.ap-opt .n { font-size: 12px; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ap-opt .px { display: grid; justify-items: end; gap: 1px; }
+.ap-opt .px .num { font-size: 12.5px; color: var(--fg-2); }
+.ap-opt .px .ch { font-size: 11.5px; }
+.ap-opt:hover, .ap-opt.hi { background: var(--hover-2); }
+.ap-opt.hi::before { content: ""; position: absolute; inset-inline-start: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px; background: var(--accent-fg); }
+.ap-opt.cur .s::after { content: ""; display: inline-block; width: 5px; height: 5px; margin-inline-start: 6px; border-radius: 50%; vertical-align: 2px; background: var(--accent-fg); }
+.ap-empty { padding: 18px 10px; font-size: 13px; color: var(--fg-3); }
+.ap-foot { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--line-1); font-size: 11.5px; color: var(--fg-3); }
+.ap-foot kbd { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: var(--r-xs); font-size: 10.5px; color: var(--fg-2); background: var(--bg-3); box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--line-1); }
+@media (max-width: 560px) { .ap-foot .keys { display: none; } .ap-opt .px .num { font-size: 11.5px; } }
+
+/* autocomplete under the command line */
+.cmd-pop { position: absolute; inset-inline: 0; top: calc(100% + 8px); z-index: 50; display: grid; gap: 1px; padding: 6px; border-radius: var(--r-lg); background: var(--glass); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); box-shadow: var(--e3); animation: pop var(--t-pop) var(--ease-out); transform-origin: top; }
+.cmd-pop button { display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--fg-1); text-align: start; cursor: pointer; }
+.cmd-pop button.on { background: var(--hover-2); }
+.cmd-pop .avatar { width: 24px; height: 24px; font-size: 8px; }
+.cmd-pop .s { font-weight: 600; }
+.cmd-pop .n { font-size: 13px; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

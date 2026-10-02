@@ -2,7 +2,7 @@
 
 Phase 4 answers *"I own asset X. Where can I trade it on Robinhood Chain?"* It is read-only: there are no swaps, approvals, signatures, permits, calldata or transaction submission.
 
-The generic model is `src/model/trade.ts`. It is protocol-independent; the Uniswap adapter is one producer of it.
+The generic model is `packages/core/src/model/trade.ts`. It is protocol-independent; the Uniswap adapter is one producer of it.
 
 ## Three separate concepts
 
@@ -43,7 +43,7 @@ Each verified market becomes **two** TRADE opportunities, one per direction, bec
 | `PORTFOLIO_PRICE` | Phase 1 Price Service (Chainlink / Robinhood quote × multiplier) | valuation, TVL, portfolio |
 | `DEX_MARKET_PRICE` | pool state (`slot0.sqrtPriceX96`), exact bigint | trade discovery, routing, cross-checks |
 
-The DEX price **never** replaces the portfolio price. If the two disagree by more than `MARKET_PRICE_DIVERGENCE_PCT` (2 %, `src/config/trade.ts`), the market gets a `MARKET_PRICE_DIVERGENCE` warning with both values. Neither is declared correct.
+The DEX price **never** replaces the portfolio price. If the two disagree by more than `MARKET_PRICE_DIVERGENCE_PCT` (2 %, `packages/robinhood/src/config/trade.ts`), the market gets a `MARKET_PRICE_DIVERGENCE` warning with both values. Neither is declared correct.
 
 ## Liquidity semantics (no universal "liquidity" number)
 
@@ -70,7 +70,7 @@ Everything is kept in `eligibility: "ALL"` (`--debug`).
 
 TRADE is its own comparison domain ([trade-routing.md](trade-routing.md)):
 - **Without a quote:** only objective market attributes (TVL, fee, hops, verification).
-- **With quotes:** routes are comparable **only** for the same input asset, output asset and input amount, by expected output (`src/trade/compare.ts`). Anything else throws.
+- **With quotes:** routes are comparable **only** for the same input asset, output asset and input amount, by expected output (`packages/engine/src/trade/compare.ts`). Anything else throws.
 
 ## Portfolio context
 

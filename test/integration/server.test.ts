@@ -4,10 +4,10 @@ import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { createApi, RATE_LIMITS } from "../../src/server/api.js";
-import { createStatic, CSP } from "../../src/server/static.js";
-import { intelligenceStack } from "../fixtures/intelligence.js";
-import { NOW, NVDA, USDG, WALLET } from "../fixtures/world.js";
+import { createApi, RATE_LIMITS } from "@skein/server/api";
+import { createStatic, CSP } from "@skein/server/static";
+import { intelligenceStack } from "@skein/testkit/intelligence";
+import { NOW, NVDA, USDG, WALLET } from "@skein/testkit/world";
 
 let server: Server | null = null;
 afterEach(() => new Promise<void>((r) => (server ? server.close(() => r()) : r())));
@@ -133,7 +133,7 @@ describe("static web app", () => {
     expect(shell.status).toBe(200);
     expect(shell.headers.get("content-security-policy")).toBe(CSP);
     expect(CSP).toContain("script-src 'self'");
-    expect(CSP).toContain("connect-src 'self' https://li.quest https://aggregator-api.kyberswap.com;");
+    expect(CSP).toContain("connect-src 'self';");
     const js = await get("/assets/app-abc.js");
     expect(js.headers.get("cache-control")).toMatch(/immutable/);
     expect((await get("/assets/missing.js")).status).toBe(404);
@@ -143,7 +143,7 @@ describe("static web app", () => {
 
 describe("asset shell meta", () => {
   it("escapes values and replaces the generic title", async () => {
-    const { shellWithMeta } = await import("../../src/server/static.js");
+    const { shellWithMeta } = await import("@skein/server/static");
     const html = shellWithMeta('<html><head><title>Skein</title><meta name="description" content="x" /></head><body></body></html>', { title: 'A<b>"', description: "d & e" });
     expect(html).toContain("<title>A&lt;b&gt;&quot;</title>");
     expect(html).toContain('property="og:description" content="d &amp; e"');

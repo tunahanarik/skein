@@ -1,75 +1,80 @@
-# defi-router (working name)
+# Skein
 
-DeFi opportunity discovery for Robinhood Chain assets: "I hold NVDA / USDG / ETH; what can I do with them?" The server is read-only; Uniswap v3 swaps can be made from the web app, built in the browser and signed in the user's own wallet ([docs/swaps.md](docs/swaps.md)); cross-chain bridging through LI.FI ([docs/bridge.md](docs/bridge.md)).
+Onchain intelligence for Robinhood Chain. Who holds what, what they do with it, and what any wallet *could* do with it, with the source, age and verification status of every number.
 
-Protocols read today: Uniswap v3 and v4 (hookless), Ramses CL, Morpho, Pendle, Spark Savings, Beefy CLM and Steer. See [docs/protocols/coverage-expansion.md](docs/protocols/coverage-expansion.md).
+Today Skein reads every canonical asset of Robinhood Chain (195 Stock Tokens, USDG, ETH/WETH and a few crypto tokens) and the protocols around them. Protocols covered:
+- Uniswap v3 and v4 (hookless pools only)
+- Ramses CL
+- Morpho
+- Pendle
+- Spark Savings
+- Beefy CLM
+- Steer
 
-**Status: Phase 6: web app + HTTP API** (`pnpm start` → http://127.0.0.1:8787; see [docs/api.md](docs/api.md)). Before that, **Phase 5: product read API** ("I own this asset. What can I actually do with it?"): AssetIntelligence / PortfolioIntelligence / coverage as a projection of the raw engine, with usability, per-category ranking, data quality and freshness. It sits on top of Phase 4 (Uniswap v3 TRADE), Phase 3 (Pendle), Phase 2 (Morpho) and Phase 1 (portfolio, registry, prices). The server and every adapter stay read-only. The only execution path is the browser swap flow in `web/src/swap` (see [docs/swaps.md](docs/swaps.md)); the code holds no keys and cannot sign anything itself. See [docs/mvp.md](docs/mvp.md).
+For any wallet it shows holdings (Stock Tokens in share-equivalents), protocol positions, and the opportunities that are actually available: trade, earn, borrow and provide liquidity.
+
+Skein is read-only end to end. The server holds no keys, and the web app never builds, signs or sends a transaction. Connecting a wallet only reads its address.
+
+Where this is going: [docs/plan/roadmap.md](docs/plan/roadmap.md) (an Arkham-style intelligence platform, Robinhood Chain first) and [docs/plan/arkham.md](docs/plan/arkham.md).
 
 ## Layout
+
+A pnpm workspace of small libraries (`packages/*`) and the apps that run them (`apps/*`). Rules, layering and "where does a new thing go" are in [docs/structure.md](docs/structure.md).
+
 ```
-docs/                     research (network, stock-tokens, usdg, protocols, morpho, pendle, dex, indexing),
-                          architecture, data-sources, mvp, open-questions
-src/chain/                ChainReader (read-only RPC abstraction), retries, health, RPC config
-src/registry/             Asset model, Robinhood registry ingestion, snapshot, change detection, unknown tokens
-src/pricing/              Price Service (Chainlink → Robinhood quote fallback), freshness, conflicts
-src/portfolio/            balance reader + Portfolio Engine
-src/opportunities/        Opportunity Engine, adapter interface, filters/sorting, user-aware context
-src/protocols/morpho/     Morpho adapter (API client, onchain reads, normalization, oracle check, vaults, positions)
-src/protocols/pendle/     Pendle adapter (onchain discovery via factory logs, identity checks, API client, PT/YT/LP normalization, positions)
-src/protocols/uniswap/    v3-style adapter (dialects: Uniswap v3, Ramses CL) + Uniswap v4 hookless adapter (tick-walk reserves, V4Quoter)
-src/protocols/ramses/     Ramses CL dialect (official addresses, dynamic fee)
-src/protocols/spark/      Spark Savings (spUSDG) adapter (vsr, exact rpow)
-src/protocols/beefy/      Beefy CLM adapter (API candidates, onchain identity, onchain TVL)
-src/protocols/steer/      Steer v3 vault adapter (VaultRegistry + pool checks)
-src/protocols/shared/     managed-LP helpers (official v3 pool verification)
-src/sources/geckoterminal.ts  third-party 24h pool volume (display only)
-src/trade/                generic trade graph, DIRECT/ONE_HOP routing, quote comparison (venue-independent)
-src/product/              Phase 5 product read API: AssetIntelligenceService, usability, cards, ranking, quality, metrics
-src/server/               Phase 6 read-only HTTP API (node:http), rate limiting, static web app with strict CSP
-web/                      Phase 6 web app (React + Vite): explore, asset, wallet, coverage; wallet connect (EIP-6963) and Uniswap v3 swaps (web/src/swap)
-src/model/                Opportunity, RiskMetadata, provenance (DataSource / Sourced<T>), verification states, warning codes
-src/lib/                  exact decimal math, Stock Token balance + valuation, rates, freshness, validation, trusted links
-src/sources/              zod schemas for the Robinhood Stock Token API and the Chainlink directory
-src/config/               verified-only registries: chains, assets, protocols, ABIs
-scripts/                  read-only live validation scripts
-research/unverified.json  candidates that are NOT in production config
-research/evidence/        curated raw evidence from the 2026-09-24 research
-research/snapshots/       output of the last validation run
-data/registry/            committed, hash-checked Stock Token registry snapshot (baseline)
-test/unit, test/integration  offline tests (fixture world in test/fixtures)
+apps/server        HTTP API + web app server         apps/web           React + Vite app
+apps/cli           CLIs and live validation scripts
+packages/core      model, exact math, provenance     packages/networks  network definitions
+packages/chain     read-only RPC (ChainReader)       packages/robinhood Robinhood Chain registry, sources, deployments
+packages/pricing   Price Service                     packages/portfolio Portfolio Engine
+packages/engine    Opportunity Engine + routing      packages/protocols protocol adapters, one folder each
+packages/product   product read layer                packages/runtime   composition root
+packages/testkit   offline fixtures
+docs/  research/  brand/  test/integration/  tools/
 ```
 
 ## Commands
+
+Run every command from the repository root.
+
 ```bash
 pnpm install
 pnpm start                      # build the web app and serve it with the API on http://127.0.0.1:8787
 pnpm web:dev                    # web dev server on :5173 (run `pnpm serve` alongside)
-pnpm test                       # unit + integration tests (offline)
+pnpm check                      # dependency rules + typecheck + all offline tests
+pnpm test                       # unit (packages/*/test, apps/*/test) + integration (test/integration)
 pnpm typecheck
-pnpm validate                   # all live checks: Phase 0–5 (read-only)
-pnpm validate:portfolio         # Phase 1 live checks only
-pnpm portfolio --address 0x…    # portfolio CLI (--json, --include-zero, --token 0x…)
-pnpm registry:check             # diff live Stock Token registry vs committed snapshot
-pnpm opportunities [--asset NVDA|0x…] [--address 0x…] [--json]   # opportunity CLI (default eligibility view)
-     [--protocol pendle] [--category FIXED_YIELD] [--include-expired] [--include-conflicted] [--debug]
-     [--maturity-after YYYY-MM-DD] [--maturity-before YYYY-MM-DD] [--sort IMPLIED_APY:DESC|MATURITY]
-pnpm validate:opportunities     # Phase 2 live checks only
-pnpm validate:pendle            # Phase 3 live checks (Pendle adapter + combined engine)
-pnpm validate:pendle:research   # Phase 0 Pendle research checks
-pnpm opportunities --asset NVDA --category TRADE        # where can NVDA be traded
-pnpm opportunities --asset NVDA --to USDG [--amount 1]  # routes (+ INDICATIVE quotes with an explicit amount)
-pnpm trade:inspect --from NVDA --to USDG [--amount 1]   # developer view of candidate markets and routes
-pnpm uniswap:index              # finish the one-time Uniswap pool-event index (.cache/, not committed)
-pnpm validate:uniswap           # Phase 4 live checks (Uniswap + combined three-protocol view)
-pnpm asset NVDA [--json] [--debug]              # Phase 5: what can be done with NVDA (product view)
-pnpm asset NVDA --to USDG --amount 1            # … with indicative quotes for exactly 1 NVDA
-pnpm portfolio:view --address 0x… [--json]      # per held asset (address never persisted)
-pnpm coverage [--json]                          # coverage matrix for all canonical assets
-pnpm validate:intelligence      # Phase 5 live checks
+pnpm check:deps                 # workspace dependency rules (tools/check-deps.mjs)
+pnpm validate                   # all live read-only checks
+pnpm asset NVDA [--json]        # what can be done with NVDA
+pnpm asset NVDA --to USDG --amount 1
+pnpm portfolio:view --address 0x… [--json]
+pnpm coverage [--json]          # coverage matrix for all canonical assets
+pnpm opportunities [--asset NVDA|0x…] [--address 0x…] [--category FIXED_YIELD] [--json]
+pnpm trade:inspect --from NVDA --to USDG [--amount 1]
+pnpm registry:check             # diff the live Stock Token registry against the committed snapshot
+pnpm uniswap:index              # one-time Uniswap pool-event index (.cache/, not committed)
 ```
 
-Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider; production refuses to start without one. `ROBINHOOD_INDEX_RPC_URL` optionally sends log indexing to a separate endpoint. The public RPC is rate-limited and officially not for production. No private key is ever needed.
+The full list of live checks (`validate:*`) is in `package.json`.
+
+Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider; production refuses to start without one. `ROBINHOOD_INDEX_RPC_URL` optionally sends log indexing to a separate endpoint. No private key is ever needed.
+
+## Docs
+
+| Topic | Docs |
+|---|---|
+| Plan | [plan/roadmap.md](docs/plan/roadmap.md), [plan/arkham.md](docs/plan/arkham.md), [open-questions.md](docs/open-questions.md) |
+| Code structure | [structure.md](docs/structure.md) |
+| Engine | [architecture.md](docs/architecture.md) (original design and phase notes), [portfolio-engine.md](docs/portfolio-engine.md), [pricing.md](docs/pricing.md), [opportunity-engine.md](docs/opportunity-engine.md), [asset-intelligence.md](docs/asset-intelligence.md) |
+| Protocols | [protocol-adapters.md](docs/protocol-adapters.md), [protocols/](docs/protocols/) |
+| API | [api.md](docs/api.md) |
+| Research | [research/](docs/research/), raw evidence in `research/evidence/` |
 
 ## Terms
-Robinhood Chain brand rules apply: use "Robinhood Chain" in full and "Stock Tokens" (never "tokenized stocks"). This project is not affiliated with Robinhood.
+
+Robinhood Chain brand rules apply:
+- Always write "Robinhood Chain" in full.
+- Always write "Stock Tokens", never "tokenized stocks".
+
+This project is not affiliated with Robinhood.

@@ -1,10 +1,10 @@
 # HTTP API and web app (Phase 6)
 
-A read-only JSON API (`src/server/api.ts`) over the Phase 5 service, plus a web app (`web/`, React + Vite) served from the same origin by `src/server/main.ts`. The server uses plain `node:http` and has no framework dependency.
+A read-only JSON API (`apps/server/src/api.ts`) over the Phase 5 service, plus a web app (`web/`, React + Vite) served from the same origin by `apps/server/src/main.ts`. The server uses plain `node:http` and has no framework dependency.
 
 ```bash
 pnpm start            # build the web app, then serve API + app on http://127.0.0.1:8787
-pnpm serve            # serve only (uses an existing web/dist)
+pnpm serve            # serve only (uses an existing apps/web/dist)
 pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pnpm serve` too)
 ```
 
@@ -16,14 +16,14 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 | `RATE_HISTORY_FILE` | `.cache/history/rates.jsonl` | local rate history (headline rate of eligible opportunities, every 10 min, 30-day retention) |
 | `DISABLE_THIRD_PARTY_VOLUME` | unset | `1` = do not ask GeckoTerminal for 24h volume |
 | `TRUST_PROXY` | unset | `1` = rate-limit by `X-Forwarded-For` (only behind a known proxy) |
-| `WEB_DIST` | `web/dist` | built web app |
+| `WEB_DIST` | `apps/web/dist` | built web app |
 
 ## Endpoints (GET/HEAD only)
 | Path | Returns | Cache-Control |
 |---|---|---|
 | `/api/health` | `{ chainId, readOnly: true, rpc }` (RPC endpoint redacted) | no-store |
 | `/api/assets` | canonical asset list `{ key, symbol, name, type, address, decimals }` | 5 min |
-| `/api/assets/:ref?mode=product\|debug&to=&amount=&exec=1` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key; `exec=1` (with an amount) quotes only venues the app can execute | 10 s; `no-store` with an amount |
+| `/api/assets/:ref?mode=product\|debug&to=&amount=` | `AssetIntelligence` ([asset-intelligence.md](asset-intelligence.md)); `ref` = symbol, address or `4663:0x…` key; with `to` and `amount`, indicative quotes (read-only, never executable) | 10 s; `no-store` with an amount |
 | `/api/portfolio/:address?mode=` | `PortfolioIntelligence` | no-store |
 | `/api/coverage` | `{ rows: CoverageRow[] }` | 15 s |
 | `/api/markets` | `{ rows: MarketRow[] }`, one per canonical asset. Fields: `usd` and `changePct` (today vs the previous close). `bestApy` and `bestApyProtocol`: the highest earn-side headline yield among actionable or limited opportunities. `caps`: `earn`, `fixed`, `borrow` and `lp` flags. `liquidityUsd`: TVL of the trade pools holding the asset, display only | 30 s |
@@ -31,7 +31,7 @@ pnpm web:dev          # Vite dev server on :5173, proxies /api to :8787 (run `pn
 | `/api/rates/history?id=` | locally recorded headline-rate history of one opportunity, with `recordingSince` (history exists only while this server runs) | 60 s |
 | `/api/logo/:address` | token logo for a canonical asset, proxied from the registry's `logoUrl` | 1 day |
 
-Logo proxy rules (`src/server/logos.ts`):
+Logo proxy rules (`apps/server/src/logos.ts`):
 - Only `https://cdn.robinhood.com`: the only host in the Robinhood registry's `logoUrl` fields.
 - Redirects are refused.
 - Images are PNG/JPEG/WebP detected by magic number; SVG is refused because it can carry script.
@@ -42,7 +42,7 @@ Logo proxy rules (`src/server/logos.ts`):
 
 `/asset/:ref` pages get an app shell with the asset's title, description and Open Graph tags, for link previews. The values come from registry data and are HTML-escaped.
 
-Bigints travel as decimal strings (`Wire<T>` in `src/server/wire.ts`), so no precision is lost.
+Bigints travel as decimal strings (`Wire<T>` in `packages/product/src/wire.ts`), so no precision is lost.
 
 Errors are `{ error: { code, message } }` and never carry stack traces:
 
@@ -71,7 +71,7 @@ Errors are `{ error: { code, message } }` and never carry stack traces:
   - `nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY`, COOP/CORP same-origin, and a restrictive `Permissions-Policy`
   - on the app: a strict CSP (`default-src 'self'`, `script-src 'self'`, `connect-src 'self'`, no inline scripts, `frame-ancestors 'none'`)
   - no third-party origins at all: no CDN, no web fonts, no analytics
-- **Static files:** path traversal is rejected, because the resolved path must stay inside `web/dist`. A missing asset file is a 404, not the app shell. Hashed assets are immutable and the shell is revalidated.
+- **Static files:** path traversal is rejected, because the resolved path must stay inside `apps/web/dist`. A missing asset file is a 404, not the app shell. Hashed assets are immutable and the shell is revalidated.
 - **Timeouts:** headers 20 s, request 60 s.
 
 ## Web app
@@ -83,11 +83,11 @@ The pages are:
 - **Compare:** two assets side by side (`/compare?a=&b=`, public symbols only)
 - **How it works**
 
-Wallet handling (`web/src/wallet.tsx`):
+Wallet handling (`apps/web/src/wallet.tsx`):
 - "Use my browser wallet" calls only `eth_requestAccounts`. A wrapper refuses every other EIP-1193 method, so the app cannot request a signature or a transaction even by mistake.
 - The address is kept in React state only. It is never put in the URL, localStorage or logs.
 
-Languages: English (default) and Turkish, switchable in the header. The choice is stored in `localStorage` (a UI preference, not personal data). All wording lives in `web/src/i18n/strings.ts`. A test (`test/unit/i18n.test.ts`) checks that both languages have the same keys and placeholders and that neither uses promotional or safety claims. Action labels such as "Supply USDG" are rebuilt on the client from structured card fields, so they translate. Protocol-supplied titles and redemption terms are data and stay in English, labelled as such. Numbers, percentages and dates follow the chosen language's format.
+Language: English only. All wording lives in `apps/web/src/i18n/strings.ts`; a test (`apps/web/src/i18n/i18n.test.ts`) checks it for dashes, promotional or safety claims, and any offer to swap, bridge or send a transaction. Action labels such as "Supply USDG" are rebuilt on the client from structured card fields. Numbers, percentages and dates use the en-US format.
 
 The product name is "Skein" (chosen 2026-10-01; earlier "Hoodmap", and before that the placeholder "Waypoint"). Robinhood's terms forbid "Robinhood Chain" as a product name, and the footer states the app is not affiliated with or endorsed by Robinhood.
 
@@ -100,7 +100,7 @@ The product name is "Skein" (chosen 2026-10-01; earlier "Hoodmap", and before th
 Server start warms the snapshot (≈ 8 s). After that, stale-while-revalidate keeps requests off the cold path.
 
 ## Third-party 24h volume
-Swap-log indexing is too heavy for the public RPC (P4-5). Route markets therefore carry an optional `volume24h` from GeckoTerminal's keyless API (`src/sources/geckoterminal.ts`), labelled as third party.
+Swap-log indexing is too heavy for the public RPC (P4-5). Route markets therefore carry an optional `volume24h` from GeckoTerminal's keyless API (`packages/robinhood/src/sources/geckoterminal.ts`), labelled as third party.
 
 Rules:
 - Only the pools of the routes actually shown are asked for.
@@ -130,4 +130,4 @@ Events:
 - `price` a token's Chainlink answer changed: `{ key, symbol, usd, updatedAt, block }`;
 - `block` heartbeat after every read: `{ block, t }`.
 
-The server (`src/server/live.ts`) reads only what is watched, every 2 s, in one multicall at the latest block: `slot0()` of Uniswap v3 / Ramses pools, `StateView.getSlot0(poolId)` of hookless Uniswap v4 pools, `latestRoundData()` of the Chainlink feeds. Limits: 4 streams per IP, 300 in total. No wallet data is involved.
+The server (`apps/server/src/live.ts`) reads only what is watched, every 2 s, in one multicall at the latest block: `slot0()` of Uniswap v3 / Ramses pools, `StateView.getSlot0(poolId)` of hookless Uniswap v4 pools, `latestRoundData()` of the Chainlink feeds. Limits: 4 streams per IP, 300 in total. No wallet data is involved.

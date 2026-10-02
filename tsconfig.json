@@ -1,17 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "verbatimModuleSyntax": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "types": ["node"],
-    "noEmit": true
-  },
-  "include": ["src", "scripts", "test"]
+  "extends": "./tsconfig.base.json",
+  "include": ["packages/*/src", "packages/*/test", "apps/server/src", "apps/server/test", "apps/cli/src", "test"]
 }

@@ -52,7 +52,7 @@ This does not change Phase 1 Stock Token valuation. The Price Service still valu
 
 **FIXED_YIELD** (buy PT):
 - **Metric:** `IMPLIED_APY`, EARN, basis IMPLIED.
-- **Source:** **onchain**, `exp(lastLnImpliedRate / 1e18) − 1`, computed in bigint (`src/protocols/pendle/math.ts`). Pendle stores `ln(1 + implied APY)`.
+- **Source:** **onchain**, `exp(lastLnImpliedRate / 1e18) − 1`, computed in bigint (`packages/protocols/src/pendle/math.ts`). Pendle stores `ln(1 + implied APY)`.
 - **Meaning:** the market's rate at its last trade. Pendle's docs call Fixed APY "numerically equivalent" to Implied APY. It is realised only if you buy at that price and hold to maturity. **Not guaranteed**: entry price, fees, slippage and SY redemption (depeg/watermark) all move the realised return. We never emit FIXED_APY.
 
 **FIXED_YIELD** (PT discount):

@@ -1,6 +1,6 @@
 # Product ranking (Phase 5)
 
-`src/product/ranking.ts`. Cards are ordered by deterministic, category-specific comparators.
+`packages/product/src/ranking.ts`. Cards are ordered by deterministic, category-specific comparators.
 
 Rules:
 - There is no universal score.

@@ -1,0 +1,21 @@
+{
+  "name": "@skein/testkit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic offline fixtures (fake chain, fake protocol APIs) for tests in every package.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/portfolio": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/product": "workspace:*",
+    "@skein/protocols": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

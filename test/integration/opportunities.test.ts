@@ -4,15 +4,15 @@
  */
 import { describe, expect, it } from "vitest";
 import type { Address } from "viem";
-import type { Opportunity } from "../../src/model/opportunity.js";
-import type { AdapterContext, OpportunityAdapter } from "../../src/opportunities/adapter.js";
-import { OpportunityEngine } from "../../src/opportunities/engine.js";
-import { filterOpportunities, sortOpportunities } from "../../src/opportunities/query.js";
-import { getPortfolio } from "../../src/portfolio/engine.js";
-import { MorphoAdapter } from "../../src/protocols/morpho/adapter.js";
-import { marketIdOf } from "../../src/protocols/morpho/onchain.js";
-import { FAKE_NVDA, FakeMorphoApi, fixtureMarkets, installMorpho, LLTV_625, NVDA_USDG_ORACLE, VAULT_OK, VAULT_ROGUE } from "../fixtures/morpho.js";
-import { AAPL, defaultWorld, NOW, NVDA, testStack, USDG, WALLET } from "../fixtures/world.js";
+import type { Opportunity } from "@skein/core/model/opportunity";
+import type { AdapterContext, OpportunityAdapter } from "@skein/engine/opportunities/adapter";
+import { OpportunityEngine } from "@skein/engine/opportunities/engine";
+import { filterOpportunities, sortOpportunities } from "@skein/engine/opportunities/query";
+import { getPortfolio } from "@skein/portfolio/engine";
+import { MorphoAdapter } from "@skein/protocols/morpho/adapter";
+import { marketIdOf } from "@skein/protocols/morpho/onchain";
+import { FAKE_NVDA, FakeMorphoApi, fixtureMarkets, installMorpho, LLTV_625, NVDA_USDG_ORACLE, VAULT_OK, VAULT_ROGUE } from "@skein/testkit/morpho";
+import { AAPL, defaultWorld, NOW, NVDA, testStack, USDG, WALLET } from "@skein/testkit/world";
 
 async function setup(opts: { markets?: ReturnType<typeof fixtureMarkets>; apiMarkets?: unknown[]; mutateWorld?: (w: ReturnType<typeof defaultWorld>) => void; clock?: { t: number } } = {}) {
   const markets = opts.markets ?? fixtureMarkets();

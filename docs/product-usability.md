@@ -1,6 +1,6 @@
 # Product usability (Phase 5)
 
-`src/product/usability.ts`. Usability answers *"can the user act on this now, and with what limitation?"*. Verification answers a different question, *"how well is this data evidenced?"*, so the two are kept apart. A VERIFIED_ONCHAIN market can still be LIMITED, for example when it is thin.
+`packages/product/src/usability.ts`. Usability answers *"can the user act on this now, and with what limitation?"*. Verification answers a different question, *"how well is this data evidenced?"*, so the two are kept apart. A VERIFIED_ONCHAIN market can still be LIMITED, for example when it is thin.
 
 Usability uses objective inputs only:
 - the engine's eligibility result (Phases 3–4)
@@ -40,7 +40,7 @@ Precedence, first match wins: HIDDEN_BY_DEFAULT, then UNAVAILABLE, then INFORMAT
 | ELEVATED_PRICE_IMPACT | LIMITED | quote impact **1 % ≤ x < 5 %** |
 | HIGH_PRICE_IMPACT | LIMITED | quote impact **5 % ≤ x < 15 %** |
 | PRICE_IMPACT_UNKNOWN | LIMITED | impact not computable, or the quote failed |
-| STALE_DATA | LIMITED | headline metric freshness STALE or UNKNOWN (`src/config/freshness.ts`) |
+| STALE_DATA | LIMITED | headline metric freshness STALE or UNKNOWN (`packages/core/src/config/freshness.ts`) |
 | QUOTE_STALE | LIMITED | quote block older than **60 s** (`maxQuoteAgeSeconds`, ONCHAIN_STATE FRESH bound) |
 
 ## Notes (facts that do not limit usability)
@@ -59,7 +59,7 @@ Precedence, first match wins: HIDDEN_BY_DEFAULT, then UNAVAILABLE, then INFORMAT
 ## Trade quality (P4-4): discoverable vs actionable
 Two thresholds apply to trade, and they answer different questions:
 - **Discoverable** (routing edge): verified, canonical, TVL ≥ **$50** (`ROUTING_POLICY.minEdgeTvlUsdE18` = the dust line). Phase 5 does not change it. A thin pool still exists and stays visible in RAW and DEBUG.
-- **User-actionable** (`TRADE_QUALITY_POLICY`, `src/config/tradeQuality.ts`):
+- **User-actionable** (`TRADE_QUALITY_POLICY`, `packages/core/src/config/tradeQuality.ts`):
   - without an amount, bottleneck TVL < $10,000 → LIMITED (LOW_ROUTE_LIQUIDITY)
   - with an amount, the quote's price-impact class is added to that
 
@@ -81,7 +81,7 @@ The observed ~$83 NVDA/USDG pool therefore:
 It never appears as a normal ACTIONABLE route. A unit test pins this case.
 
 ## Fail-closed Stock Token YT semantics (Phase 5 fix)
-The live smoke run found a fail-open path. When the NVDA `uiMultiplier` read failed (rate-limited), `syRateEqualsMultiplier` was `null`, P3-1 did not fire, and YT-NVDA showed as ACTIONABLE with the API's −100 %. Now a Stock Token YT with a LIQUIDITY accounting unit and an API underlying APY of 0 is UNRESOLVED unless a mismatch was **measured** (`syRateEqualsMultiplier === false`). An unknown value no longer clears it. The fix is in `src/protocols/pendle/normalize.ts`, with a test that makes the multiplier revert.
+The live smoke run found a fail-open path. When the NVDA `uiMultiplier` read failed (rate-limited), `syRateEqualsMultiplier` was `null`, P3-1 did not fire, and YT-NVDA showed as ACTIONABLE with the API's −100 %. Now a Stock Token YT with a LIQUIDITY accounting unit and an API underlying APY of 0 is UNRESOLVED unless a mismatch was **measured** (`syRateEqualsMultiplier === false`). An unknown value no longer clears it. The fix is in `packages/protocols/src/pendle/normalize.ts`, with a test that makes the multiplier revert.
 
 ## Capabilities
 Capabilities are derived from cards, never set by hand. `canX` is true only with an ACTIONABLE card for that intent. `detail[intent]` distinguishes LIMITED_ONLY from INFORMATIONAL_ONLY, so a collateral market with nothing to borrow is not a borrow capability.

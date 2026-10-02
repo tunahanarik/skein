@@ -1,0 +1,19 @@
+{
+  "name": "@skein/product",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Product read layer: AssetIntelligence, usability, ranking, charts, aggregator coverage, wire and live types.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/portfolio": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

@@ -1,6 +1,6 @@
 # Portfolio Engine
 
-`getPortfolio(walletAddress)` (`src/portfolio/engine.ts`) turns a public address into a normalized Robinhood Chain portfolio. It is read-only, needs no key, and never signs anything.
+`getPortfolio(walletAddress)` (`packages/portfolio/src/engine.ts`) turns a public address into a normalized Robinhood Chain portfolio. It is read-only, needs no key, and never signs anything.
 
 ```
 wallet ─► parseWalletAddress (checksum, reject zero / malformed)      chainId fixed to 4663
@@ -12,7 +12,7 @@ wallet ─► parseWalletAddress (checksum, reject zero / malformed)      chainI
       ─► Portfolio
 ```
 
-## Output (`src/portfolio/types.ts`)
+## Output (`packages/portfolio/src/types.ts`)
 
 | Field | Meaning |
 |---|---|
@@ -24,7 +24,7 @@ wallet ─► parseWalletAddress (checksum, reject zero / malformed)      chainI
 | `valuationCoverage` | `COMPLETE` / `PARTIAL` / `UNKNOWN`. `totalValueUsd` is set **only** when COMPLETE |
 | `registry` | mode (LIVE/SNAPSHOT), data age, freshness, onchain-verified count |
 | `rpc` | health snapshot (requests, failures, 429s, timeouts, retries, latency, latest block) |
-| `warnings[]` | typed portfolio-level warnings (`src/model/warnings.ts`) |
+| `warnings[]` | typed portfolio-level warnings (`packages/core/src/model/warnings.ts`) |
 | `timingsMs` | registry / balances / prices / normalization / total |
 | `provenance[]` | block and registry source |
 
@@ -41,7 +41,7 @@ wallet ─► parseWalletAddress (checksum, reject zero / malformed)      chainI
 
 ## Stock Token accounting (exact, with units)
 
-One function, `calculateStockDisplayBalance(rawTokenBalance, uiMultiplierE18)` in `src/lib/stockToken.ts`, is the only place a multiplier touches a balance. Valuation never touches the multiplier: the Price Service already returns USD per whole **token**.
+One function, `calculateStockDisplayBalance(rawTokenBalance, uiMultiplierE18)` in `packages/core/src/lib/stockToken.ts`, is the only place a multiplier touches a balance. Valuation never touches the multiplier: the Price Service already returns USD per whole **token**.
 
 ```
 rawTokenBalance         = NVDA.balanceOf(wallet)          token base units, 18 dp          2000000000000000000
@@ -97,7 +97,7 @@ A fake "USDG" is caught this way in tests.
 Network calls per portfolio: 1 `eth_getBalance`, 1 balance multicall, 1 feed multicall, and at most 1 `/rhj/prices` request (cached for 15 s). There is no per-token request, and the cost grows by calls per multicall, not by round trips.
 
 ## Anonymized example
-`docs/examples/portfolio.fixture.json` is generated from the offline fixture world (`test/fixtures/world.ts`), so no real wallet appears. It shows:
+`docs/examples/portfolio.fixture.json` is generated from the offline fixture world (`packages/testkit/src/world.ts`), so no real wallet appears. It shows:
 - a Chainlink-priced Stock Token with cross-check
 - a split token priced by fallback
 - an unpriced token

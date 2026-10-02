@@ -3,13 +3,13 @@
  * three-protocol fixture world (Morpho + Pendle + Uniswap v3).
  */
 import { describe, expect, it } from "vitest";
-import { PRODUCT_MAX_ROUTES_PER_TARGET } from "../../src/config/trade.js";
-import { Metrics } from "../../src/product/metrics.js";
-import { IncompatibleRankingError, rankCards } from "../../src/product/ranking.js";
-import type { AssetIntelligence, ProductCard } from "../../src/product/types.js";
-import { intelligenceStack } from "../fixtures/intelligence.js";
-import { FAKE_NVDA } from "../fixtures/morpho.js";
-import { AAPL, NOW, NVDA, ONE, USDG, WALLET, WETH } from "../fixtures/world.js";
+import { PRODUCT_MAX_ROUTES_PER_TARGET } from "@skein/robinhood/config/trade";
+import { Metrics } from "@skein/product/metrics";
+import { IncompatibleRankingError, rankCards } from "@skein/product/ranking";
+import type { AssetIntelligence, ProductCard } from "@skein/product/types";
+import { intelligenceStack } from "@skein/testkit/intelligence";
+import { FAKE_NVDA } from "@skein/testkit/morpho";
+import { AAPL, NOW, NVDA, ONE, USDG, WALLET, WETH } from "@skein/testkit/world";
 
 const addr = (n: number) => `0x${n.toString(16).padStart(40, "0")}` as `0x${string}`;
 const K = (a: string) => `4663:${a.toLowerCase()}`;
@@ -411,8 +411,8 @@ describe("improvements: trade targets and borrowable now", () => {
 
 describe("portfolio: open positions", () => {
   it("lists Morpho lending and Pendle PT positions with health factor and LLTV; the wallet reaches no protocol API", async () => {
-    const { marketIdOf } = await import("../../src/protocols/morpho/onchain.js");
-    const { fixtureMarkets } = await import("../fixtures/morpho.js");
+    const { marketIdOf } = await import("@skein/protocols/morpho/onchain");
+    const { fixtureMarkets } = await import("@skein/testkit/morpho");
     const id = marketIdOf(fixtureMarkets().nvdaOk.params).toLowerCase();
     const st = await intelligenceStack({
       pendleBalances: { nvda: { pt: 5n * ONE } },

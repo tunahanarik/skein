@@ -3,22 +3,22 @@
  * offline and deterministic.
  */
 import { describe, expect, it } from "vitest";
-import type { Opportunity } from "../../src/model/opportunity.js";
-import type { TradeQuote } from "../../src/model/trade.js";
-import { OpportunityEngine } from "../../src/opportunities/engine.js";
-import type { OpportunityAdapter } from "../../src/opportunities/adapter.js";
-import { getPortfolio } from "../../src/portfolio/engine.js";
-import { MorphoAdapter } from "../../src/protocols/morpho/adapter.js";
-import { PendleAdapter } from "../../src/protocols/pendle/adapter.js";
-import { UniswapAdapter } from "../../src/protocols/uniswap/adapter.js";
-import { price0In1, price1In0, priceImpact, hopSpotRational, Q192 } from "../../src/protocols/uniswap/math.js";
-import { MemoryPoolListStore } from "../../src/protocols/uniswap/poolStore.js";
-import { buildTradeGraph, destinations, findRoutes } from "../../src/trade/graph.js";
-import { orderQuotesByOutput, quotesComparable } from "../../src/trade/compare.js";
-import { FakeMorphoApi, fixtureMarkets, installMorpho } from "../fixtures/morpho.js";
-import { FakePendleApi, fixturePendleMarkets, installPendle } from "../fixtures/pendle.js";
-import { FAKE_NVDA, fixtureUniswapPools, installUniswap, type FixturePool, type UniswapWorldOptions } from "../fixtures/uniswap.js";
-import { AAPL, BLOCK, defaultWorld, NOW, NVDA, ONE, testStack, UNKNOWN_FAKE_USDG, USDG, WALLET, WETH } from "../fixtures/world.js";
+import type { Opportunity } from "@skein/core/model/opportunity";
+import type { TradeQuote } from "@skein/core/model/trade";
+import { OpportunityEngine } from "@skein/engine/opportunities/engine";
+import type { OpportunityAdapter } from "@skein/engine/opportunities/adapter";
+import { getPortfolio } from "@skein/portfolio/engine";
+import { MorphoAdapter } from "@skein/protocols/morpho/adapter";
+import { PendleAdapter } from "@skein/protocols/pendle/adapter";
+import { UniswapAdapter } from "@skein/protocols/uniswap/adapter";
+import { price0In1, price1In0, priceImpact, hopSpotRational, Q192 } from "@skein/protocols/uniswap/math";
+import { MemoryPoolListStore } from "@skein/protocols/uniswap/poolStore";
+import { buildTradeGraph, destinations, findRoutes } from "@skein/engine/trade/graph";
+import { orderQuotesByOutput, quotesComparable } from "@skein/engine/trade/compare";
+import { FakeMorphoApi, fixtureMarkets, installMorpho } from "@skein/testkit/morpho";
+import { FakePendleApi, fixturePendleMarkets, installPendle } from "@skein/testkit/pendle";
+import { FAKE_NVDA, fixtureUniswapPools, installUniswap, type FixturePool, type UniswapWorldOptions } from "@skein/testkit/uniswap";
+import { AAPL, BLOCK, defaultWorld, NOW, NVDA, ONE, testStack, UNKNOWN_FAKE_USDG, USDG, WALLET, WETH } from "@skein/testkit/world";
 
 const K = (a: string) => `4663:${a.toLowerCase()}`;
 const ALL = { eligibility: "ALL" as const };

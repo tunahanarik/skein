@@ -10,9 +10,9 @@ Five venues were added. Each adapter publishes nothing on an API's word alone: c
 | Ramses CL | TRADE | factory `PoolCreated` events + factory sweep | same checks as Uniswap v3, keyed by tickSpacing; the fee is dynamic and is read every block | reserves = `balanceOf(pool)`; quotes from Ramses QuoterV2 (tickSpacing-keyed) |
 | Uniswap v4 (hookless) | TRADE | computed PoolKey ids (token × hub × standard tiers, `hooks = 0`) | `StateView.getSlot0(id)` initialized; `lpFee` = PoolKey fee | reserves = StateView tick walk within ×/÷ 4 of the price (a lower bound); quotes from V4Quoter |
 
-The managed-LP code shared by Beefy and Steer lives in `src/protocols/shared/managedLp.ts`. One LP opportunity is created per canonical token of the pair. Entry needs both tokens, and the note says so: a zap in the protocol's app is not verified here.
+The managed-LP code shared by Beefy and Steer lives in `packages/protocols/src/shared/managedLp.ts`. One LP opportunity is created per canonical token of the pair. Entry needs both tokens, and the note says so: a zap in the protocol's app is not verified here.
 
-The two v3-style DEXes share one adapter through `V3Dialect` (`src/protocols/uniswap/constants.ts`). The dialect sets:
+The two v3-style DEXes share one adapter through `V3Dialect` (`packages/protocols/src/uniswap/constants.ts`). The dialect sets:
 - the protocol and its label
 - the factory and the quoter
 - the pool key: fee (Uniswap) or tickSpacing (Ramses)
@@ -34,7 +34,7 @@ The tick walk instead reads:
 - the bitmap words within ×/÷ 4 of the price
 - `getTickLiquidity` for each initialized tick
 
-It then sums the principal inside that window with an exact TickMath port (`src/protocols/uniswap/v4math.ts`). Liquidity outside the window is not counted. Using the lower bound for eligibility thresholds is conservative.
+It then sums the principal inside that window with an exact TickMath port (`packages/protocols/src/uniswap/v4math.ts`). Liquidity outside the window is not counted. Using the lower bound for eligibility thresholds is conservative.
 
 Live check (2026-09-24), NVDA/USDG 0.3 %: tick walk $984k against $0.99M from a full replay (docs/research/dex.md).
 

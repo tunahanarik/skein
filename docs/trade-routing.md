@@ -1,6 +1,6 @@
 # Trade routing and indicative quotes
 
-`src/trade/graph.ts` (graph and routes), `src/trade/compare.ts` (quote comparison), `src/config/trade.ts` (policy). The routing layer is venue-independent: any adapter that publishes TRADE opportunities contributes edges.
+`packages/engine/src/trade/graph.ts` (graph and routes), `packages/engine/src/trade/compare.ts` (quote comparison), `packages/robinhood/src/config/trade.ts` (policy). The routing layer is venue-independent: any adapter that publishes TRADE opportunities contributes edges.
 
 ## Graph
 
@@ -61,7 +61,7 @@ For Uniswap v3, `QuoterV2.quoteExactInputSingle` is called **hop by hop through 
 - **Not included:** there is no minimum output, slippage limit, deadline or calldata. A minimum output needs a user-chosen slippage in a future execution phase.
 - **Failures:** a revert (e.g. the amount exceeds the pool) is a non-retryable failure; RPC errors are retryable.
 
-## Caches (`src/config/freshness.ts`)
+## Caches (`packages/core/src/config/freshness.ts`)
 
 | Cache | TTL | Why |
 |---|---|---|

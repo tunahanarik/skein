@@ -49,7 +49,7 @@ Uniswap examples (Phase 4):
   - For Pendle, a failed structural check makes it **UNVERIFIED**. Value disagreements (totals, implied rate, pool USD) are recorded as `conflicts` with the onchain value kept, and they do not change the status.
 - `freshness` = the worst of the opportunity's measured values.
 
-## Freshness rules (`src/config/freshness.ts`)
+## Freshness rules (`packages/core/src/config/freshness.ts`)
 | Rule | FRESH ≤ | AGING ≤ | Applies to | Rationale |
 |---|---|---|---|---|
 | ONCHAIN_STATE | 60 s | 10 min | totals, oracle price, vault totalAssets, positions | read at our own pinned block |
@@ -81,7 +81,7 @@ Failures are never cached.
 | ORACLE_DEVIATION_WARNING_PCT | 2 % | oracle vs independent price → ORACLE_PRICE_DEVIATION |
 | PROTOCOL_RATE_CONFLICT_PCT | 1 % relative | API rate vs the same rate onchain (Pendle impliedApy). Observed 5e-6. |
 | PROTOCOL_LIQUIDITY_CONFLICT_PCT | 5 % | API pool USD vs onchain pool value priced by us. Observed 0.01–0.3 %. |
-| eligibility `lowLiquidityUsdE18` | $10,000 | `src/config/eligibility.ts`; advisory only |
+| eligibility `lowLiquidityUsdE18` | $10,000 | `packages/core/src/config/eligibility.ts`; advisory only |
 | eligibility `dustLiquidityUsdE18` | $50 | DUST_LIQUIDITY (excluding) and the minimum routing-edge TVL |
 | MARKET_PRICE_DIVERGENCE_PCT | 2 % | DEX spot vs portfolio price → warning; neither declared correct |
 | QUOTE_TIMEOUT_MS | 8 s | a slower quote is a retryable failure |

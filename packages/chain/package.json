@@ -1,0 +1,14 @@
+{
+  "name": "@skein/chain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only RPC access: ChainReader, retries, batching, log scanning, RPC health.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/networks": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

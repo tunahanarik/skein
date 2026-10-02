@@ -1,6 +1,6 @@
 # Comparing opportunities
 
-`src/opportunities/comparison.ts` (groups) and `src/opportunities/query.ts` (sorting). There is no subjective scoring: no "best", no "safe", no blended rank.
+`packages/engine/src/opportunities/comparison.ts` (groups) and `packages/engine/src/opportunities/query.ts` (sorting). There is no subjective scoring: no "best", no "safe", no blended rank.
 
 ## Comparison groups
 
@@ -34,7 +34,7 @@ Some consequences:
 
 ## Eligibility vs discovery
 
-Discovery keeps everything an adapter finds. The **default view** shows only opportunities that pass the default eligibility policy (`src/config/eligibility.ts`, id `default-v1`). The engine computes this from canonical fields alone (`src/opportunities/eligibility.ts`), never from `details`.
+Discovery keeps everything an adapter finds. The **default view** shows only opportunities that pass the default eligibility policy (`packages/core/src/config/eligibility.ts`, id `default-v1`). The engine computes this from canonical fields alone (`packages/engine/src/opportunities/eligibility.ts`), never from `details`.
 
 | Reason | Excludes by default | From |
 |---|---|---|
@@ -62,7 +62,7 @@ Discovery keeps everything an adapter finds. The **default view** shows only opp
 
 **P3-1: unresolved yield semantics.** Pendle reports −100 % Long Yield APY (and underlyingApy 0) for Stock Token YTs, while the SY rate is the uiMultiplier, which grows with reinvested dividends. The figure may leave out that growth, and without multiplier history we have no verified replacement.
 - The adapter keeps the value as supplied and marks the metric `semantics: { status: "UNRESOLVED", reason }`.
-- The engine excludes an opportunity when its *headline* metric (`src/opportunities/headline.ts`) is UNRESOLVED.
+- The engine excludes an opportunity when its *headline* metric (`packages/engine/src/opportunities/headline.ts`) is UNRESOLVED.
 - Only the YT is affected, because the headline of PT (onchain implied rate) and of LP is not the flagged metric.
 - `includeReasons: ["UNRESOLVED_YIELD_SEMANTICS"]` or `--debug` shows it again.
 
@@ -91,7 +91,7 @@ Discovery keeps everything an adapter finds. The **default view** shows only opp
 
 TRADE opportunities carry no yield metrics and are never ranked by APY (tested).
 - **Without a quote:** only objective market attributes: TVL, fee, state, verification. The route order is `BOTTLENECK_TVL_DESC`.
-- **With quotes:** routes are comparable only for the same input asset, output asset and input amount, by expected output (`src/trade/compare.ts`). Comparing quotes for different amounts throws.
+- **With quotes:** routes are comparable only for the same input asset, output asset and input amount, by expected output (`packages/engine/src/trade/compare.ts`). Comparing quotes for different amounts throws.
 
 Eligibility reasons that matter for TRADE:
 - `LIQUIDITY_UNVERIFIED` (Phase 4, category rule, excluding): a TRADE market without a priced TVL, because non-dust cannot be shown.

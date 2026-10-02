@@ -1,0 +1,65 @@
+/* Fonts, reset, type scale, utilities and shared motion. */
+
+/* Geist and Geist Mono (OFL-1.1, bundled: ./fonts/LICENSE-Geist.txt). Served from our own origin (CSP font-src 'self'). */
+@font-face { font-family: "Geist"; src: url("./fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("./fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+html { scrollbar-color: var(--line-3) transparent; -webkit-text-size-adjust: 100%; }
+body { background: var(--bg-0); color: var(--fg-1); font: 400 14px/22px var(--sans); letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+::selection { background: var(--accent-a24); }
+
+/* Film grain over the whole page, so flat graphite reads as a material. */
+body::after { content: ""; position: fixed; inset: 0; z-index: 100; pointer-events: none; opacity: var(--grain); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+:root[data-skein-theme="light"] body::after { filter: invert(1); }
+
+h1, h2, h3 { margin: 0; font-weight: 600; color: var(--fg-1); text-wrap: balance; }
+h1 { font-size: 28px; line-height: 34px; letter-spacing: -0.03em; }
+h2 { font-size: 18px; line-height: 26px; letter-spacing: -0.02em; }
+h3 { font-size: 15px; line-height: 22px; letter-spacing: -0.01em; }
+p { margin: 0 0 12px; }
+strong, b { font-weight: 600; }
+
+a { color: var(--accent-fg); text-decoration: none; text-underline-offset: 3px; text-decoration-thickness: 1px; transition: color var(--t-fast) var(--ease-out); }
+a:hover { text-decoration: underline; }
+button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
+:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
+/* Text fields show focus on their own frame (.input, or the composite field around them). */
+input:focus-visible { box-shadow: none; }
+kbd { font-family: var(--mono); }
+
+/* utilities */
+.num { font-variant-numeric: tabular-nums lining-nums; }
+.mono { font-family: var(--mono); font-size: 0.92em; letter-spacing: 0; font-variant-numeric: tabular-nums slashed-zero; }
+a.mono { color: var(--fg-2); }
+a.mono:hover { color: var(--fg-1); }
+.muted { color: var(--fg-2); }
+.faint { color: var(--fg-3); }
+.small { font-size: 13px; line-height: 20px; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.icon { flex: none; vertical-align: -0.2em; }
+.up { color: var(--up); }
+.down { color: var(--down); }
+.keep-case { text-transform: none; }
+.big { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+
+/* shared motion */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.96) translateY(-4px); } }
+@keyframes ping { 0% { transform: scale(0.4); opacity: 0.8; } 80%, 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@keyframes breathe { 50% { opacity: 0.45; } }
+@keyframes flash-up { from { background-color: var(--up-a); } }
+@keyframes flash-down { from { background-color: var(--down-a); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

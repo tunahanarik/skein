@@ -1,0 +1,17 @@
+{
+  "name": "@skein/robinhood",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Everything specific to Robinhood Chain: canonical asset registry, Stock Token sources, protocol deployments, routing hubs.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "viem": "2.56.8",
+    "zod": "4.6.5"
+  }
+}

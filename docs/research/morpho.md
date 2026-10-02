@@ -46,7 +46,7 @@ Checked 2026-09-24. Reproduce with `pnpm validate:morpho`. Full tables: `researc
 | SPY/USDG `0x50bc…8e55` | params, id hash, totals, oracle price | 71146xxx |
 | syrupUSDG/USDG and NVDA/USDG | borrow APY recomputed from IRM `borrowRateView` agrees to 1e-8 | 71130970 (research) |
 
-- API `supplyApy` = `expm1(ln(1+borrowApy) × utilization × (1−fee))`. The supply rate is compounded, not the naive product. This is implemented in `src/lib/rates.ts` and tested against the live USDe market.
+- API `supplyApy` = `expm1(ln(1+borrowApy) × utilization × (1−fee))`. The supply rate is compounded, not the naive product. This is implemented in `packages/core/src/lib/rates.ts` and tested against the live USDe market.
 
 ### What is live (API fetch 2026-09-24T05:43Z)
 - 277 markets, of which **9 are `listed`**, plus 38 Vault V2 vaults.

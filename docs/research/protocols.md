@@ -1,6 +1,6 @@
 # Protocol records
 
-Checked 2026-09-24. Admission to `src/config/protocols.ts` requires **an official deployment source + a live onchain check**. Candidates below that bar are in `research/unverified.json`. DefiLlama (191 protocols on Robinhood Chain) was used **only** to find candidates.
+Checked 2026-09-24. Admission to `packages/robinhood/src/config/protocols.ts` requires **an official deployment source + a live onchain check**. Candidates below that bar are in `research/unverified.json`. DefiLlama (191 protocols on Robinhood Chain) was used **only** to find candidates.
 
 Robinhood's own docs ecosystem table (recovered from the docsite bundle) lists: Lending = **Morpho** (only), stablecoin = **Paxos (USDG)**, oracle = **Chainlink**, and trading venues = Uniswap (AMM), Rialto (propAMM), Lighter (orderbook), and 0x / 1inch Fusion / LI.FI (RFQ).
 

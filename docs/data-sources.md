@@ -17,7 +17,7 @@
 | `dexscreener` | THIRD_PARTY_API | `https://api.dexscreener.com/...` | pools, volume, liquidity | none | 300/min; token-pairs capped at 30 | THIRD_PARTY_ONLY |
 | `defillama` | THIRD_PARTY_API | `https://api.llama.fi/protocols` | **discovery only** | none | – | never displayed as fact |
 
-## Provenance model (implemented: `src/model/provenance.ts`)
+## Provenance model (implemented: `packages/core/src/model/provenance.ts`)
 
 ```ts
 DataSource { type, provider, url?, chainId?, contract?, method?, blockNumber?, observedAt, sourceTimestamp? }
@@ -34,7 +34,7 @@ This answers the four required questions:
 | How old is this value? | `freshness(value, maxAge)` uses `sourceTimestamp` (e.g. Chainlink `updatedAt`, API `generatedAt`) before `observedAt`. Derived values take the **oldest** input's time |
 | Calculated by us or supplied? | `origin` |
 
-## Verification states (implemented: `src/model/verification.ts`)
+## Verification states (implemented: `packages/core/src/model/verification.ts`)
 
 | State | Meaning | UI treatment |
 |---|---|---|

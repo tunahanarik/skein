@@ -1,0 +1,20 @@
+{
+  "name": "@skein/runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Composition root: builds the reader, registry, prices, engine and product service from env.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/portfolio": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/product": "workspace:*",
+    "@skein/protocols": "workspace:*",
+    "@skein/robinhood": "workspace:*"
+  }
+}

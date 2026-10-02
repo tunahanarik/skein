@@ -1,6 +1,6 @@
 # Opportunity Engine
 
-`src/opportunities/engine.ts`. It answers: *"I own asset X. What verified DeFi opportunities exist for it on Robinhood Chain?"* It is read-only and has no execution path.
+`packages/engine/src/opportunities/engine.ts`. It answers: *"I own asset X. What verified DeFi opportunities exist for it on Robinhood Chain?"* It is read-only and has no execution path.
 
 ```
 Portfolio (Phase 1) ─┐
@@ -36,11 +36,11 @@ Phase 4 trade methods. All are generic and read only `Opportunity.trade`, never 
 
 `getPortfolioOpportunities` adds a TRADE context per market and `tradeDestinations { direct, oneHop }` per held asset. It never quotes.
 
-The Phase 5 product layer (`src/product/`, [asset-intelligence.md](asset-intelligence.md)) reads `getOpportunities({ eligibility: "ALL" })` once per 15 s snapshot and projects it. The engine is unchanged by Phase 5 apart from the reader hardening (multicall transport retries).
+The Phase 5 product layer (`packages/product/src/`, [asset-intelligence.md](asset-intelligence.md)) reads `getOpportunities({ eligibility: "ALL" })` once per 15 s snapshot and projects it. The engine is unchanged by Phase 5 apart from the reader hardening (multicall transport retries).
 
 `query` = `{ filter?, sort?, eligibility?: "ELIGIBLE_ONLY" (default) | "ALL", includeReasons? }`. See [opportunity-comparison.md](opportunity-comparison.md) for the eligibility policy.
 
-## Opportunity model (`src/model/opportunity.ts`)
+## Opportunity model (`packages/core/src/model/opportunity.ts`)
 - **Identity:**
   - `id = chainId:protocol:category:venueKind:venueId` (deterministic)
   - `primaryAsset` is the asset the holder uses
@@ -80,7 +80,7 @@ Comparison groups decide what may be shown or ranked together: [opportunity-comp
 
 Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denominatedIn` (the asset it accrues in; this matters for Pendle PTs on Stock Tokens), `label` and full provenance. **Sorting compares one metric type at a time and needs an explicit direction.** Opportunities without that metric are not ranked and are listed as `notComparable`, never treated as 0.
 
-## Filtering and sorting (`src/opportunities/query.ts`)
+## Filtering and sorting (`packages/engine/src/opportunities/query.ts`)
 - **Filters:**
   - `categories`, `protocols`
   - `assetKey` + `assetRole` (PRIMARY / INPUT / COLLATERAL / BORROW / ANY)
@@ -94,7 +94,7 @@ Each metric also carries `basis` (VARIABLE / FIXED / IMPLIED), `window`, `denomi
   - Deterministic, with ties broken by id.
 - **Eligibility** runs before filters. It is generic and derived from canonical fields: see [opportunity-comparison.md](opportunity-comparison.md). Excluded opportunities are counted in `excluded`, never deleted. When the advisory `LOW_LIQUIDITY` applies, the engine also appends a `LOW_LIQUIDITY` warning.
 
-## User-aware context (`src/opportunities/userContext.ts`)
+## User-aware context (`packages/engine/src/opportunities/userContext.ts`)
 `PortfolioAsset × Opportunity → PortfolioOpportunity`. This is generic: it uses only `liquidation`, `availableLiquidity` and `yields`.
 - **COLLATERAL:**
   - `protocolMaximumBorrow = floor(floor(collateralRaw × price.raw / price.scale) × LLTV / 1e18)`. This is Morpho's own `_isHealthy` bound, computed in bigint with the protocol's oracle price.

@@ -1,0 +1,19 @@
+{
+  "name": "@skein/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Opportunity Engine and trade routing: adapter interface, eligibility, lifecycle, trade graph.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "@skein/portfolio": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8"
+  }
+}
