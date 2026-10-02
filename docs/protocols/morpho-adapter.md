@@ -1,6 +1,6 @@
 # Morpho adapter
 
-`src/protocols/morpho/`. This is the reference adapter. Everything below was **re-verified live on 2026-09-24** before coding (Phase 2 step 1).
+`packages/protocols/src/morpho/`. This is the reference adapter. Everything below was **re-verified live on 2026-09-24** before coding (Phase 2 step 1).
 
 ## Deployment re-verification
 

@@ -1,6 +1,6 @@
 # Uniswap adapter (Phase 4)
 
-`src/protocols/uniswap/`. This is the first production TRADE adapter. It is read-only: no swaps, approvals, signatures, permits, calldata or transaction submission. It implements `OpportunityAdapter`, and the engine and router gained no Uniswap-specific code.
+`packages/protocols/src/uniswap/`. This is the first production TRADE adapter. It is read-only: no swaps, approvals, signatures, permits, calldata or transaction submission. It implements `OpportunityAdapter`, and the engine and router gained no Uniswap-specific code.
 
 | File | Role |
 |---|---|

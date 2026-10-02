@@ -1,6 +1,6 @@
 # DEX data: "for asset X, where can it be traded, and how deep?"
 
-Checked 2026-09-24 (blocks 71,129,856–71,140,265). Evidence: `research/evidence/dex/` (pool_table.md, compare.json, quotes.json, v3_pools.json, scripts/). Uniswap addresses and topic0s come from the 2026-09-23 research (`robinhood-terminal/…/C_dex_launchpads_routing.md`); they are verified onchain and sourced from [Uniswap/contracts 4663.json](https://github.com/Uniswap/contracts/blob/main/deployments/json/4663.json).
+Checked 2026-09-24 (blocks 71,129,856–71,140,265). Evidence: `research/evidence/dex/` (pool_table.md, compare.json, quotes.json, v3_pools.json, apps/cli/src/). Uniswap addresses and topic0s come from the 2026-09-23 research (`robinhood-terminal/…/C_dex_launchpads_routing.md`); they are verified onchain and sourced from [Uniswap/contracts 4663.json](https://github.com/Uniswap/contracts/blob/main/deployments/json/4663.json).
 
 ## CONFIRMED
 

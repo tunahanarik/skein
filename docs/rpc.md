@@ -1,6 +1,6 @@
 # RPC layer
 
-`src/chain/`. Engine code talks to the chain only through the `ChainReader` interface. That interface has no signing or sending method.
+`packages/chain/src/`. Engine code talks to the chain only through the `ChainReader` interface. That interface has no signing or sending method.
 
 ```ts
 interface ChainReader {

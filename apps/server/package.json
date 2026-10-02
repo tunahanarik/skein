@@ -1,0 +1,20 @@
+{
+  "name": "@skein/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only HTTP API + static web app server (node:http).",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/product": "workspace:*",
+    "@skein/protocols": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "@skein/runtime": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

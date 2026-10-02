@@ -1,0 +1,17 @@
+{
+  "name": "@skein/pricing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Price Service: Chainlink first, Robinhood quotes as fallback, with freshness and conflict checks.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

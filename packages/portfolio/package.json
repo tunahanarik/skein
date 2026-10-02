@@ -1,0 +1,18 @@
+{
+  "name": "@skein/portfolio",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Portfolio Engine: balances at one pinned block, share-equivalents, valuation.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

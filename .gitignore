@@ -15,5 +15,6 @@ research/snapshots/combined-trade-validation.json
 research/snapshots/intelligence-validation.json
 .tmp/
 .cache/
-web/dist/
+apps/web/dist/
+apps/web/snapshot/dist/
 .claude/

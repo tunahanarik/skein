@@ -1,18 +1,18 @@
 # Asset Intelligence (Phase 5 product read API)
 
-`src/product/`. It answers the product question *"I own this asset. What can I actually do with it?"* for a future frontend. It is read-only: nothing here signs, approves, builds calldata or sends a transaction.
+`packages/product/src/`. It answers the product question *"I own this asset. What can I actually do with it?"* for a future frontend. It is read-only: nothing here signs, approves, builds calldata or sends a transaction.
 
 ```
 OpportunityEngine (raw, Phases 2–4) ── getOpportunities({eligibility: "ALL"}) at one pinned block
    │  snapshot (15 s TTL): raw opportunities by primary asset + trade graph + markets
    ▼
-AssetIntelligenceService (src/product/service.ts) ── projection, no protocol logic
+AssetIntelligenceService (packages/product/src/service.ts) ── projection, no protocol logic
    │  classifyOpportunity / classifyRoute / classifyQuotedRoute   → usability (product-usability.md)
    │  opportunityCard / routeCard                                 → ProductCard (neutral labels)
    │  rankCards per subcategory (and per trade target)            → ranking (product-ranking.md)
    │  capabilities, counts, empty states, data quality, freshness
    ▼
-AssetIntelligence · PortfolioIntelligence · CoverageRow[]  (src/product/types.ts)
+AssetIntelligence · PortfolioIntelligence · CoverageRow[]  (packages/product/src/types.ts)
 ```
 
 The raw `Opportunity` stays the source of truth. A product card is a projection and always lists the raw opportunity ids behind it (`sourceOpportunityIds`). Route cards list one raw TRADE opportunity per hop.
@@ -58,7 +58,7 @@ External strings (vault names, PT/YT symbols, API labels) are sanitized by the a
 Two raw opportunities with the same cardId are the same user action and become one card, with both raw ids listed. Different fee tiers are different pools, so they never merge.
 
 ## Trade display
-- **No amount:** route information only (path, markets, fee, bottleneck liquidity, verification, `volume24h: "UNKNOWN"`). There are no quotes. Routes go to the default targets `PRODUCT_TRADE_TARGET_KEYS` = USDG and WETH (`src/config/trade.ts`). These are the two deepest hubs measured live: USDG has 127 active v3 pools ≥ $50 against 76 counterparts, and WETH/USDG is $18.9M. Every other destination is counted in `otherTradeDestinations` and can be requested with `tradeTarget`.
+- **No amount:** route information only (path, markets, fee, bottleneck liquidity, verification, `volume24h: "UNKNOWN"`). There are no quotes. Routes go to the default targets `PRODUCT_TRADE_TARGET_KEYS` = USDG and WETH (`packages/robinhood/src/config/trade.ts`). These are the two deepest hubs measured live: USDG has 127 active v3 pools ≥ $50 against 76 counterparts, and WETH/USDG is $18.9M. Every other destination is counted in `otherTradeDestinations` and can be requested with `tradeTarget`.
 - **Explicit amount:** needs both `tradeTarget` and `tradeAmount` (a decimal string of the asset). Each route to that target gets an INDICATIVE quote (`guarantee: "NONE"`, no minimum output), and the routes are ranked by expected output. An amount without a target is rejected. Amounts are never inferred from a balance, and a portfolio view never quotes.
 - **Per-target cap:** `PRODUCT_MAX_ROUTES_PER_TARGET = 5` in PRODUCT mode. This is a UX limit, not a quality judgement. The remainder is reported as `moreRoutes: [{ target, shown, total }]`. DEBUG mode and the raw APIs keep every route. Live NVDA had 30 visible routes to its two targets (2026-09-24).
 
@@ -123,7 +123,7 @@ Positions with debt are listed first.
 - `borrowCapacity.borrowableNow` = min(protocol limit at LLTV, the market's available liquidity), compared exactly in integers, with `cappedBy` set to PROTOCOL_LIMIT or MARKET_LIQUIDITY. It is still at the liquidation threshold and is not a recommendation.
 
 ## Protocol app links (`protocolApp`)
-A card links to the protocol's own app only when the app's host is in the protocol's verified `linkHosts` (`src/config/protocols.ts`) and passes `toTrustedLink`.
+A card links to the protocol's own app only when the app's host is in the protocol's verified `linkHosts` (`packages/robinhood/src/config/protocols.ts`) and passes `toTrustedLink`.
 
 | Host | Source (2026-09-24) |
 |---|---|
@@ -137,7 +137,7 @@ Links go to the app's home page, because chain-specific deep-link formats are no
 - The snapshot is the engine output at one block. It has a 15 s TTL (`CACHE_TTL_MS.PRODUCT_SNAPSHOT`), which is shorter than the adapter and price TTLs below it, so the product layer never extends their freshness.
 - View cache keys are `chainId | asset | mode | tradeTarget | tradeAmount | holding | snapshot time`. Views with a holding are not cached.
 
-## Observability (`src/product/metrics.ts`)
+## Observability (`packages/product/src/metrics.ts`)
 In-memory counters and timings (p50/p95/max):
 - adapter latency
 - asset, portfolio and coverage latency

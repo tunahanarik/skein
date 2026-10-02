@@ -1,0 +1,20 @@
+{
+  "name": "@skein/protocols",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Protocol adapters (Morpho, Pendle, Uniswap v3/v4, Ramses, Spark, Beefy, Steer). One folder per protocol.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/chain": "workspace:*",
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "@skein/pricing": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "viem": "2.56.8",
+    "zod": "4.6.5"
+  }
+}

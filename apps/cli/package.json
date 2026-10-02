@@ -1,0 +1,21 @@
+{
+  "name": "@skein/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Command-line tools and live read-only validation scripts.",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@skein/core": "workspace:*",
+    "@skein/engine": "workspace:*",
+    "@skein/networks": "workspace:*",
+    "@skein/portfolio": "workspace:*",
+    "@skein/product": "workspace:*",
+    "@skein/protocols": "workspace:*",
+    "@skein/robinhood": "workspace:*",
+    "@skein/runtime": "workspace:*",
+    "viem": "2.56.8"
+  }
+}

@@ -19,7 +19,7 @@ Checked 2026-09-24. Evidence: `research/evidence/yield/` (paxos_usdg_mainnet.txt
 
 ## How to value USDG (do not hardcode $1)
 
-Implemented in `scripts/portfolio.ts`; to become the Price Service rule in Phase 1:
+Implemented in `apps/cli/src/portfolio.ts`; to become the Price Service rule in Phase 1:
 
 1. **Primary:** the Chainlink USDG/USD answer. Reject it if `answer ≤ 0`, if `now − updatedAt > heartbeat (86,400 s)`, or if `answeredInRound < roundId`. A day-old answer is normal for a stable asset (it only updates on a 0.5 % move or at the heartbeat), so "old" ≠ "wrong".
 2. **Cross-check:** the Uniswap v3 WETH/USDG 0.01 % pool `0x52e65b17fb6e5ba00ed806f37afcd2daa50271ca` (about $19.1M TVL) mid × Chainlink ETH/USD. That gives a market price for USDG.

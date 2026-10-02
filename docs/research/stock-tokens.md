@@ -43,7 +43,7 @@ Source: [docs /chain/building-with-stock-tokens](https://docs.robinhood.com/chai
 - The feed-to-token mapping exists **only by ticker in the feed name** ("Robinhood NVDA / USD"). The directory has no token-address field, and `description()` onchain is inconsistent ("RHNVDA / USD" vs "Robinhood AAPL / USD"). So we map by name, then confirm with a price cross-check.
 
 ### The calculation ("Wallet X owns Y NVDA Stock Tokens")
-Implemented in `src/lib/stockToken.ts`, tested in `test/stockToken.test.ts`, and run live by `pnpm portfolio <address>`:
+Implemented in `packages/core/src/lib/stockToken.ts`, tested in `test/stockToken.test.ts`, and run live by `pnpm portfolio <address>`:
 
 ```
 raw        = NVDA.balanceOf(X)                        // integer, 18 decimals — never changes on corporate actions

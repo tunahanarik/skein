@@ -1,6 +1,6 @@
 # Pendle adapter
 
-`src/protocols/pendle/`. Read-only. It implements `OpportunityAdapter`, and the engine gained no Pendle-specific code. The semantics are in [pendle-semantics.md](../pendle-semantics.md).
+`packages/protocols/src/pendle/`. Read-only. It implements `OpportunityAdapter`, and the engine gained no Pendle-specific code. The semantics are in [pendle-semantics.md](../pendle-semantics.md).
 
 | File | Role |
 |---|---|
@@ -52,7 +52,7 @@
 
 **Prices:** yield-token USD comes from the Phase 1 Price Service through `priceCanonicalAssets`, which passes the onchain `uiMultiplier` exactly as Phase 1 defines. Pendle's own USD prices are never used.
 
-## Caches (separate; TTLs in `src/config/freshness.ts`)
+## Caches (separate; TTLs in `packages/core/src/config/freshness.ts`)
 
 | Cache | Content | TTL | On failure |
 |---|---|---|---|

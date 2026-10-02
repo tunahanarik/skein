@@ -1,7 +1,7 @@
 /** Portfolio Engine end-to-end on the offline fixture world (fake chain + fixture APIs). */
 import { describe, expect, it } from "vitest";
-import { getPortfolio, portfolioToJson } from "../../src/portfolio/engine.js";
-import { ValidationError } from "../../src/lib/validation.js";
+import { getPortfolio, portfolioToJson } from "@skein/portfolio/engine";
+import { ValidationError } from "@skein/core/lib/validation";
 import {
   AAPL,
   defaultWorld,
@@ -19,7 +19,7 @@ import {
   USDG,
   WALLET,
   WETH,
-} from "../fixtures/world.js";
+} from "@skein/testkit/world";
 
 async function run(opts: Parameters<typeof testStack>[0] = {}, p: Parameters<typeof getPortfolio>[2] = {}) {
   const s = await testStack(opts);

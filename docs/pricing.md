@@ -1,6 +1,6 @@
 # Price Service
 
-`src/pricing/priceService.ts`. This is the only place assets are priced. Future protocol adapters must call it; they must not price Stock Tokens themselves, and **Morpho oracle prices are never used for portfolio valuation** (see the Morpho finding below).
+`packages/pricing/src/priceService.ts`. This is the only place assets are priced. Future protocol adapters must call it; they must not price Stock Tokens themselves, and **Morpho oracle prices are never used for portfolio valuation** (see the Morpho finding below).
 
 **Invariant:** `PriceQuote.priceUsd` is always **USD per one whole token**. For Stock Tokens the multiplier is already inside the price, so every holding is valued as `raw × priceUsd`.
 
@@ -25,7 +25,7 @@ Round validity checks (Chainlink guidance):
 
 An invalid round → `INVALID_FEED_ROUND`, and the fallback is attempted.
 
-## Freshness (`src/config/freshness.ts`, the only place thresholds live)
+## Freshness (`packages/core/src/config/freshness.ts`, the only place thresholds live)
 
 Age is measured from the **source's own timestamp** (Chainlink `updatedAt`, quote `generatedAt`), not our fetch time.
 

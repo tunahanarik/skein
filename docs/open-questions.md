@@ -35,8 +35,8 @@ P5-6. **Public RPC reliability.** The public RPC intermittently answers batched 
 *All seven P4 items were decided at the start of Phase 5:*
 - **P4-1:** v4 deferred; needs a hook security policy.
 - **P4-2:** no second DEX.
-- **P4-3:** Lighter and Rialto are metadata only (`src/config/ecosystem.ts`).
-- **P4-4:** a separate user-facing trade-quality policy (`src/config/tradeQuality.ts`); see docs/product-usability.md.
+- **P4-3:** Lighter and Rialto are metadata only (`packages/robinhood/src/config/ecosystem.ts`).
+- **P4-4:** a separate user-facing trade-quality policy (`packages/core/src/config/tradeQuality.ts`); see docs/product-usability.md.
 - **P4-5:** volume stays UNKNOWN (`TradeMarket.volume24h`).
 - **P4-6:** production requires `ROBINHOOD_RPC_URL`, with an optional `ROBINHOOD_INDEX_RPC_URL`.
 - **P4-7:** no aggregator cross-check; that is future execution validation.

@@ -1,0 +1,97 @@
+/*
+ * Controls: buttons, inputs, switches, segmented choices, chips.
+ * Heights 32 (small) · 36 (default) · 44 (big). Hover snaps in and eases out; press scales to .97.
+ */
+
+/* buttons */
+.btn { --h: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--h); padding: 0 14px; border: 0; border-radius: var(--r-sm); background: var(--bg-3); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-2), var(--hi); font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.btn:hover { background: var(--bg-4); box-shadow: inset 0 0 0 1px var(--line-3), var(--hi); color: var(--fg-1); text-decoration: none; transition-duration: 0ms, 0ms, 0ms, var(--t-press); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:focus-visible { box-shadow: inset 0 0 0 1px var(--line-3), var(--focus); }
+.btn.primary { background: var(--accent); color: var(--on-accent); font-weight: 600; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.12), var(--glow); }
+.btn.primary:hover:not(:disabled) { background: var(--accent-hover); color: var(--on-accent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.12), 0 8px 24px -8px rgba(200, 241, 105, 0.6); }
+.btn.primary:active:not(:disabled) { background: var(--accent-press); }
+.btn.primary:focus-visible { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), var(--focus); }
+.btn.ghost { background: transparent; box-shadow: none; color: var(--fg-2); }
+.btn.ghost:hover { background: var(--hover-2); box-shadow: none; color: var(--fg-1); }
+.btn.small { --h: 32px; padding: 0 12px; font-size: 13px; gap: 6px; }
+.btn.big { --h: 44px; padding: 0 20px; font-size: 15px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.primary:disabled { box-shadow: none; }
+.btn img { border-radius: var(--r-xs); }
+
+.icon-btn { width: 36px; height: 36px; display: inline-grid; place-items: center; flex: none; padding: 0; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--fg-2); cursor: pointer; transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.icon-btn:hover { background: var(--hover-2); color: var(--fg-1); transition-duration: 0ms, 0ms, var(--t-press); }
+.icon-btn:active { transform: scale(0.94); }
+.icon-btn .icon { transition: transform 300ms var(--ease-out); }
+.icon-btn:hover .icon { transform: rotate(-8deg); }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 99px; background: var(--bg-2); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-1); font-size: 13px; font-weight: 500; white-space: nowrap; text-decoration: none; cursor: pointer; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.pill:hover { background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-3); color: var(--fg-1); text-decoration: none; transition-duration: 0ms, 0ms, 0ms, var(--t-press); }
+.pill:active { transform: scale(0.97); }
+.pill[aria-pressed="true"] { color: var(--warn); background: var(--warn-a); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 30%, transparent); }
+.pill img { border-radius: var(--r-xs); }
+
+.linkish { border: 0; background: none; padding: 0; color: var(--accent-fg); font: inherit; cursor: pointer; text-underline-offset: 3px; }
+.linkish:hover { text-decoration: underline; }
+
+/* inputs */
+.input { height: 36px; width: 100%; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: var(--bg-1); color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-2); font-size: 14px; transition: box-shadow var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
+.input::placeholder { color: var(--fg-3); }
+.input:hover { box-shadow: inset 0 0 0 1px var(--line-3); }
+.input:focus { outline: none; background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--accent-a24), 0 0 0 4px var(--accent-a08); }
+.input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--down) 55%, transparent); }
+select.input { width: auto; appearance: none; -webkit-appearance: none; padding-inline-end: 30px; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237d838c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+select.input option { background: var(--bg-2); color: var(--fg-1); }
+
+/* a label that wraps a control (switch, select) */
+.toggle { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--fg-2); cursor: pointer; user-select: none; }
+.toggle input[type="checkbox"] { appearance: none; -webkit-appearance: none; position: relative; width: 34px; height: 20px; margin: 0; flex: none; border-radius: 99px; background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2); cursor: pointer; transition: background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
+.toggle input[type="checkbox"]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg-2); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); transition: transform 240ms var(--ease-out), background var(--t-fast) var(--ease-out); }
+.toggle input[type="checkbox"]:checked { background: var(--accent); box-shadow: none; }
+.toggle input[type="checkbox"]:checked::after { transform: translateX(14px); background: var(--on-accent); }
+.toggle input[type="checkbox"]:focus-visible { box-shadow: var(--focus); }
+
+/* segmented choice; the selected option sits on a sliding thumb */
+.seg { position: relative; display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-sm); background: var(--bg-1); box-shadow: inset 0 0 0 1px var(--line-1); }
+.seg button { position: relative; z-index: 1; height: 28px; padding: 0 12px; border: 0; border-radius: 5px; background: none; color: var(--fg-3); font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
+.seg button:hover { color: var(--fg-1); }
+.seg button.on, .seg button[aria-checked="true"] { color: var(--fg-1); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2), var(--hi), 0 1px 2px rgba(0, 0, 0, 0.3); }
+
+.fseg { position: relative; display: grid; gap: 2px; padding: 2px; border-radius: var(--r-sm); background: var(--bg-0); box-shadow: inset 0 0 0 1px var(--line-1); }
+.fseg button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 28px; padding: 0 4px; border: 0; border-radius: 5px; background: transparent; color: var(--fg-3); font-size: 12.5px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
+.fseg button:hover { color: var(--fg-1); }
+.fseg button.on { color: var(--fg-1); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2), var(--hi), 0 1px 2px rgba(0, 0, 0, 0.3); }
+.fseg button.on .faint { color: inherit; opacity: 0.7; }
+
+/* Where :has() is available the thumb slides between options instead of jumping. Options share one width. */
+@supports selector(:has(*)) {
+  .seg, .fseg { --n: 1; --i: 0; }
+  .seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  :is(.seg, .fseg):has(> button:nth-child(2)) { --n: 2; }
+  :is(.seg, .fseg):has(> button:nth-child(3)) { --n: 3; }
+  :is(.seg, .fseg):has(> button:nth-child(4)) { --n: 4; }
+  :is(.seg, .fseg):has(> button:nth-child(5)) { --n: 5; }
+  :is(.seg, .fseg):has(> button:nth-child(2):is(.on, [aria-checked="true"])) { --i: 1; }
+  :is(.seg, .fseg):has(> button:nth-child(3):is(.on, [aria-checked="true"])) { --i: 2; }
+  :is(.seg, .fseg):has(> button:nth-child(4):is(.on, [aria-checked="true"])) { --i: 3; }
+  :is(.seg, .fseg):has(> button:nth-child(5):is(.on, [aria-checked="true"])) { --i: 4; }
+  :is(.seg, .fseg)::before { content: ""; position: absolute; top: 2px; bottom: 2px; inset-inline-start: 2px; width: calc((100% - 4px - (var(--n) - 1) * 2px) / var(--n)); border-radius: 5px; background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-2), var(--hi), 0 1px 2px rgba(0, 0, 0, 0.3); transform: translateX(calc(var(--i) * (100% + 2px))); transition: transform 280ms var(--ease-out), opacity var(--t-fast) var(--ease-out); }
+  :is(.seg, .fseg):not(:has(> button:is(.on, [aria-checked="true"])))::before { opacity: 0; }
+  .seg button.on, .seg button[aria-checked="true"], .fseg button.on { background: transparent; box-shadow: none; }
+}
+
+/* filter chips (coverage) */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { height: 30px; padding: 0 12px; border: 0; border-radius: 99px; background: var(--bg-1); color: var(--fg-2); box-shadow: inset 0 0 0 1px var(--line-1); font-size: 13px; font-weight: 500; cursor: pointer; transition: background var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.tabs button:hover { color: var(--fg-1); box-shadow: inset 0 0 0 1px var(--line-3); }
+.tabs button:active { transform: scale(0.97); }
+.tabs button[aria-pressed="true"] { color: var(--fg-1); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-3), var(--hi); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: var(--r-xs); background: var(--bg-2); color: var(--fg-2); box-shadow: inset 0 0 0 1px var(--line-1); font-size: 12px; font-weight: 500; white-space: nowrap; }
+
+.star-btn { display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--fg-4); cursor: pointer; transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), transform var(--t-press) var(--ease-out); }
+.star-btn:hover { color: var(--fg-1); background: var(--hover-2); }
+.star-btn:active { transform: scale(0.88); }
+.star-btn.on { color: var(--warn); }
+.star-btn.on .icon { fill: currentColor; }

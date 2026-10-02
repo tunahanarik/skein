@@ -5,13 +5,13 @@
  *   P3-3  PROTOCOL_UNLISTED is advisory; a verified, liquid, live unlisted market stays visible
  */
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ELIGIBILITY_POLICY } from "../../src/config/eligibility.js";
-import type { Opportunity } from "../../src/model/opportunity.js";
-import { computeEligibility } from "../../src/opportunities/eligibility.js";
-import { OpportunityEngine } from "../../src/opportunities/engine.js";
-import { PendleAdapter } from "../../src/protocols/pendle/adapter.js";
-import { FakePendleApi, fixturePendleMarkets, installPendle } from "../fixtures/pendle.js";
-import { defaultWorld, NOW, testStack } from "../fixtures/world.js";
+import { DEFAULT_ELIGIBILITY_POLICY } from "@skein/core/config/eligibility";
+import type { Opportunity } from "@skein/core/model/opportunity";
+import { computeEligibility } from "@skein/engine/opportunities/eligibility";
+import { OpportunityEngine } from "@skein/engine/opportunities/engine";
+import { PendleAdapter } from "@skein/protocols/pendle/adapter";
+import { FakePendleApi, fixturePendleMarkets, installPendle } from "@skein/testkit/pendle";
+import { defaultWorld, NOW, testStack } from "@skein/testkit/world";
 
 async function setup() {
   const markets = fixturePendleMarkets();

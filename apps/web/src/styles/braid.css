@@ -1,0 +1,7 @@
+/* The skein: three threads braiding in, light travelling along them (components/Braid.tsx). */
+.braid .glow { filter: blur(7px); opacity: 0.55; }
+.braid .flow { stroke-dasharray: 26 974; animation: braid-flow 9s linear infinite; }
+.braid .flow.f2 { animation-delay: -3s; }
+.braid .flow.f3 { animation-delay: -6s; }
+@keyframes braid-flow { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .braid .flow { animation: none; opacity: 0; } }

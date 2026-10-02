@@ -1,12 +1,12 @@
 # Asset Registry
 
-`src/registry/`. It defines which assets are canonical and therefore scanned, and how changes upstream are detected.
+`packages/robinhood/src/registry/`. It defines which assets are canonical and therefore scanned, and how changes upstream are detected.
 
 ## Identity
 - **Identity = chainId + contract address** (key `4663:<lowercase address>`; native ETH is `4663:native`). Symbols and names are display-only and sanitized (control/bidi characters stripped, length capped).
 - Addresses are checksummed for output. Lookups are case-insensitive.
 
-## Asset model (`src/registry/asset.ts`)
+## Asset model (`packages/robinhood/src/registry/asset.ts`)
 
 | Field | Notes |
 |---|---|
@@ -54,7 +54,7 @@
 
 A changed contract address is never trusted automatically.
 
-## Snapshot (`snapshot.ts`, file `data/registry/robinhood-stock-tokens.snapshot.json`)
+## Snapshot (`snapshot.ts`, file `packages/robinhood/data/registry/robinhood-stock-tokens.snapshot.json`)
 - Fields: `schemaVersion`, `source`, `chainId`, `generatedAt`, `sourceFetchedAt`, `assetCount`, `contentHash` (sha256 over canonical JSON, independent of order and address case), `entries`.
 - `parseSnapshot` rejects a wrong chain, a count mismatch, or a **hash mismatch** (a hand-edited file).
 - Uses: the **baseline** for change detection, **degraded mode** when the API is down, and test fixtures.
@@ -66,7 +66,7 @@ A changed contract address is never trusted automatically.
 
 Current baseline (2026-09-24): 195 entries, `sha256:c316dd53e1a1e70ede17d0d9732ea19171e8b161e399966174d18141e6f5776c`. Live check: 195/195 onchain identity matches, 0 changes vs the snapshot.
 
-## Crypto tokens (`CRYPTO_ASSETS`, `src/config/assets.ts`)
+## Crypto tokens (`CRYPTO_ASSETS`, `packages/robinhood/src/config/assets.ts`)
 
 Besides ETH, WETH, USDG and the Stock Tokens, a crypto token is canonical only if it passes all of these (checked 2026-10-01):
 - **Chainlink feed:** a `<SYMBOL> / USD` feed for it exists in the Chainlink directory for Robinhood Chain mainnet and answers fresh. This is also how the token is priced.

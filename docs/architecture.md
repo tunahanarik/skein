@@ -20,7 +20,7 @@ Opportunity Engine
   │  (listed-only default, expired hidden, unverified flagged)
   ▼
 Protocol Adapters  morpho · pendle · spark · uniswap · beefy · steer · (merkl = reward enricher)
-  │  normalize raw protocol data → Opportunity (src/model/opportunity.ts)
+  │  normalize raw protocol data → Opportunity (packages/core/src/model/opportunity.ts)
   ▼
 Risk Metadata Service  (changed: separate, shared)
   │  oracle review (kind, feeds, multiplier handling), asset controls (pause/freeze/blocklist),
@@ -34,7 +34,7 @@ API (read-only) ──► Comparison UI (Next.js)
 
 ## Why these changes
 1. **Asset Registry before the Portfolio Engine.** A wallet has no "list of tokens" we can ask for without an indexer. We scan a known list: 195 Stock Tokens + core assets, one Multicall3 call, about 0.5 s. So the registry defines what the portfolio can see.
-2. **Price Service is separate from the adapters.** Stock Token pricing is easy to get wrong (multiplier applied twice or not at all). It lives in one tested module (`src/lib/stockToken.ts`) that has two price *types*, and adapters never price assets themselves.
+2. **Price Service is separate from the adapters.** Stock Token pricing is easy to get wrong (multiplier applied twice or not at all). It lives in one tested module (`packages/core/src/lib/stockToken.ts`) that has two price *types*, and adapters never price assets themselves.
 3. **Risk Metadata Service is shared.** The same oracle and asset-control facts (for example "this oracle double-applies uiMultiplier", "USDG can be frozen by Paxos") apply across adapters.
 4. **Snapshot store from day one.** Provenance is a requirement, and several protocols give no history (Spark, onchain-only metrics).
 
@@ -48,8 +48,8 @@ API (read-only) ──► Comparison UI (Next.js)
 | Portfolio Engine | server | balances + multipliers at a pinned block; display balance + share-equivalent | keyed RPC, Multicall3 |
 | Price Service | server | token prices with provenance + staleness + cross-check | Chainlink, `/rhj/prices`, DEX |
 | Opportunity Engine | server | fan out to adapters, merge, filter, rank by *user-chosen* metric | adapters |
-| Protocol Adapters | server | one per protocol, capability-flagged (`src/opportunities/adapter.ts`) | protocol APIs + onchain |
-| Risk Metadata | server | objective attributes (`OpportunityRisk` in `src/model/opportunity.ts`; Phase 2: produced inside adapters, shared service later) | onchain, protocol APIs |
+| Protocol Adapters | server | one per protocol, capability-flagged (`packages/engine/src/opportunities/adapter.ts`) | protocol APIs + onchain |
+| Risk Metadata | server | objective attributes (`OpportunityRisk` in `packages/core/src/model/opportunity.ts`; Phase 2: produced inside adapters, shared service later) | onchain, protocol APIs |
 | Cache | Redis | short TTL: prices ≈15–60 s, protocol API ≈60 s, registry ≈5 min; request coalescing to respect rate limits | – |
 | Store | PostgreSQL | snapshots of served values, v4 pool registry, registry history | – |
 | Jobs | cron/worker | registry refresh, v4 `Initialize` log follower, snapshotting | keyed RPC |
@@ -68,15 +68,15 @@ Pendle was added as an ordinary adapter. The engine gained only generic concepts
 - `EntryRequirement`
 - `LiquidityKind`
 - `AssetRelationship`
-- the eligibility layer (`src/opportunities/eligibility.ts` + `src/config/eligibility.ts`)
+- the eligibility layer (`packages/engine/src/opportunities/eligibility.ts` + `packages/core/src/config/eligibility.ts`)
 - comparison groups
 
 `ChainReader` gained `getLogs` (range bisection) for onchain discovery. See [protocols/pendle-adapter.md](protocols/pendle-adapter.md).
 
 ## Phase 4 status
 Uniswap v3 was added as the first TRADE adapter, through the same interface. The generic additions are:
-- the trade model: TradeMarket / TradeRoute / TradeQuote (`src/model/trade.ts`)
-- a venue-independent trade graph and router (`src/trade/`)
+- the trade model: TradeMarket / TradeRoute / TradeQuote (`packages/core/src/model/trade.ts`)
+- a venue-independent trade graph and router (`packages/engine/src/trade/`)
 - engine trade methods
 - the TRADE portfolio context
 - the eligibility reasons DUST_LIQUIDITY, UNRESOLVED_YIELD_SEMANTICS and LIQUIDITY_UNVERIFIED
@@ -84,7 +84,7 @@ Uniswap v3 was added as the first TRADE adapter, through the same interface. The
 `ChainReader.getLogs` gained topic filters, an unbatched log client and a sub-request budget. See [trade-opportunities.md](trade-opportunities.md), [trade-routing.md](trade-routing.md) and [protocols/uniswap-adapter.md](protocols/uniswap-adapter.md).
 
 ## Phase 5 status
-A product read layer (`src/product/`) sits between the engine and a future API/UI. It adds:
+A product read layer (`packages/product/src/`) sits between the engine and a future API/UI. It adds:
 - `AssetIntelligenceService`: asset, category, portfolio, coverage and raw views; PRODUCT/DEBUG modes
 - usability, separate from verification (ACTIONABLE / LIMITED / INFORMATIONAL / HIDDEN_BY_DEFAULT / UNAVAILABLE)
 - per-category deterministic ranking
@@ -101,9 +101,9 @@ See [asset-intelligence.md](asset-intelligence.md).
 ## Protocol adapter system
 
 ```
-src/protocols/
+packages/protocols/src/
   morpho/           IMPLEMENTED (Phase 2): API + onchain identity/totals; markets → LEND/COLLATERAL, vaultV2 → VAULT
-                    (interface: src/opportunities/adapter.ts)
+                    (interface: packages/engine/src/opportunities/adapter.ts)
   pendle/           IMPLEMENTED (Phase 3): factory CreateNewMarket logs → onchain identity/state + API /v1/{chain}/markets/{addr} → FIXED_YIELD, YIELD, LP; positions
   spark/            onchain vsr/totalAssets → YIELD (savings)
   uniswap/          IMPLEMENTED (Phase 4): v3 factory PoolCreated logs → verified pools → TRADE; QuoterV2 indicative quotes (v2/v4 researched, not integrated)

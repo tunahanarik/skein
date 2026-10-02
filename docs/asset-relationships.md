@@ -1,6 +1,6 @@
 # Asset relationships
 
-`src/model/assetRelationship.ts`. This is a generic, provenance-carrying graph between tokens. It is not Pendle-specific: the same kinds describe vault shares, LP tokens and receipt tokens. Each opportunity carries the relationships that explain its assets (`Opportunity.relationships`).
+`packages/core/src/model/assetRelationship.ts`. This is a generic, provenance-carrying graph between tokens. It is not Pendle-specific: the same kinds describe vault shares, LP tokens and receipt tokens. Each opportunity carries the relationships that explain its assets (`Opportunity.relationships`).
 
 ```ts
 interface AssetRelationship {
