@@ -14,7 +14,7 @@
 .hero-art svg { display: block; width: 100%; height: 100%; }
 
 /* status line: block, asset and protocol counts, live */
-.cmd-status { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px 20px; flex-wrap: wrap; padding: 20px 40px 0; font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); font-variant-numeric: tabular-nums; animation: fade 500ms var(--ease-out) backwards; }
+.cmd-status { position: relative; z-index: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px 20px; flex-wrap: wrap; padding: 20px 40px 0; font: 500 11px/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); font-variant-numeric: tabular-nums; animation: fade 500ms var(--ease-out) backwards; }
 .cmd-live { display: inline-flex; align-items: center; gap: 8px; color: var(--fg-3); }
 .cmd-live.on { color: var(--accent-fg); }
 
@@ -47,8 +47,10 @@
 .hw-why b { display: block; font-size: 13.5px; line-height: 20px; font-weight: 600; color: var(--fg-1); }
 .hw-why span span { display: block; margin-top: 2px; font-size: 12.5px; line-height: 18px; color: var(--fg-3); }
 
-/* Home hero: headline, wallet search and note on the left over the braid; reasons along the bottom */
-.home-hero .hw { position: relative; z-index: 1; gap: 0; padding: 60px 40px 0; grid-template-areas: "step" "title" "lead" "form" "err" "note" "why"; }
+/* Home hero: headline, wallet search and note on the left over the braid; reasons along the bottom.
+   The status line sits in the top right corner, on the same row as the step label. */
+.home-hero > .cmd-status { position: absolute; top: 0; inset-inline: 0; padding: 32px 40px 0; pointer-events: none; }
+.home-hero .hw { position: relative; z-index: 1; gap: 0; padding: 32px 40px 0; grid-template-areas: "step" "title" "lead" "form" "err" "note" "why"; }
 .home-hero .hw > * { max-width: 620px; animation: rise 640ms var(--ease-out) backwards; }
 .home-hero .hw > .hero-step { grid-area: step; animation-delay: 60ms; }
 .home-hero .hw > .hw-title { grid-area: title; margin-top: 18px; font-size: 52px; line-height: 56px; letter-spacing: -0.045em; animation-delay: 120ms; }
@@ -379,6 +381,15 @@ h1 + p.muted { margin-top: 8px; }
 .prose strong { color: var(--fg-1); }
 
 /* ---------- responsive ---------- */
+@media (min-width: 1600px) {
+  .home-hero .hw { padding-inline: 56px; }
+  .home-hero > .cmd-status { padding-inline: 56px; }
+  .home-hero .hw > * { max-width: 720px; }
+  .home-hero .hw > .hw-title { font-size: 64px; line-height: 68px; }
+  .home-hero .hw > .hw-lead { max-width: 620px; font-size: 18px; line-height: 30px; }
+  .home-hero .hw > .hw-form { max-width: 660px; }
+  .home-hero .hw > .hw-why { margin-inline: -56px; }
+}
 @media (max-width: 1200px) {
   .mk-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hide-m { display: none; }
@@ -407,7 +418,8 @@ h1 + p.muted { margin-top: 8px; }
 @media (max-width: 720px) {
   .cmd-status { padding: 16px 18px 0; }
   .cmd-status > span:not(.cmd-live) { display: none; }
-  .home-hero .hw { padding: 36px 18px 0; }
+  .home-hero > .cmd-status { padding: 18px 18px 0; }
+  .home-hero .hw { padding: 18px 18px 0; }
   .home-hero .hw > .hw-title { font-size: 34px; line-height: 38px; letter-spacing: -0.04em; }
   .home-hero .hw > .hw-lead { font-size: 15px; line-height: 24px; }
   .home-hero .hw > .hw-why { margin: 36px -18px 0; }

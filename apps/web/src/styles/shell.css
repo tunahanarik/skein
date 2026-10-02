@@ -5,8 +5,9 @@
 .app { display: grid; grid-template-columns: 72px minmax(0, 1fr); min-height: 100vh; }
 .app-main { min-width: 0; display: flex; flex-direction: column; }
 .app-main main { flex: 1; }
-main { padding: 28px 0 72px; min-height: calc(100vh - 160px); }
-.shell { max-width: 1680px; margin: 0 auto; padding: 0 28px; }
+main { padding: 20px 0 72px; min-height: calc(100vh - 160px); }
+/* Full width, on the same 28px edges as the header. */
+.shell { padding: 0 28px; }
 /* Each page rises in when it opens. */
 .shell.wide > * { animation: rise 420ms var(--ease-out) backwards; }
 
@@ -83,5 +84,4 @@ footer.bottom p { margin: 6px 0 0; max-width: 820px; }
   .hq { margin: 0; padding: 0; border: 0; }
   .hq a { display: none; }
   .shell { padding: 0 16px; }
-  main { padding-top: 20px; }
 }
