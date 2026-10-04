@@ -1,0 +1,38 @@
+# Skein in production: its own container, reachable only from the host; a reverse proxy (Caddy)
+# terminates TLS and forwards to 127.0.0.1:${SKEIN_PORT:-8787}.
+#
+# .env next to this file (never committed):
+#   ROBINHOOD_RPC_URL=https://robinhood-mainnet.g.alchemy.com/v2/<key>   required in production
+#   SKEIN_PORT=8787            host port (loopback only)
+#   APP_ENV=development        only to run on the public RPC for a while (not for production)
+name: skein
+services:
+  skein:
+    build: .
+    image: skein:latest
+    container_name: skein
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${SKEIN_PORT:-8787}:8787"
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      TRUST_PROXY: "1"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - cache:/app/.cache
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 1g
+    cpus: 1.5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  cache:

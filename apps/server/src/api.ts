@@ -4,7 +4,9 @@
  *   GET /api/health                                   RPC health (endpoint redacted), chain id
  *   GET /api/assets                                   canonical asset list (search / picker)
  *   GET /api/assets/:ref?mode=&to=&amount=            AssetIntelligence (ref = symbol, address or key)
- *   GET /api/portfolio/:address?mode=                 PortfolioIntelligence (never cached, never logged)
+ *   GET /api/portfolio/:address?mode=&positions=0     PortfolioIntelligence (never cached, never logged);
+ *                                                     positions=0 leaves out open positions (fast holdings)
+ *   GET /api/portfolio/:address/positions             open positions alone (the web app loads both at once)
  *   GET /api/coverage                                 coverage matrix
  *   GET /api/assets/:ref/history                      Chainlink price history (last rounds)
  *   GET /api/assets/:ref/chart?range=1D|1W|1M|1Y      price chart (share data × multiplier, or Chainlink)
@@ -17,6 +19,7 @@
  * the route TEMPLATE, never the raw path (a wallet address is part of the portfolio path).
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { isIP } from "node:net";
 import { isAddress } from "viem";
 import type { RpcHealthSnapshot } from "@skein/chain/health";
 import type { AssetRegistry } from "@skein/robinhood/registry/registry";
@@ -39,6 +42,8 @@ export interface ApiDeps {
   now?: () => number;
   /** Trust X-Forwarded-For for rate limiting (only behind a known proxy). */
   trustProxy?: boolean;
+  /** Runs a wallet request ahead of the snapshot's background RPC reads (RpcPriority). */
+  priority?: { hold<T>(work: () => Promise<T>): Promise<T> };
   logos?: LogoStore;
   live?: LiveHub;
   rates?: RateHistory;
@@ -83,26 +88,46 @@ export function resolveRef(registry: AssetRegistry, ref: string, chainId: number
   return hits[0]!.key;
 }
 
+/** First four groups of an IPv6 address (compressed forms expanded), lowercased. */
+function v6Prefix64(ip: string): string {
+  const [head = "", tail = ""] = ip.split("%")[0]!.split("::");
+  const h = head ? head.split(":") : [];
+  const t = tail ? tail.split(":") : [];
+  const groups = ip.includes("::") ? [...h, ...new Array<string>(Math.max(0, 8 - h.length - t.length)).fill("0"), ...t] : h;
+  return `${groups.slice(0, 4).map((g) => g.toLowerCase().replace(/^0+(?=.)/, "")).join(":")}::/64`;
+}
+
+/**
+ * Rate limit key of a request. Behind our own reverse proxy (TRUST_PROXY=1) the client is the
+ * RIGHT-most X-Forwarded-For entry, the one that proxy wrote; entries to its left come from the
+ * client and can be forged (SRV-4). IPv6 clients share one key per /64, the smallest block a
+ * user is normally given (SRV-5).
+ */
+export function clientKey(remote: string | undefined, forwarded: string | string[] | undefined, trustProxy: boolean): string {
+  let ip = (remote ?? "").replace(/^::ffff:/i, "");
+  if (trustProxy && forwarded) {
+    const last = (Array.isArray(forwarded) ? forwarded.join(",") : forwarded).split(",").map((s) => s.trim()).filter(Boolean).at(-1)?.replace(/^::ffff:/i, "");
+    if (last && isIP(last)) ip = last;
+  }
+  if (isIP(ip) === 6) return v6Prefix64(ip);
+  return ip || "unknown";
+}
+
 export function createApi(deps: ApiDeps) {
   const log = deps.log ?? ((l: Record<string, unknown>) => console.log(JSON.stringify(l)));
   const limiter = new RateLimiter(deps.now ?? (() => Date.now()));
   let assetList: { at: number; body: AssetListItem[] } | null = null;
 
-  const clientIp = (req: IncomingMessage) => {
-    if (deps.trustProxy) {
-      const fwd = req.headers["x-forwarded-for"];
-      const first = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(",")[0]?.trim();
-      if (first) return first;
-    }
-    return req.socket.remoteAddress ?? "unknown";
-  };
+  const clientIp = (req: IncomingMessage) => clientKey(req.socket.remoteAddress, req.headers["x-forwarded-for"], !!deps.trustProxy);
 
   async function route(req: IncomingMessage, url: URL): Promise<{ template: string; status?: number; body: unknown; cache: string; expensive: boolean }> {
     const p = url.pathname.replace(/\/+$/, "") || "/";
     const q = url.searchParams;
     if (p === "/api/health") {
+      // Public: state and latest block only. Counters, endpoint and the last RPC error stay in the
+      // server logs (CLI reports print the full snapshot).
       const h = deps.health();
-      return { template: "/api/health", body: { chainId: deps.chainId, rpc: h, readOnly: true }, cache: "no-store", expensive: false };
+      return { template: "/api/health", body: { chainId: deps.chainId, rpc: { status: h.status, latestBlock: h.latestBlock }, readOnly: true }, cache: "no-store", expensive: false };
     }
     if (p === "/api/assets") {
       const now = (deps.now ?? Date.now)();
@@ -162,11 +187,14 @@ export function createApi(deps: ApiDeps) {
       const v = await deps.intelligence.getAssetIntelligence(key, { mode, ...(tradeTarget ? { tradeTarget } : {}), ...(amount !== null ? { tradeAmount: amount } : {}) });
       return { template: "/api/assets/:ref", body: v, cache: amount !== null ? "no-store" : "public, max-age=10", expensive: amount !== null || mode === "DEBUG" };
     }
-    m = /^\/api\/portfolio\/([^/]{1,100})$/.exec(p);
+    m = /^\/api\/portfolio\/([^/]{1,100})(\/positions)?$/.exec(p);
     if (m) {
       const addr = decodeURIComponent(m[1]!);
       if (!isAddress(addr, { strict: false })) throw new ApiError(400, "BAD_ADDRESS", "not a valid wallet address");
-      const v = await deps.intelligence.getPortfolioIntelligence(addr, { mode: parseMode(q.get("mode")) });
+      // A person is waiting on a wallet view: its RPC reads go ahead of the background snapshot.
+      const first = <T>(work: () => Promise<T>) => (deps.priority ? deps.priority.hold(work) : work());
+      if (m[2]) return { template: "/api/portfolio/:address/positions", body: await first(() => deps.intelligence.getPortfolioPositions(addr)), cache: "no-store", expensive: true };
+      const v = await first(() => deps.intelligence.getPortfolioIntelligence(addr, { mode: parseMode(q.get("mode")), positions: q.get("positions") !== "0" }));
       return { template: "/api/portfolio/:address", body: v, cache: "no-store", expensive: true };
     }
     throw new ApiError(404, "NOT_FOUND", "no such endpoint");
@@ -200,6 +228,9 @@ export function createApi(deps: ApiDeps) {
   async function stream(req: IncomingMessage, res: ServerResponse, url: URL, ip: string): Promise<void> {
     if (!deps.live) throw new ApiError(404, "NO_STREAM", "live prices are not enabled on this server");
     const reg = await deps.getRegistry();
+    // The client may have left while the registry loaded: a close listener added now would never
+    // fire, leaving the slot, the ping timer and the subscription behind (SRV-8).
+    if (req.destroyed || res.destroyed) return;
     const list = (k: string) =>
       [...new Set((url.searchParams.get(k) ?? "").split(",").map((x) => x.trim()).filter(Boolean))].slice(0, 12).map((r) => resolveRef(reg, r, deps.chainId));
     const pairs = list("pairs");
@@ -218,7 +249,10 @@ export function createApi(deps: ApiDeps) {
     const send = (event: string, data: unknown) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     const unsubscribe = deps.live.subscribe({ pairs, prices }, send);
     const ping = setInterval(() => res.write(": ping\n\n"), 15_000);
+    let closed = false;
     const close = () => {
+      if (closed) return;
+      closed = true;
       clearInterval(ping);
       unsubscribe();
       streams--;
@@ -226,7 +260,8 @@ export function createApi(deps: ApiDeps) {
       if (n > 0) streamsByIp.set(ip, n);
       else streamsByIp.delete(ip);
     };
-    req.on("close", close);
+    req.once("close", close);
+    res.once("close", close);
   }
 
   return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {

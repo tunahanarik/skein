@@ -20,7 +20,8 @@ const rateDesc = (t: MetricView["type"]): Cmp => (a, b) => {
   const x = metric(a, t);
   const y = metric(b, t);
   if (x && y && (x.side !== y.side || x.unit !== y.unit)) return 0;
-  return desc(x?.value, y?.value);
+  // An outlier rate sorts with the unknowns (last), never on top (D1).
+  return desc(x?.outlier ? null : x?.value, y?.outlier ? null : y?.value);
 };
 const rateAsc = (t: MetricView["type"]): Cmp => (a, b) => {
   const x = metric(a, t);

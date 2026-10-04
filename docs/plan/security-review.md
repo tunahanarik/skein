@@ -14,6 +14,23 @@ Kapsam dışı kalanlar:
 >
 > Cüzdan artık yalnızca adres ve zincir okuyor (`eth_requestAccounts`, `eth_accounts`, `eth_chainId`). CSP `connect-src 'self'`. Açık kalanlar SRV-1…SRV-5, SRV-8, SRV-9 ve düşük önemli sunucu bulguları.
 
+> **Durum (2026-10-04):** Şu bulgular kapandı. Her birinin testi var.
+> - **D1:** %100'ün üstündeki kazanç oranları `outlier` olarak işaretleniyor. Sıralamada sona düşüyor, "Top yield" ve "en iyi" başlıklarına girmiyor. Kartta sayı yerine "Outlier" etiketi ve bildirilen değer gösteriliyor.
+> - **SRV-1:** `//a:b` gibi istek hedefleri ayrıştırılmadan 400 alıyor. Beklenmeyen hata logu tek satır yazıp süreçten çıkıyor.
+> - **SRV-2:** Statik dosyalar `pipeline` ile sunuluyor.
+> - **SRV-3:** `TtlCache` girdi sayısıyla sınırlı (varsayılan 1000, görünüm önbelleği 200). Tutar girilmiş teklif görünümleri önbelleğe alınmıyor. Fiyat teklifleri için global eşzamanlılık sınırı 24.
+> - **SRV-4:** `TRUST_PROXY=1` iken en sağdaki `X-Forwarded-For` değeri kullanılıyor.
+> - **SRV-5:** IPv6 /64 önekiyle anahtarlanıyor. Kova sınırında herkes sıfırlanmıyor; en eski %10 atılıyor.
+> - **SRV-8:** İstemci erken koparsa akış hiç açılmıyor. Kapanış tek seferlik.
+> - **SRV-9:** Açılış ve ölümcül hata loglarında URL'ler origin'e kısaltılıyor.
+> - **A1:** CLI raporları, ortamdaki RPC URL'lerini dosyaya ve konsola yazmadan önce maskeliyor.
+> - **A2:** Mod artık fail-closed çalışıyor: değişkenlerden biri production derse ya da değer `prod` ise üretim sayılıyor. Bilinmeyen değerde sunucu başlamıyor.
+> - **A3:** `.gitignore`'a `.npmrc`, `*.pem` ve `*.key` eklendi.
+> - **C1, C2:** CI'da `permissions: contents: read` var. Action'lar SHA'ya sabitlendi. `persist-credentials: false`, zaman aşımı ve concurrency ayarlandı.
+> - **Düşük önemli:** `/api/health` dışarıya yalnızca `{status, latestBlock}` açıyor.
+>
+> Açık kalanlar: D2–D10, B2, B3 (sunucu konteynerde `tsx` ile çalışıyor), E1–E2 ve diğer düşük önemliler.
+
 ## Özet
 
 | ID | Önem | Alan | Bulgu |

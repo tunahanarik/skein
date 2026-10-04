@@ -4,6 +4,27 @@ import { join } from "node:path";
 
 export type CheckStatus = "PASS" | "FAIL" | "WARN" | "INFO";
 
+/** Origin only (a provider URL can carry an API key in its path or query). */
+function originOf(url: string): string {
+  try {
+    const u = new URL(url);
+    return `${u.protocol}//${u.host}${u.pathname === "/" ? "" : "/…"}`;
+  } catch {
+    return "invalid-url";
+  }
+}
+
+/**
+ * Configured RPC URLs never reach a report (reports are committed under research/snapshots):
+ * every occurrence is cut to its origin, whichever check printed it (A1).
+ */
+export function scrubSecrets(s: string): string {
+  for (const url of [process.env.ROBINHOOD_RPC_URL, process.env.ROBINHOOD_INDEX_RPC_URL]) {
+    if (url && url.length > 8) s = s.split(url).join(originOf(url));
+  }
+  return s;
+}
+
 export interface Check {
   name: string;
   status: CheckStatus;
@@ -20,7 +41,7 @@ export class Report {
   add(status: CheckStatus, name: string, detail: string, evidence?: Record<string, unknown>): void {
     this.checks.push({ name, status, detail, ...(evidence ? { evidence } : {}) });
     const tag = { PASS: "PASS", FAIL: "FAIL", WARN: "WARN", INFO: "INFO" }[status];
-    console.log(`${tag.padEnd(4)}  ${name} — ${detail}`);
+    console.log(scrubSecrets(`${tag.padEnd(4)}  ${name} — ${detail}`));
   }
 
   pass(name: string, detail: string, evidence?: Record<string, unknown>) {
@@ -47,7 +68,7 @@ export class Report {
     const out = { script: this.name, startedAt: this.startedAt, finishedAt: new Date().toISOString(), checks: this.checks };
     writeFileSync(
       join(dir, `${this.name}.json`),
-      JSON.stringify(out, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2) + "\n",
+      JSON.stringify(out, (_k, v) => (typeof v === "bigint" ? v.toString() : typeof v === "string" ? scrubSecrets(v) : v), 2) + "\n",
     );
     const counts = this.checks.reduce<Record<string, number>>((m, c) => ((m[c.status] = (m[c.status] ?? 0) + 1), m), {});
     console.log(`\n${this.name}: ${JSON.stringify(counts)}`);

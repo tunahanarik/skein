@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { api, type Intelligence, type Portfolio } from "../api";
+import { api, type ApiFailure, type Intelligence, type Portfolio } from "../api";
+import { loadPortfolio } from "../components/market";
 import { CardView } from "../components/CardView";
 import { Avatar, ErrorBox, ExplorerLink, LoadingCards, useAsync } from "../components/common";
 import { amount, date, pctE18, prettyId, shortAddr, usd } from "../format";
@@ -79,8 +80,14 @@ function PortfolioEmpty() {
 function WalletView({ address }: { address: string }) {
   const { t } = useI18n();
   const w = useWallet();
-  const res = useAsync((s) => api.portfolio(address, s), [address]);
+  // Holdings and open positions load side by side: holdings show as soon as balances are read,
+  // positions (onchain reads across protocols) fill in their own section when they arrive.
+  const [fresh, setFresh] = useState(0);
+  const res = useAsync(() => loadPortfolio(address, fresh > 0), [address, fresh]);
+  const pos = useAsync((s) => api.positions(address, s), [address, fresh]);
   const p = res.data;
+  const posQuality = pos.data?.dataQuality ?? null;
+  const quality = p && (p.dataQuality.status !== "COMPLETE" || (posQuality && posQuality.status !== "COMPLETE")) ? { status: p.dataQuality.status !== "COMPLETE" ? p.dataQuality.status : "PARTIAL", reasons: [...p.dataQuality.reasons, ...(posQuality?.reasons ?? [])] } : null;
   const tracked = useTracked();
   const [open, setOpen] = useState<string | null>(null);
   // Largest holdings first; unpriced last.
@@ -99,7 +106,7 @@ function WalletView({ address }: { address: string }) {
         <button className={`btn small${tracked.has(address) ? " primary" : ""}`} onClick={() => (tracked.has(address) ? tracked.remove(address) : tracked.add(address))} aria-pressed={tracked.has(address)}>
           <Icon name="eye" size={14} /> {tracked.has(address) ? t("tracked.tracking") : t("tracked.track")}
         </button>
-        <button className="btn small" onClick={res.reload} disabled={res.loading}>
+        <button className="btn small" onClick={() => setFresh((n) => n + 1)} disabled={res.loading || pos.loading}>
           {t("wallet.refresh")}
         </button>
         <button className="btn small ghost" onClick={w.clear}>
@@ -109,7 +116,7 @@ function WalletView({ address }: { address: string }) {
 
       {res.error && (
         <div style={{ marginTop: 16 }}>
-          <ErrorBox error={res.error} onRetry={res.reload} />
+          <ErrorBox error={res.error} onRetry={() => setFresh((n) => n + 1)} />
         </div>
       )}
       {!p && !res.error && (
@@ -148,13 +155,13 @@ function WalletView({ address }: { address: string }) {
               <div className="l">{t("wallet.opps")}</div>
             </div>
           </div>
-          {p.dataQuality.status !== "COMPLETE" && (
+          {quality && (
             <p className="small" style={{ color: "var(--warn)" }}>
-              {t(`quality.${p.dataQuality.status}`)}: {[...new Set(p.dataQuality.reasons.map((r) => ("protocol" in r && r.protocol ? r.protocol[0]!.toUpperCase() + r.protocol.slice(1) : prettyId(r.code.toLowerCase()))))].join(", ")}
+              {t(`quality.${quality.status}`)}: {[...new Set(quality.reasons.map((r) => ("protocol" in r && r.protocol ? r.protocol[0]!.toUpperCase() + r.protocol.slice(1) : prettyId(r.code.toLowerCase()))))].join(", ")}
             </p>
           )}
 
-          <Positions positions={p.positions} />
+          <Positions positions={pos.data?.positions ?? null} error={pos.error} onRetry={pos.reload} />
 
           <section className="section">
             <div className="section-head">
@@ -189,7 +196,8 @@ function WalletView({ address }: { address: string }) {
 
 type PositionV = Portfolio["positions"][number];
 
-function Positions({ positions }: { positions: PositionV[] }) {
+/** Open positions; `null` while they are still being read (they arrive after the holdings). */
+function Positions({ positions, error, onRetry }: { positions: PositionV[] | null; error: ApiFailure | null; onRetry: () => void }) {
   const { t } = useI18n();
   const amt = (x: PositionV["supplied"]) => (x ? `${amount(x.amount?.display ?? null)} ${x.asset.symbol}${x.usd ? ` · ${usd(x.usd.display)}` : ""}` : null);
   return (
@@ -198,7 +206,11 @@ function Positions({ positions }: { positions: PositionV[] }) {
         <h2>{t("pos.title")}</h2>
         <span className="muted">{t("pos.hint")}</span>
       </div>
-      {positions.length === 0 ? (
+      {error ? (
+        <ErrorBox error={error} onRetry={onRetry} />
+      ) : positions === null ? (
+        <LoadingCards n={2} />
+      ) : positions.length === 0 ? (
         <div className="panel pad muted small">{t("pos.none")}</div>
       ) : (
         <div className="grid two">

@@ -30,8 +30,11 @@ async function mountAt(path: string) {
       const toKey = to ? st.s.registry.canonicalBySymbol(to)[0]?.key : undefined;
       return json(await st.service.getAssetIntelligence(key, { ...(url.searchParams.get("mode") ? { mode: "DEBUG" as const } : {}), ...(toKey ? { tradeTarget: toKey } : {}), ...(amount ? { tradeAmount: amount } : {}) }));
     }
-    const w = /^\/api\/portfolio\/(.+)$/.exec(p);
-    if (w) return json(await st.service.getPortfolioIntelligence(decodeURIComponent(w[1]!)));
+    const w = /^\/api\/portfolio\/([^/]+)(\/positions)?$/.exec(p);
+    if (w) {
+      const addr = decodeURIComponent(w[1]!);
+      return json(w[2] ? await st.service.getPortfolioPositions(addr) : await st.service.getPortfolioIntelligence(addr, { positions: url.searchParams.get("positions") !== "0" }));
+    }
     return json({ error: { code: "NOT_FOUND", message: "x" } }, 404);
   });
   history.pushState(null, "", path);

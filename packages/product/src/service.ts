@@ -5,8 +5,9 @@
  *
  *   getAssetIntelligence(asset, opts)      one asset, PRODUCT or DEBUG mode, optional trade target/amount
  *   getCategory(asset, category, opts)     one product category of that view
- *   getPortfolioIntelligence(wallet, opts) every held canonical asset
- *   getCoverage()                          machine-readable coverage matrix for all canonical assets
+ *   getPortfolioIntelligence(wallet, opts) every held canonical asset (positions=false leaves them out)
+ *   getPortfolioPositions(wallet)          open protocol positions alone (the slow part of a wallet)
+ *   getCoverage()                        machine-readable coverage matrix for all canonical assets
  *   getRawOpportunities(query)             RAW mode: the engine's untouched output
  */
 import { getAddress, isAddress, parseUnits, type Address } from "viem";
@@ -19,6 +20,7 @@ import { RH_MARKET_BASE, RH_QUERY, type ChartRange, type ShareBar } from "@skein
 import type { LiveFeed, LiveMarket } from "./liveTypes.js";
 import { chainlinkAggregatorAbi } from "@skein/core/config/abis";
 import type { AssetRef, Opportunity, TokenAmount, UsdAmount } from "@skein/core/model/opportunity";
+import type { Position } from "@skein/core/model/position";
 import type { TradeMarket, TradeRoute } from "@skein/core/model/trade";
 import { isAuthoritative } from "@skein/core/model/verification";
 import type { AdapterContext } from "@skein/engine/opportunities/adapter";
@@ -30,7 +32,7 @@ import type { AssetRegistry } from "@skein/robinhood/registry/registry";
 import type { PriceService } from "@skein/pricing/priceService";
 import type { VolumeSource } from "@skein/robinhood/sources/geckoterminal";
 import { buildTradeGraph, destinations, findRoutes, type TradeGraph } from "@skein/engine/trade/graph";
-import { opportunityCard, routeCard } from "./cards.js";
+import { isOutlierRate, opportunityCard, routeCard } from "./cards.js";
 import { PRODUCT_CATEGORY_ORDER, SUBCATEGORY_ORDER, productCategoryOf } from "./categories.js";
 import { Metrics } from "./metrics.js";
 import { criticalValues, summarizeDataQuality, summarizeFreshness, type AdapterStatus, type TimedValue } from "./quality.js";
@@ -45,6 +47,7 @@ import type {
   EmptyState,
   OpportunityCounts,
   PortfolioIntelligence,
+  PortfolioPositions,
   PositionView,
   PriceView,
   ProductCard,
@@ -69,6 +72,11 @@ export interface IntelligenceDeps {
   prices?: PriceService;
   /** Third-party 24h pool volume (display only). */
   volumes?: VolumeSource;
+  /**
+   * Reader for reads made on behalf of one user (position reads). The snapshot's own reader may
+   * yield to user requests (RpcPriority), so user work must not go through it.
+   */
+  foregroundReader?: AdapterContext["reader"];
   /** Chainlink round history for charts (full feed history, incremental). */
   chartRounds?: ChainlinkRounds;
   /** Underlying share price history for Stock Token charts (Robinhood market data). */
@@ -126,7 +134,8 @@ function marketExtras(opps: Opportunity[]): Pick<MarketRow, "bestApy" | "bestApy
     if (o.category === "LP") caps.lp = true;
     if (!EARN_SIDE.has(o.category)) continue;
     const h = headlineMetric(o);
-    if (!h || h.side !== "EARN") continue;
+    // Outliers (above 100 %) never become an asset's "top yield" (D1).
+    if (!h || h.side !== "EARN" || isOutlierRate(h)) continue;
     const v = Number(h.value) / 1e16;
     if (Number.isFinite(v) && v > 0 && (bestApy === null || v > bestApy)) {
       bestApy = v;
@@ -169,6 +178,26 @@ interface Snapshot {
 
 const ms = (t: number) => performance.now() - t;
 
+/** Quotes in flight across ALL requests (mapLimit bounds one request): parallel amount queries cannot multiply RPC load. */
+const QUOTE_GLOBAL_CONCURRENCY = 24;
+
+/** A counting gate shared by every request. */
+class Gate {
+  private active = 0;
+  private readonly waiting: (() => void)[] = [];
+  constructor(private readonly size: number) {}
+  async run<T>(f: () => Promise<T>): Promise<T> {
+    while (this.active >= this.size) await new Promise<void>((r) => this.waiting.push(r));
+    this.active++;
+    try {
+      return await f();
+    } finally {
+      this.active--;
+      this.waiting.shift()?.();
+    }
+  }
+}
+
 /** Order-preserving map with at most `limit` promises in flight. */
 async function mapLimit<T, R>(items: readonly T[], limit: number, fn: (x: T) => Promise<R>): Promise<R[]> {
   const out = new Array<R>(items.length);
@@ -208,6 +237,12 @@ function mergeCounts(a: OpportunityCounts, b: OpportunityCounts): OpportunityCou
   return out;
 }
 
+/** Position adapters that did not complete, as data quality statuses (unknown when the read failed). */
+function positionStatuses(pos: EngineResult<Position[]> | null): AdapterStatus[] {
+  if (!pos) return [{ protocol: "positions", status: "UNKNOWN", issues: [] }];
+  return pos.adapters.filter((a) => a.status !== "COMPLETE").map((a) => ({ protocol: `${a.protocol}_positions`, status: a.status, issues: a.issues }));
+}
+
 function capabilitiesOf(cards: readonly { category: ProductCategory; usability: UsabilityResult }[]): Capabilities {
   const detail = {} as Capabilities["detail"];
   for (const cat of PRODUCT_CATEGORY_ORDER) {
@@ -223,12 +258,14 @@ export class AssetIntelligenceService {
   private readonly now: () => Date;
   private readonly snapCache: TtlCache<Snapshot>;
   private readonly viewCache: TtlCache<AssetIntelligence>;
+  private readonly quoteGate = new Gate(QUOTE_GLOBAL_CONCURRENCY);
 
   constructor(private readonly deps: IntelligenceDeps) {
     this.now = deps.now ?? (() => new Date());
     this.metrics = deps.metrics ?? new Metrics();
     this.snapCache = new TtlCache<Snapshot>(() => this.now().getTime());
-    this.viewCache = new TtlCache<AssetIntelligence>(() => this.now().getTime());
+    // Views are large; 200 covers every canonical asset in each mode with room to spare.
+    this.viewCache = new TtlCache<AssetIntelligence>(() => this.now().getTime(), { maxEntries: 200 });
   }
 
   // ---------------------------------------------------------------- snapshot (shared by everything)
@@ -293,7 +330,9 @@ export class AssetIntelligenceService {
     const mode = opts.mode ?? "PRODUCT";
     const s = await this.snapshot();
     const cacheKey = [s.ctx.chainId, assetInput.toLowerCase(), mode, opts.tradeTarget?.toLowerCase() ?? "-", opts.tradeAmount ?? "-", opts.holding ? `h${opts.holding.rawBalance}` : "-", s.takenAt].join("|");
-    const hit = !opts.holding && this.viewCache.get(cacheKey);
+    // Holding-aware and amount-quoted views are never cached: each is specific to one request.
+    const cacheable = !opts.holding && opts.tradeAmount === undefined;
+    const hit = cacheable && this.viewCache.get(cacheKey);
     if (hit) {
       this.metrics.inc("cache_hit", 1, { cache: "asset_view" });
       // Cached projection, but freshness is always re-evaluated now.
@@ -301,7 +340,7 @@ export class AssetIntelligenceService {
     }
     this.metrics.inc("cache_miss", 1, { cache: "asset_view" });
     const view = await this.build(s, assetInput, mode, opts);
-    if (!opts.holding) this.viewCache.set(cacheKey, view, CACHE_TTL_MS.PRODUCT_SNAPSHOT);
+    if (cacheable) this.viewCache.set(cacheKey, view, CACHE_TTL_MS.PRODUCT_SNAPSHOT);
     this.metrics.time("asset_intelligence_latency_ms", ms(t0), { mode });
     return view;
   }
@@ -341,7 +380,7 @@ export class AssetIntelligenceService {
     // ---- price (PORTFOLIO_PRICE) and borrow-asset prices, via the Phase 1 Price Service ----
     const opps = s.byPrimary.get(ref.key) ?? [];
     const borrowKeys = [...new Set(opps.flatMap((o) => o.borrowAssets.map((b) => b.key)))];
-    const priced = ref.canonical ? await priceCanonicalAssets(s.ctx, [ref.key, ...borrowKeys]) : null;
+    const priced = ref.canonical ? await priceCanonicalAssets(this.userCtx(s), [ref.key, ...borrowKeys]) : null;
     const p = priced?.priceOf(ref.key) ?? null;
     const holding = opts.holding ?? null;
     // Prefer the holder's own Phase 1 quote; else the Price Service quote. Freshness is the
@@ -402,7 +441,7 @@ export class AssetIntelligenceService {
         const routes: TradeRoute[] = [...found.direct, ...found.oneHop];
         const quoteCard = async (r: TradeRoute): Promise<ProductCard> => {
           const tq = performance.now();
-          const q = await this.deps.engine.getTradeQuote(r, amountRaw!, s.ctx, PRODUCT_QUOTE_TIMEOUT_MS);
+          const q = await this.quoteGate.run(() => this.deps.engine.getTradeQuote(r, amountRaw!, this.userCtx(s), PRODUCT_QUOTE_TIMEOUT_MS));
           this.metrics.time("quote_latency_ms", ms(tq), { kind: r.kind });
           if (q.ok) return routeCard(r, s, classifyQuotedRoute(r, q.quote, nowS, Number(s.ctx.blockTimestamp)), { q: q.quote, nowS });
           return routeCard(r, s, { status: "LIMITED", reasons: ["PRICE_IMPACT_UNKNOWN"], notes: ["VOLUME_UNKNOWN"], policies: [] }, null, q.reason);
@@ -461,7 +500,9 @@ export class AssetIntelligenceService {
       const shown = productCards.filter((c) => c.trade);
       const poolOf = (marketId: string) => marketId.split(":").at(-1)!.toLowerCase();
       const pools = [...new Set(shown.flatMap((c) => c.trade!.route.markets.map((m) => poolOf(m.marketId))))];
-      const vols = pools.length ? await this.deps.volumes.get(pools, { timeoutMs: 2_000 }).catch(() => new Map()) : new Map();
+      // A wallet view builds every held asset at once: answer from cached volumes without waiting
+      // (the call still refreshes the cache for the next view); a single asset page waits briefly.
+      const vols = pools.length ? await this.deps.volumes.get(pools, { timeoutMs: opts.holding ? 0 : 2_000 }).catch(() => new Map()) : new Map();
       for (const c of shown) {
         for (const m of c.trade!.route.markets) {
           const v = vols.get(poolOf(m.marketId));
@@ -513,26 +554,33 @@ export class AssetIntelligenceService {
 
   // ---------------------------------------------------------------- portfolio
 
-  async getPortfolioIntelligence(wallet: string, opts: { mode?: ProductMode } = {}): Promise<PortfolioIntelligence> {
+  async getPortfolioIntelligence(wallet: string, opts: { mode?: ProductMode; positions?: boolean } = {}): Promise<PortfolioIntelligence> {
     const t0 = performance.now();
-    // The wallet only reaches the Phase 1 balance reader (onchain balanceOf); never a protocol API.
-    const portfolio = await this.deps.getPortfolio(wallet);
-    const s = await this.snapshot();
+    const withPositions = opts.positions !== false;
+    // Balances, the snapshot and (once the snapshot is there) positions run side by side; the
+    // wallet only reaches onchain reads (balanceOf, position reads), never a protocol API.
+    const snap = this.snapshot();
+    const posP = withPositions ? snap.then((s) => this.deps.engine.getUserPositions(wallet, this.userCtx(s))).catch(() => null) : Promise.resolve(null);
+    const [portfolio, s] = await Promise.all([this.deps.getPortfolio(wallet), snap]);
     const nowS = Math.floor(this.now().getTime() / 1000);
     const held = portfolio.assets.filter((r) => r.balanceStatus === "OK" && (r.rawBalance ?? 0n) > 0n);
-    const assets: AssetIntelligence[] = [];
     const unsupported: PortfolioIntelligence["unsupportedAssets"] = [];
-    let counts = emptyCounts();
-    let supported = 0n;
     let unsupportedValue = 0n;
+    const covered: PortfolioAsset[] = [];
     for (const row of held) {
-      if (!row.asset.canonical || !row.asset.address) {
-        unsupported.push({ asset: { symbol: row.asset.symbol, key: row.asset.key }, reason: row.asset.canonical ? "native asset (no token opportunities)" : "non-canonical asset", valueUsd: row.valueUsd });
-        if (row.valueUsdE18) unsupportedValue += row.valueUsdE18;
+      if (row.asset.canonical && row.asset.address) {
+        covered.push(row);
         continue;
       }
-      const v = await this.build(s, row.asset.key, opts.mode ?? "PRODUCT", { holding: row });
-      assets.push(v);
+      unsupported.push({ asset: { symbol: row.asset.symbol, key: row.asset.key }, reason: row.asset.canonical ? "native asset (no token opportunities)" : "non-canonical asset", valueUsd: row.valueUsd });
+      if (row.valueUsdE18) unsupportedValue += row.valueUsdE18;
+    }
+    // Every held asset's view at once (each is a projection of the shared snapshot).
+    const assets = await Promise.all(covered.map((row) => this.build(s, row.asset.key, opts.mode ?? "PRODUCT", { holding: row })));
+    let counts = emptyCounts();
+    let supported = 0n;
+    assets.forEach((v, i) => {
+      const row = covered[i]!;
       counts = mergeCounts(counts, v.summary.counts);
       // Supported = at least one ACTIONABLE or LIMITED intent (informational-only is not support).
       const hasUsable = Object.values(v.summary.capabilities.detail).some((d) => d === "ACTIONABLE" || d === "LIMITED_ONLY");
@@ -540,14 +588,67 @@ export class AssetIntelligenceService {
         if (hasUsable) supported += row.valueUsdE18;
         else unsupportedValue += row.valueUsdE18;
       }
-    }
-    // Positions: onchain reads at the snapshot block; the wallet goes only to the chain reader.
-    const pos = await this.deps.engine.getUserPositions(wallet, s.ctx).catch(() => null);
+    });
+    const pos = await posP;
+    const positions = this.positionViews(pos, s, assets);
+    const statuses = this.adapterStatuses(s);
+    if (withPositions) statuses.push(...positionStatuses(pos));
+    const freshness = summarizeFreshness([], nowS);
+    freshness.oldestCriticalDataAt = assets.map((a) => a.freshness.oldestCriticalDataAt).filter((x): x is string => !!x).sort()[0] ?? null;
+    freshness.newestDataAt = assets.map((a) => a.freshness.newestDataAt).filter((x): x is string => !!x).sort().at(-1) ?? null;
+    freshness.staleSources = [...new Map(assets.flatMap((a) => a.freshness.staleSources).map((x) => [`${x.provider}|${x.what}|${x.status}`, x])).values()];
+    const extra: DataQuality["reasons"] = portfolio.valuationCoverage.coverageStatus === "COMPLETE" ? [] : [{ code: `PORTFOLIO_VALUATION_${portfolio.valuationCoverage.coverageStatus}`, detail: `${portfolio.valuationCoverage.unpricedAssets} unpriced, ${portfolio.valuationCoverage.failedBalances} failed balances` }];
+    this.metrics.time("portfolio_intelligence_latency_ms", ms(t0));
+    return {
+      chainId: s.ctx.chainId,
+      wallet: portfolio.walletAddress,
+      portfolioValueUsd: portfolio.valuationCoverage.totalValueUsd,
+      pricedValueUsd: portfolio.totals.pricedValueUsd,
+      supportedAssetValueUsd: formatFixed(supported, USD_DECIMALS),
+      unsupportedAssetValueUsd: formatFixed(unsupportedValue, USD_DECIMALS),
+      unpricedAssetCount: portfolio.totals.unpricedAssetCount,
+      assets,
+      positions,
+      unsupportedAssets: unsupported,
+      opportunityCounts: counts,
+      dataQuality: summarizeDataQuality(statuses, freshness, extra),
+      freshness,
+      blockNumber: s.ctx.blockNumber,
+      generatedAt: this.now().toISOString(),
+    };
+  }
+
+  /** Open positions alone, for a wallet view that loads them beside its holdings. */
+  async getPortfolioPositions(wallet: string): Promise<PortfolioPositions> {
+    const t0 = performance.now();
+    const s = await this.snapshot();
+    const pos = await this.deps.engine.getUserPositions(wallet, this.userCtx(s)).catch(() => null);
+    // Card ids for "view market" come from the views of the assets these positions touch.
+    const keys = [...new Set((pos?.data ?? []).flatMap((p) => p.assets.filter((a) => a.canonical).map((a) => a.key)))];
+    const views = await Promise.all(keys.map((k) => this.getAssetIntelligence(k).catch(() => null)));
+    const positions = this.positionViews(pos, s, views.filter((v): v is AssetIntelligence => !!v));
+    this.metrics.time("portfolio_positions_latency_ms", ms(t0));
+    return {
+      chainId: s.ctx.chainId,
+      positions,
+      dataQuality: summarizeDataQuality(positionStatuses(pos), summarizeFreshness([], Math.floor(this.now().getTime() / 1000)), []),
+      blockNumber: s.ctx.blockNumber,
+      generatedAt: this.now().toISOString(),
+    };
+  }
+
+  /** The snapshot context with the user-facing reader and Price Service (same block, same registry). */
+  private userCtx(s: Snapshot): AdapterContext {
+    if (!this.deps.foregroundReader) return s.ctx;
+    return { ...s.ctx, reader: this.deps.foregroundReader, ...(this.deps.prices ? { prices: this.deps.prices } : {}) };
+  }
+
+  private positionViews(pos: EngineResult<Position[]> | null, s: Snapshot, assets: AssetIntelligence[]): PositionView[] {
     const oppById = new Map(s.all.data.map((o) => [o.id, o]));
     const cardIdsByOpp = new Map<string, string[]>();
     for (const a of assets) for (const c of a.categories.flatMap((x) => x.subcategories.flatMap((y) => y.cards))) for (const id of c.sourceOpportunityIds) cardIdsByOpp.set(id, [...(cardIdsByOpp.get(id) ?? []), c.cardId]);
     const amt = (m: { value: { amount: TokenAmount | null; usd: UsdAmount | null; asset: AssetRef } } | null) => (m ? { amount: m.value.amount, usd: m.value.usd, asset: m.value.asset } : null);
-    const positions: PositionView[] = (pos?.data ?? [])
+    return (pos?.data ?? [])
       .map((p) => {
         const related = p.relatedOpportunityIds.map((id) => oppById.get(id)).filter((o): o is Opportunity => !!o);
         return {
@@ -572,32 +673,6 @@ export class AssetIntelligenceService {
         };
       })
       .sort((a, b) => Number(b.borrowed !== null) - Number(a.borrowed !== null) || Number(b.supplied?.usd?.display ?? b.collateral?.usd?.display ?? 0) - Number(a.supplied?.usd?.display ?? a.collateral?.usd?.display ?? 0));
-    const statuses = this.adapterStatuses(s);
-    if (pos && pos.status !== "COMPLETE") for (const a of pos.adapters.filter((x) => x.status !== "COMPLETE")) statuses.push({ protocol: `${a.protocol}_positions`, status: a.status, issues: a.issues });
-    if (!pos) statuses.push({ protocol: "positions", status: "UNKNOWN", issues: [] });
-    const freshness = summarizeFreshness([], nowS);
-    freshness.oldestCriticalDataAt = assets.map((a) => a.freshness.oldestCriticalDataAt).filter((x): x is string => !!x).sort()[0] ?? null;
-    freshness.newestDataAt = assets.map((a) => a.freshness.newestDataAt).filter((x): x is string => !!x).sort().at(-1) ?? null;
-    freshness.staleSources = [...new Map(assets.flatMap((a) => a.freshness.staleSources).map((x) => [`${x.provider}|${x.what}|${x.status}`, x])).values()];
-    const extra: DataQuality["reasons"] = portfolio.valuationCoverage.coverageStatus === "COMPLETE" ? [] : [{ code: `PORTFOLIO_VALUATION_${portfolio.valuationCoverage.coverageStatus}`, detail: `${portfolio.valuationCoverage.unpricedAssets} unpriced, ${portfolio.valuationCoverage.failedBalances} failed balances` }];
-    this.metrics.time("portfolio_intelligence_latency_ms", ms(t0));
-    return {
-      chainId: s.ctx.chainId,
-      wallet: portfolio.walletAddress,
-      portfolioValueUsd: portfolio.valuationCoverage.totalValueUsd,
-      pricedValueUsd: portfolio.totals.pricedValueUsd,
-      supportedAssetValueUsd: formatFixed(supported, USD_DECIMALS),
-      unsupportedAssetValueUsd: formatFixed(unsupportedValue, USD_DECIMALS),
-      unpricedAssetCount: portfolio.totals.unpricedAssetCount,
-      assets,
-      positions,
-      unsupportedAssets: unsupported,
-      opportunityCounts: counts,
-      dataQuality: summarizeDataQuality(statuses, freshness, extra),
-      freshness,
-      blockNumber: s.ctx.blockNumber,
-      generatedAt: this.now().toISOString(),
-    };
   }
 
   // ---------------------------------------------------------------- price history
@@ -651,7 +726,7 @@ export class AssetIntelligenceService {
     if (!asset || !this.deps.prices) return null;
     const feed = await this.deps.prices.feedFor(asset).catch(() => null);
     if (!feed) return null;
-    const [dec] = await s.ctx.reader.multicall([{ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" }], { blockNumber: s.ctx.blockNumber });
+    const [dec] = await this.userCtx(s).reader.multicall([{ address: feed.proxyAddress, abi: chainlinkAggregatorAbi, functionName: "decimals" }], { blockNumber: s.ctx.blockNumber });
     return dec?.status === "success" ? { key: asset.key, symbol: asset.symbol, proxy: feed.proxyAddress, decimals: Number(dec.result) } : null;
   }
 
@@ -687,7 +762,7 @@ export class AssetIntelligenceService {
   /** Chainlink/Phase 1 USD prices of canonical assets, as numbers (for classification only). */
   async usdPrices(keys: string[]): Promise<Map<string, number>> {
     const s = await this.snapshot();
-    const priced = await priceCanonicalAssets(s.ctx, keys);
+    const priced = await priceCanonicalAssets(this.userCtx(s), keys);
     const out = new Map<string, number>();
     for (const k of keys) {
       const p = priced.priceOf(k).price;
@@ -721,7 +796,7 @@ export class AssetIntelligenceService {
       const now = this.now().getTime();
       const from = now - RANGE_MS[range];
       const generatedAt = this.now().toISOString();
-      const p = (await priceCanonicalAssets(s.ctx, [ref.key])).priceOf(ref.key);
+      const p = (await priceCanonicalAssets(this.userCtx(s), [ref.key])).priceOf(ref.key);
       const price18 = p.price ? p.price.raw * 10n ** BigInt(18 - p.price.decimals) : null;
       let note: string | null = null;
       if (asset.type === "STOCK_TOKEN" && this.deps.shareHistory && p.multiplier && price18) {
@@ -757,7 +832,7 @@ export class AssetIntelligenceService {
     const t0 = performance.now();
     const s = await this.snapshot();
     const canonical = s.ctx.registry.canonical().filter((a) => a.address !== null);
-    const priced = await priceCanonicalAssets(s.ctx, canonical.map((a) => a.key));
+    const priced = await priceCanonicalAssets(this.userCtx(s), canonical.map((a) => a.key));
     const rows: CoverageRow[] = canonical.map((a) => {
       const ref: AssetRef = { key: a.key, chainId: 4663, address: a.address!, symbol: a.symbol, decimals: a.decimals, canonical: true, registryType: a.type };
       const opps = s.byPrimary.get(a.key) ?? [];

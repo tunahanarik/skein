@@ -1,0 +1,15 @@
+#!/bin/sh
+# Server side git hook (~/skein/repo.git/hooks/post-receive): a push to main checks the code out
+# into ~/skein/app and rebuilds the container. Only Skein's own container and images are touched.
+set -eu
+APP="$HOME/skein/app"
+while read -r old new ref; do
+  [ "$ref" = "refs/heads/main" ] || continue
+  mkdir -p "$APP"
+  git --work-tree="$APP" --git-dir="$HOME/skein/repo.git" checkout -f main
+  cd "$APP"
+  echo "Building and starting skein ($(git --git-dir="$HOME/skein/repo.git" rev-parse --short main))"
+  docker compose up -d --build
+  docker image prune -f --filter label=app=skein >/dev/null
+  docker compose ps
+done

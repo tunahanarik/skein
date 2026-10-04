@@ -56,10 +56,18 @@ export function CardView({ card, showRank = true }: { card: Card; showRank?: boo
       <div className="metric">
         {h && (
           <div>
-            <div className="v num">{pctText(h.display)}</div>
+            {h.outlier ? (
+              // Above 100 %: an unverified, usually thin-liquidity figure; named, never headlined.
+              <div className="v" title={t("card.outlierNote", { v: h.display })}>
+                <span className="badge HIDDEN_BY_DEFAULT">{t("card.outlier")}</span>
+              </div>
+            ) : (
+              <div className="v num">{pctText(h.display)}</div>
+            )}
             <div className="l">
               {HEADLINE_LABEL[h.type] ? t(HEADLINE_LABEL[h.type]!) : h.type}
               {h.basis === "VARIABLE" ? ` · ${t("card.variable")}` : ""}
+              {h.outlier ? ` · ${t("card.outlierNote", { v: h.display })}` : ""}
             </div>
           </div>
         )}

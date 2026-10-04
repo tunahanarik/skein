@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { PRODUCT_MAX_ROUTES_PER_TARGET } from "@skein/robinhood/config/trade";
 import { Metrics } from "@skein/product/metrics";
 import { IncompatibleRankingError, rankCards } from "@skein/product/ranking";
+import { isOutlierRate } from "@skein/product/cards";
 import type { AssetIntelligence, ProductCard } from "@skein/product/types";
 import { intelligenceStack } from "@skein/testkit/intelligence";
 import { FAKE_NVDA } from "@skein/testkit/morpho";
@@ -144,6 +145,15 @@ describe("ranking", () => {
     expect(r.map((c) => c.cardId)).toEqual(["c", "b", "a", "d"]);
   });
 
+  it("an outlier rate (above 100 %) sorts with the unknowns, never on top (D1)", () => {
+    const card = (id: string, apy: bigint): ProductCard =>
+      ({ cardId: id, subcategory: "VAULT", usability: { status: "ACTIONABLE", reasons: [], notes: [], policies: [] }, headline: { type: "NET_APY", side: "EARN", value: apy, unit: "u", outlier: isOutlierRate({ side: "EARN", value: apy }) }, metrics: [], liquidity: null, tvlUsd: null, maturity: null }) as unknown as ProductCard;
+    // 4,962 % (the USDG Beefy CLM figure from the security review) vs 7 % vs 100 % exactly
+    const r = rankCards([card("thin", 4962n * 10n ** 16n), card("real", 7n * 10n ** 16n), card("edge", 10n ** 18n)], "VAULT");
+    expect(r.map((c) => c.cardId)).toEqual(["edge", "real", "thin"]);
+    expect(isOutlierRate({ side: "PAY", value: 5n * 10n ** 18n })).toBe(false); // borrow costs are never outliers
+  });
+
   it("rates in different units are not compared (implied APY across accounting units)", () => {
     const pt = (id: string, apy: bigint, unit: string): ProductCard =>
       ({ cardId: id, subcategory: "FIXED_YIELD", usability: { status: "ACTIONABLE", reasons: [], notes: [], policies: [] }, headline: { type: "IMPLIED_APY", side: "EARN", value: apy, unit }, metrics: [], liquidity: null, maturity: "2027-01-01T00:00:00.000Z" }) as unknown as ProductCard;
@@ -273,6 +283,19 @@ describe("portfolio intelligence", () => {
     expect(p.assets.every((a) => a.categories.every((c) => c.subcategories.every((s) => s.cards.every((x) => !x.trade?.quote))))).toBe(true);
     const counts = p.opportunityCounts;
     expect(counts.discovered).toBe(p.assets.reduce((s, a) => s + a.summary.counts.discovered, 0));
+  });
+
+  it("holdings without positions plus positions alone match the full wallet view", async () => {
+    const st = await intelligenceStack();
+    const full = await st.service.getPortfolioIntelligence(WALLET);
+    const holdings = await st.service.getPortfolioIntelligence(WALLET, { positions: false });
+    const pos = await st.service.getPortfolioPositions(WALLET);
+    expect(holdings.positions).toEqual([]);
+    expect(j(holdings.assets)).toBe(j(full.assets));
+    expect(holdings.pricedValueUsd).toBe(full.pricedValueUsd);
+    expect(j(pos.positions)).toBe(j(full.positions));
+    // Position read quality belongs to the positions response, not to the holdings view.
+    expect(holdings.dataQuality.reasons.some((r) => r.protocol?.endsWith("_positions") || r.protocol === "positions")).toBe(false);
   });
 
   it("the wallet reaches only the balance reader; metrics carry no addresses or balances", async () => {

@@ -64,6 +64,12 @@ export interface DecodedLog {
 export const MAX_LOG_SPLIT_DEPTH = 16;
 /** Hard budget of eth_getLogs sub-requests for ONE getLogs call; beyond it the call fails. */
 export const MAX_LOG_SUBREQUESTS = 512;
+/**
+ * Widest range sent in one eth_getLogs request. Robinhood Chain's RPC rejects spans over 10M
+ * blocks ("only 10000000 are allowed"); splitting up front avoids a certain failure that would
+ * count against RPC health on every cold start.
+ */
+export const MAX_LOG_RANGE = 5_000_000n;
 
 /** Full error text including the provider's details (viem puts them in `details` and later lines). */
 function errorText(e: unknown): string {
@@ -245,7 +251,11 @@ export class ViemChainReader implements ChainReader {
         throw e;
       }
     };
-    const out = await run(q.fromBlock, q.toBlock, 0);
+    const out: DecodedLog[] = [];
+    for (let from = q.fromBlock; from <= q.toBlock; from += MAX_LOG_RANGE) {
+      const to = from + MAX_LOG_RANGE - 1n < q.toBlock ? from + MAX_LOG_RANGE - 1n : q.toBlock;
+      out.push(...(await run(from, to, 0)));
+    }
     return out.sort((a, b) => (a.blockNumber === b.blockNumber ? a.logIndex - b.logIndex : a.blockNumber < b.blockNumber ? -1 : 1));
   }
 

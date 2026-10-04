@@ -190,7 +190,8 @@ function siteData(): Plugin {
       type Intel = { categories: { category: string; subcategories: { cards: { trade?: { route: { markets: { marketId: string }[] } } }[] }[] }[] };
       const nvda = get[keyOf(`/api/assets/${bySymbol.get("NVDA")!.address}`)] as Intel | undefined;
       const pool = nvda?.categories.find((c) => c.category === "TRADE")?.subcategories[0]?.cards[0]?.trade?.route.markets[0]?.marketId.split(":").at(-1);
-      if (pool) await record(`/api/portfolio/${pool}`);
+      // The wallet page asks for holdings (positions=0) and for positions side by side.
+      if (pool) await runAll([() => record(`/api/portfolio/${pool}?positions=0`), () => record(`/api/portfolio/${pool}/positions`)]);
 
       const logos: Record<string, string> = {};
       await runAll(
