@@ -41,7 +41,8 @@ export function intentsOf(v: Intelligence): Intent[] {
   return INTENTS.map((key) => {
     const cards = all.filter((s) => SUBS[key].includes(s.subcategory)).flatMap((s) => s.cards);
     const u = cards.filter(usable);
-    const heads = u.map((c) => pct18(c.headline?.value)).filter((x): x is number => x !== null && Number.isFinite(x));
+    // Outlier rates (above 100 %, unverified) never become an intent's best or cost.
+    const heads = u.filter((c) => !c.headline?.outlier).map((c) => pct18(c.headline?.value)).filter((x): x is number => x !== null && Number.isFinite(x));
     const best =
       key === "TRADE"
         ? null
@@ -70,7 +71,7 @@ export function topOpportunities(v: Intelligence, limit = 6): { intent: IntentKe
   const rows = intentsOf(v)
     .filter((i) => i.key !== "TRADE")
     .flatMap((i) => i.cards.map((card) => ({ intent: i.key, card })));
-  const score = (r: { intent: IntentKey; card: Card }) => (r.intent === "BORROW" ? (pct18(r.card.lltv) ?? 0) / 10 : (pct18(r.card.headline?.value) ?? 0));
+  const score = (r: { intent: IntentKey; card: Card }) => (r.intent === "BORROW" ? (pct18(r.card.lltv) ?? 0) / 10 : r.card.headline?.outlier ? 0 : (pct18(r.card.headline?.value) ?? 0));
   const rank = (c: Card) => (c.usability.status === "ACTIONABLE" ? 0 : c.usability.status === "LIMITED" ? 1 : 2);
   return rows.sort((a, b) => rank(a.card) - rank(b.card) || score(b) - score(a)).slice(0, limit);
 }

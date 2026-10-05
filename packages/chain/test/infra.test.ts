@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { parseAbi, type PublicClient } from "viem";
 import { RpcHealth, redactRpcUrl } from "../src/health.js";
-import { classifyRpcError, ViemChainReader } from "../src/reader.js";
-import { resolveRpcConfig, RpcConfigError, type RpcConfig } from "../src/rpcConfig.js";
+import { classifyRpcError, MAX_LOG_RANGE, ViemChainReader } from "../src/reader.js";
+import { resolveRpcConfig, RpcConfigError, runtimeMode, type RpcConfig } from "../src/rpcConfig.js";
 import { TtlCache } from "@skein/core/lib/cache";
 import { HttpClient, HttpError } from "@skein/core/lib/http";
 
@@ -55,6 +55,20 @@ describe("TtlCache", () => {
     expect(await cache.getOrLoad("k", 100, load)).toBe(2);
     expect(cache.getStale("k")?.value).toBe(2);
   });
+
+  it("is bounded: past maxEntries the least recently stored entry goes, expired ones stay for getStale (SRV-3)", () => {
+    let t = 0;
+    const cache = new TtlCache<number>(() => t, { maxEntries: 3 });
+    for (let i = 0; i < 10; i++) cache.set(`k${i}`, i, 1);
+    expect(cache.size).toBe(3);
+    expect(cache.getStale("k0")).toBeUndefined();
+    t = 5; // all expired, still served stale
+    expect(cache.getStale("k9")?.value).toBe(9);
+    cache.set("k7", 70, 1); // re-storing moves a key to the end
+    cache.set("k10", 10, 1);
+    expect(cache.getStale("k7")?.value).toBe(70);
+    expect(cache.getStale("k8")).toBeUndefined();
+  });
 });
 
 describe("RPC configuration", () => {
@@ -68,6 +82,15 @@ describe("RPC configuration", () => {
     expect(() => resolveRpcConfig({ ROBINHOOD_RPC_URL: "http://rpc.example.com" }, "development")).toThrow(/https/);
     expect(() => resolveRpcConfig({ RPC_MULTICALL_CHUNK_SIZE: "0" }, "development")).toThrow(RpcConfigError);
     expect(resolveRpcConfig({ RPC_MULTICALL_CHUNK_SIZE: "50" }, "development").multicallChunkSize).toBe(50);
+  });
+
+  it("runtime mode fails closed: either variable can say production, unknown values refuse to start (A2)", () => {
+    expect(runtimeMode({})).toBe("development");
+    expect(runtimeMode({ NODE_ENV: "production" })).toBe("production");
+    expect(runtimeMode({ APP_ENV: "development", NODE_ENV: "production" })).toBe("production");
+    expect(runtimeMode({ APP_ENV: "prod" })).toBe("production");
+    expect(runtimeMode({ APP_ENV: " Production " })).toBe("production");
+    expect(() => runtimeMode({ APP_ENV: "staging" })).toThrow(RpcConfigError);
   });
 
   it("health output never contains the provider key in the URL path", () => {
@@ -141,5 +164,29 @@ describe("ViemChainReader.multicall chunking and partial failure", () => {
   it("rejects an endpoint on the wrong chain", async () => {
     const reader = new ViemChainReader(cfg, { getChainId: async () => 1 } as unknown as PublicClient);
     await expect(reader.assertChainId()).rejects.toThrow(/expected 4663/);
+  });
+});
+
+describe("ViemChainReader.getLogs range splitting", () => {
+  const cfg: RpcConfig = { url: "https://x.example", isPublicRpc: false, multicallChunkSize: 2, maxAttempts: 1, timeoutMs: 1_000, retryBaseMs: 0 };
+  const event = parseAbi(["event Created(address indexed market)"])[0];
+
+  it("splits a span wider than MAX_LOG_RANGE up front, so the RPC never sees an oversized query", async () => {
+    const spans: [bigint, bigint][] = [];
+    const client = {
+      getLogs: async ({ fromBlock, toBlock }: { fromBlock: bigint; toBlock: bigint }) => {
+        spans.push([fromBlock, toBlock]);
+        return [{ address: "0x0000000000000000000000000000000000000001", blockNumber: fromBlock, transactionHash: "0x01", logIndex: 0, args: {} }];
+      },
+    } as unknown as PublicClient;
+    const reader = new ViemChainReader(cfg, client);
+    const logs = await reader.getLogs({ address: "0x0000000000000000000000000000000000000001", event, fromBlock: 1n, toBlock: MAX_LOG_RANGE * 2n + 10n });
+    expect(spans).toEqual([
+      [1n, MAX_LOG_RANGE],
+      [MAX_LOG_RANGE + 1n, MAX_LOG_RANGE * 2n],
+      [MAX_LOG_RANGE * 2n + 1n, MAX_LOG_RANGE * 2n + 10n],
+    ]);
+    expect(logs.map((l) => l.blockNumber)).toEqual([1n, MAX_LOG_RANGE + 1n, MAX_LOG_RANGE * 2n + 1n]);
+    expect(reader.health()).toMatchObject({ failures: 0 });
   });
 });

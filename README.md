@@ -60,6 +60,20 @@ The full list of live checks (`validate:*`) is in `package.json`.
 
 Set `ROBINHOOD_RPC_URL` (see `.env.example`) to use a keyed provider; production refuses to start without one. `ROBINHOOD_INDEX_RPC_URL` optionally sends log indexing to a separate endpoint. No private key is ever needed.
 
+## Production
+
+Skein runs as one container (`Dockerfile`, `compose.yaml`) bound to `127.0.0.1:8787`, behind a reverse proxy that terminates TLS (Caddy: `reverse_proxy 127.0.0.1:8787`). CI builds the image on every change.
+
+```bash
+cp .env.example .env            # set ROBINHOOD_RPC_URL to a keyed provider (Alchemy, QuickNode, Chainstack)
+docker compose up -d --build
+```
+
+- `APP_ENV` defaults to `production` in the container, which refuses the public RPC. Unknown `APP_ENV`/`NODE_ENV` values stop the server at startup.
+- `TRUST_PROXY=1` is set: the rate limiter keys on the right-most `X-Forwarded-For` entry, the one the proxy wrote. Do not expose the container port directly.
+- Caches (logos, Chainlink rounds, pool lists, rate history) live in the `cache` volume. Wallet addresses are never logged or stored; keep access logs off at the proxy for `/api/portfolio/*`.
+- Deploy by push: a bare repository on the server with `deploy/post-receive` as its hook rebuilds the container on `git push <server> main`.
+
 ## Docs
 
 | Topic | Docs |

@@ -19,6 +19,11 @@ import { opportunitySources, summarizeSources } from "./quality.js";
 import type { BorrowCapacity, FixedYieldView, MetricView, ProductCard, TradeQuoteView, TradeRouteView, UsabilityResult } from "./types.js";
 import { classifyOpportunity } from "./usability.js";
 
+/** EARN rates above this (100 %, 1e18-scaled) are outliers (see MetricView.outlier). */
+export const OUTLIER_RATE_E18 = 10n ** 18n;
+
+export const isOutlierRate = (y: { side: "EARN" | "PAY"; value: bigint }) => y.side === "EARN" && y.value > OUTLIER_RATE_E18;
+
 export function metricView(y: YieldMetric, nowS: number, unitOverride?: string | null): MetricView {
   const t = Math.floor(Date.parse(y.observedAt) / 1000);
   return {
@@ -33,6 +38,7 @@ export function metricView(y: YieldMetric, nowS: number, unitOverride?: string |
     freshness: classifyFreshness(y.freshness.rule, Number.isFinite(t) ? t : null, nowS).status,
     label: y.label,
     unit: y.denominatedIn?.key ?? unitOverride ?? null,
+    outlier: isOutlierRate(y),
   };
 }
 

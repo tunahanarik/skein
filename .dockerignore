@@ -1,0 +1,16 @@
+.git
+.github
+.claude
+.cache
+.tmp
+node_modules
+**/node_modules
+apps/web/dist
+apps/web/snapshot/dist
+brand
+docs
+research
+coverage
+*.log
+.env
+.env.*

@@ -5,6 +5,7 @@
 import { existsSync } from "node:fs";
 import { CACHE_TTL_MS } from "@skein/core/config/freshness";
 import { ViemChainReader, type ChainReader } from "@skein/chain/reader";
+import { RpcPriority } from "@skein/chain/priority";
 import { resolveRpcConfig, runtimeMode, type RpcConfig } from "@skein/chain/rpcConfig";
 import { TtlCache } from "@skein/core/lib/cache";
 import { HttpClient } from "@skein/core/lib/http";
@@ -27,6 +28,8 @@ import { defaultSnapshotPath, readSnapshotFile, type RegistrySnapshot } from "@s
 export interface Runtime {
   rpc: RpcConfig;
   reader: ChainReader;
+  /** Lets user-facing requests go ahead of the snapshot's discovery reads (see RpcPriority). */
+  priority: RpcPriority;
   http: HttpClient;
   prices: PriceService;
   baseline: RegistrySnapshot | null;
@@ -59,17 +62,24 @@ export function createRuntime(env: Record<string, string | undefined> = process.
       return loadAssetRegistry({ http, baseline, ...(verify ? { reader, blockNumber: blockNumber! } : {}) });
     });
 
-  const engine = new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) }), new UniswapAdapter({ dialect: RAMSES_CL, store: new FilePoolListStore(RAMSES_POOL_CACHE_PATH) }), new UniswapV4Adapter(), new SparkSavingsAdapter(), new BeefyAdapter(http), new SteerAdapter(http)], { reader, getRegistry, prices });
+  // Discovery (the periodic snapshot) yields to user-facing reads held by the server; wallet
+  // balances, prices and position reads use the plain reader. With no hold active (CLI scripts)
+  // the background reader behaves exactly like the plain one.
+  const priority = new RpcPriority();
+  const backgroundReader = priority.background(reader);
+  const backgroundPrices = new PriceService({ reader: backgroundReader, http });
+  const engine = new OpportunityEngine([new MorphoAdapter(http), new PendleAdapter(http), new UniswapAdapter({ store: new FilePoolListStore(opts.poolCachePath ?? UNISWAP_POOL_CACHE_PATH) }), new UniswapAdapter({ dialect: RAMSES_CL, store: new FilePoolListStore(RAMSES_POOL_CACHE_PATH) }), new UniswapV4Adapter(), new SparkSavingsAdapter(), new BeefyAdapter(http), new SteerAdapter(http)], { reader: backgroundReader, getRegistry, prices: backgroundPrices });
   const portfolioFn: Runtime["getPortfolio"] = (wallet, o) => getPortfolio(wallet, { reader, getRegistry, prices, isPublicRpc: rpc.isPublicRpc }, o);
   return {
     rpc,
     reader,
+    priority,
     http,
     prices,
     baseline,
     getRegistry,
     getPortfolio: portfolioFn,
     opportunities: engine,
-    intelligence: new AssetIntelligenceService({ engine, getPortfolio: (w) => portfolioFn(w) }),
+    intelligence: new AssetIntelligenceService({ engine, getPortfolio: (w) => portfolioFn(w), foregroundReader: reader, prices }),
   };
 }

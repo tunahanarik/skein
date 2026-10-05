@@ -1,11 +1,12 @@
 /** Typed client for the read-only JSON API (apps/server/src/api.ts). Same origin only. */
-import type { AssetIntelligence, CoverageRow, PortfolioIntelligence } from "@skein/product/types";
+import type { AssetIntelligence, CoverageRow, PortfolioIntelligence, PortfolioPositions } from "@skein/product/types";
 import type { MarketRow, PriceHistory } from "@skein/product/service";
 import type { PriceChartData } from "@skein/product/charts";
 import type { AssetListItem, Wire } from "@skein/product/wire";
 
 export type Intelligence = Wire<AssetIntelligence>;
 export type Portfolio = Wire<PortfolioIntelligence>;
+export type Positions = Wire<PortfolioPositions>;
 export type Coverage = Wire<CoverageRow>;
 export type History = Wire<PriceHistory>;
 export type Chart = Wire<PriceChartData>;
@@ -49,7 +50,9 @@ export const api = {
     const qs = q.toString();
     return get<Intelligence>(`/api/assets/${encodeURIComponent(ref)}${qs ? `?${qs}` : ""}`, s);
   },
-  portfolio: (address: string, s?: AbortSignal) => get<Portfolio>(`/api/portfolio/${encodeURIComponent(address)}`, s),
+  /** Holdings and opportunities without open positions (fast); positions come from `positions`. */
+  portfolio: (address: string, s?: AbortSignal) => get<Portfolio>(`/api/portfolio/${encodeURIComponent(address)}?positions=0`, s),
+  positions: (address: string, s?: AbortSignal) => get<Positions>(`/api/portfolio/${encodeURIComponent(address)}/positions`, s),
   history: (ref: string, s?: AbortSignal) => get<History>(`/api/assets/${encodeURIComponent(ref)}/history`, s),
   markets: (s?: AbortSignal) => get<{ rows: Market[] }>("/api/markets", s),
   chart: (ref: string, range: "1D" | "1W" | "1M" | "1Y", s?: AbortSignal) => get<Chart>(`/api/assets/${encodeURIComponent(ref)}/chart?range=${range}`, s),

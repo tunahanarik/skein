@@ -286,21 +286,29 @@ export function useTodayChange(key: string | null): number | null {
 /* ---------------- wallet ---------------- */
 
 const portfolioCache = new Map<string, { at: number; p: Promise<Portfolio> }>();
-/** Portfolio for the connected / pasted address (cached for a minute, memory only). */
+/**
+ * Portfolio for an address, shared by every page for a minute (memory only, never stored), so
+ * opening the wallet after the home page shows it at once. `fresh` asks the server again.
+ */
+export function loadPortfolio(address: string, fresh = false): Promise<Portfolio> {
+  const k = address.toLowerCase();
+  let hit = portfolioCache.get(k);
+  if (fresh || !hit || Date.now() - hit.at > 60_000) {
+    hit = { at: Date.now(), p: api.portfolio(address) };
+    portfolioCache.set(k, hit);
+    hit.p.catch(() => portfolioCache.delete(k));
+  }
+  return hit.p;
+}
+
+/** Portfolio for the connected / pasted address (see loadPortfolio). */
 export function usePortfolio(address: string | null): Portfolio | null {
   const [p, setP] = useState<Portfolio | null>(null);
   useEffect(() => {
     setP(null);
     if (!address) return;
     let live = true;
-    const k = address.toLowerCase();
-    let hit = portfolioCache.get(k);
-    if (!hit || Date.now() - hit.at > 60_000) {
-      hit = { at: Date.now(), p: api.portfolio(address) };
-      portfolioCache.set(k, hit);
-      hit.p.catch(() => portfolioCache.delete(k));
-    }
-    hit.p.then((r) => live && setP(r), () => undefined);
+    loadPortfolio(address).then((r) => live && setP(r), () => undefined);
     return () => {
       live = false;
     };

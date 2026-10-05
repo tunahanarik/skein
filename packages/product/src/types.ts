@@ -101,6 +101,12 @@ export interface MetricView {
   label: string;
   /** What the rate is denominated in: an asset key, or `accounting:<key>` for non-token accounting units. Rates compare only within one unit. */
   unit: string | null;
+  /**
+   * An EARN rate above 100 %: typically a thin pool's compounded fee APR as a protocol API reports
+   * it. Shown with an "Outlier" tag, never as a headline number, and left out of rankings and best
+   * yields (security review D1).
+   */
+  outlier: boolean;
 }
 
 export interface RankingFactors {
@@ -341,6 +347,19 @@ export interface PortfolioIntelligence {
   opportunityCounts: OpportunityCounts;
   dataQuality: DataQuality;
   freshness: FreshnessSummary;
+  blockNumber: bigint;
+  generatedAt: string;
+}
+
+/**
+ * Open positions alone: the slowest part of a wallet view (onchain reads across protocols), so the
+ * web app asks for it beside a portfolio requested with positions=0 and shows holdings first.
+ */
+export interface PortfolioPositions {
+  chainId: number;
+  positions: PositionView[];
+  /** Quality of the position reads only. */
+  dataQuality: DataQuality;
   blockNumber: bigint;
   generatedAt: string;
 }

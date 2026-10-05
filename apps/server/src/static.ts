@@ -6,6 +6,7 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { pipeline } from "node:stream";
 import { SECURITY_HEADERS } from "./json.js";
 
 const TYPES: Record<string, string> = {
@@ -50,14 +51,18 @@ export function shellWithMeta(html: string, meta: { title: string; description: 
   return html.replace(/<title>[^<]*<\/title>/, "").replace(/<meta name="description"[^>]*>/, "").replace("</head>", `    ${tags}\n  </head>`);
 }
 
+/** A request target this server will parse: origin-form ("/path"), never "//host…" or absolute URLs. */
+export function isOriginForm(target: string | undefined): target is string {
+  return !!target && target.startsWith("/") && !target.startsWith("//");
+}
+
 export function createStatic(rootDir: string) {
   const root = resolve(rootDir);
   return function serve(req: IncomingMessage, res: ServerResponse): boolean {
-    if (!existsSync(root)) return false;
-    const url = new URL(req.url ?? "/", "http://localhost");
+    if (!existsSync(root) || !isOriginForm(req.url)) return false;
     let rel: string;
     try {
-      rel = decodeURIComponent(url.pathname);
+      rel = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
     } catch {
       return false;
     }
@@ -80,7 +85,9 @@ export function createStatic(rootDir: string) {
       res.end();
       return true;
     }
-    createReadStream(file).pipe(res);
+    // pipeline closes the file when the client disconnects early and turns a read error (a file
+    // removed during a deploy) into a closed response instead of an uncaught exception.
+    pipeline(createReadStream(file), res, () => undefined);
     return true;
   };
 }

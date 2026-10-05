@@ -169,6 +169,8 @@ export const en = {
   "card.impliedApy": "Implied APY",
   "card.ytApy": "YT implied APY",
   "card.variable": "variable",
+  "card.outlier": "Outlier",
+  "card.outlierNote": "reported {v}, above 100% and not verified",
   "card.outputFor": "Indicative output for {x}",
   "card.impact": "Price impact · {c}",
   "card.fees": "Pool fees",

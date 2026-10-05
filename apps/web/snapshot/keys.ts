@@ -16,8 +16,8 @@ export function makeKeyOf(assets: readonly { symbol: string; address: string }[]
     let p = pathname;
     const asset = /^\/api\/assets\/([^/]+)(\/.*)?$/.exec(p);
     if (asset) p = `/api/assets/${ref(asset[1]!)}${asset[2] ?? ""}`;
-    const wallet = /^\/api\/portfolio\/([^/]+)$/.exec(p);
-    if (wallet) p = `/api/portfolio/${decodeURIComponent(wallet[1]!).toLowerCase()}`;
+    const wallet = /^\/api\/portfolio\/([^/]+)(\/positions)?$/.exec(p);
+    if (wallet) p = `/api/portfolio/${decodeURIComponent(wallet[1]!).toLowerCase()}${wallet[2] ?? ""}`;
     const qs = q.toString();
     return qs ? `${p}?${qs}` : p;
   };

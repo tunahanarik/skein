@@ -8,6 +8,7 @@ export type MetricName =
   | "adapter_latency_ms"
   | "asset_intelligence_latency_ms"
   | "portfolio_intelligence_latency_ms"
+  | "portfolio_positions_latency_ms"
   | "coverage_latency_ms"
   | "projection_latency_ms"
   | "quote_latency_ms"

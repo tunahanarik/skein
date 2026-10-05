@@ -92,7 +92,21 @@ export function resolveRpcConfig(env: Record<string, string | undefined>, mode: 
   };
 }
 
+const MODE_NAMES: Record<string, RuntimeMode> = { production: "production", prod: "production", development: "development", dev: "development", test: "test" };
+
+/**
+ * Runtime mode from APP_ENV and NODE_ENV, failing closed (security review A2): production if
+ * either says so (a typo like "prod" counts), and an unknown value refuses to start instead of
+ * silently allowing the public RPC.
+ */
 export function runtimeMode(env: Record<string, string | undefined>): RuntimeMode {
-  const m = env.APP_ENV ?? env.NODE_ENV;
-  return m === "production" ? "production" : m === "test" ? "test" : "development";
+  const modes = [env.APP_ENV, env.NODE_ENV]
+    .map((v) => v?.trim().toLowerCase())
+    .filter((v): v is string => !!v)
+    .map((v) => {
+      const m = MODE_NAMES[v];
+      if (!m) throw new RpcConfigError(`unknown APP_ENV / NODE_ENV value "${v}" (use production, development or test)`);
+      return m;
+    });
+  return modes.includes("production") ? "production" : modes.includes("test") ? "test" : "development";
 }
