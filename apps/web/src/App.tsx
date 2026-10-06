@@ -14,6 +14,7 @@ import { WalletPage } from "./pages/Wallet";
 import { linkProps, useRoute } from "./router";
 import { AlertsProvider } from "./alerts";
 import { FiredBanner } from "./components/AlertForm";
+import { TokenChip, TokenLine } from "./components/TokenCA";
 import { WalletPicker } from "./components/WalletPicker";
 import { useMarketQuotes } from "./components/market";
 import { useLive } from "./live";
@@ -135,6 +136,7 @@ function Header() {
         </span>
       </div>
       <span className="spacer" />
+      <TokenChip />
       <ChainPulse />
       {w.address && w.source === "connected" ? (
         <span className="row" style={{ gap: 6, flexWrap: "nowrap" }}>
@@ -170,6 +172,7 @@ function Footer() {
           <a {...linkProps("/compare")}>{t("nav.compare")}</a>
           <a {...linkProps("/about")}>{t("nav.about")}</a>
         </div>
+        <TokenLine />
         <p>{t("footer.p1")}</p>
         <p>{t("footer.p2")}</p>
       </div>

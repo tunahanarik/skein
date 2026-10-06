@@ -52,6 +52,21 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("$SKN contract address", () => {
+  it("shows the address in the header and footer and copies the full address", async () => {
+    const writeText = vi.fn(async () => undefined);
+    vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
+    await mountAt("/markets");
+    expect(screen.getByText("$SKN")).toBeTruthy();
+    expect(screen.getByText("0x825b…b5ea")).toBeTruthy();
+    expect(screen.getByText("0x825bfd60da9a182ab2b029fc5f45bd752d01b5ea")).toBeTruthy();
+    const [chip] = screen.getAllByRole("button", { name: "Copy contract address" });
+    await act(async () => fireEvent.click(chip!));
+    expect(writeText).toHaveBeenCalledWith("0x825bfd60da9a182ab2b029fc5f45bd752d01b5ea");
+    expect(screen.getByRole("button", { name: "Copied" })).toBeTruthy();
+  });
+});
+
 describe("asset page", () => {
   it("renders the intents for NVDA with neutral action labels", async () => {
     await mountAt("/asset/NVDA");
