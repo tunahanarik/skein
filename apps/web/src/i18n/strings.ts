@@ -380,6 +380,10 @@ export const en = {
   // misc
   "misc.loading": "Loading",
   "misc.explorer": "Open in Blockscout",
+  "ca.label": "${s} contract",
+  "ca.title": "${s} token contract on Robinhood Chain",
+  "ca.copy": "Copy contract address",
+  "ca.copied": "Copied",
   "misc.unknownAge": "unknown age",
   "misc.ago.s": "{n}s ago",
   "misc.ago.m": "{n}m ago",
